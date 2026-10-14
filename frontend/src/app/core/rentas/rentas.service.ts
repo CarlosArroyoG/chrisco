@@ -7,6 +7,9 @@ import {
   CotizacionCalculo,
   Cumplimiento,
   Documento,
+  Movimiento,
+  Movimientos,
+  MovimientoTipo,
   Pago,
   CotizacionInput,
   CotizacionSugerida,
@@ -158,6 +161,31 @@ export class RentasService {
 
   marcarCondicion(id: string, codigo: string, cumplida: boolean): Observable<Cumplimiento> {
     return this.http.post<Cumplimiento>(`${this.base}/${id}/condiciones/${codigo}`, { cumplida });
+  }
+
+  // ------------------------------------------------------------ salida y regreso del equipo
+
+  movimientos(id: string): Observable<Movimientos> {
+    return this.http.get<Movimientos>(`${this.base}/${id}/movimientos`);
+  }
+
+  registrarMovimiento(
+    id: string,
+    campos: { tipo: MovimientoTipo; horometro: number; notas: string },
+    foto: File,
+  ): Observable<Movimiento> {
+    const body = new FormData();
+    body.append('tipo', campos.tipo);
+    body.append('horometro', String(campos.horometro));
+    if (campos.notas) body.append('notas', campos.notas);
+    body.append('foto', foto);
+    return this.http.post<Movimiento>(`${this.base}/${id}/movimientos`, body);
+  }
+
+  fotoMovimiento(id: string, movimientoId: string): Observable<Blob> {
+    return this.http.get(`${this.base}/${id}/movimientos/${movimientoId}/foto`, {
+      responseType: 'blob',
+    });
   }
 
   cobranza(filtros: CobranzaFiltros): Observable<Cobranza> {

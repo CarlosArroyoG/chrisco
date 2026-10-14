@@ -1,4 +1,5 @@
 import { APIRequestContext, expect } from '@playwright/test';
+import { PDF } from './helpers';
 
 /** Ayudantes para preparar rentas por la API (las pruebas de interfaz parten de ahí). */
 
@@ -84,4 +85,42 @@ export async function apartarPorApi(
   });
   expect(aceptada.status(), await aceptada.text()).toBe(200);
   return renta;
+}
+
+/**
+ * Cumple todo lo que pide una renta apartada con operador de CHRISCO (contrato, póliza y el
+ * anticipo de $3,480) y la deja `confirmada`.
+ */
+export async function confirmarPorApi(
+  request: APIRequestContext,
+  cliente: Headers,
+  ventas: Headers,
+  rentaId: string,
+): Promise<void> {
+  for (const requisito of ['contrato', 'poliza']) {
+    const subida = await request.post(`/api/rentas/${rentaId}/documentos`, {
+      headers: cliente,
+      multipart: { requisito, archivo: PDF },
+    });
+    expect(subida.status(), await subida.text()).toBe(201);
+    const revisada = await request.post(
+      `/api/rentas/${rentaId}/documentos/${(await subida.json()).id}/revisar`,
+      { headers: ventas, data: { aprobado: true } },
+    );
+    expect(revisada.status(), await revisada.text()).toBe(200);
+  }
+  const pago = await request.post(`/api/rentas/${rentaId}/pagos`, {
+    headers: cliente,
+    multipart: {
+      monto: '3480',
+      fecha_pago: new Date().toLocaleDateString('en-CA'),
+      comprobante: PDF,
+    },
+  });
+  expect(pago.status(), await pago.text()).toBe(201);
+  const confirmado = await request.post(
+    `/api/rentas/${rentaId}/pagos/${(await pago.json()).id}/revisar`,
+    { headers: ventas, data: { aprobado: true } },
+  );
+  expect(confirmado.status(), await confirmado.text()).toBe(200);
 }

@@ -135,6 +135,30 @@ export type BodyRegisterEmpresaRegistroPost = {
 };
 
 /**
+ * Body_register_movimiento_rentas__renta_id__movimientos_post
+ */
+export type BodyRegisterMovimientoRentasRentaIdMovimientosPost = {
+    /**
+     * Foto
+     *
+     * Foto del horómetro
+     */
+    foto: Blob | File;
+    /**
+     * Tipo
+     */
+    tipo: string;
+    /**
+     * Horometro
+     */
+    horometro: string;
+    /**
+     * Notas
+     */
+    notas?: string | null;
+};
+
+/**
  * Body_report_pago_rentas__renta_id__pagos_post
  */
 export type BodyReportPagoRentasRentaIdPagosPost = {
@@ -1147,6 +1171,52 @@ export type MotivoIn = {
      * Motivo
      */
     motivo: string;
+};
+
+/**
+ * MovimientoOut
+ */
+export type MovimientoOut = {
+    /**
+     * Id
+     */
+    id: string;
+    tipo: MovimientoTipo;
+    /**
+     * Horometro
+     */
+    horometro: number;
+    /**
+     * Notas
+     */
+    notas: string | null;
+    /**
+     * Registrado Por Nombre
+     */
+    registrado_por_nombre: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * MovimientoTipo
+ */
+export type MovimientoTipo = 'salida' | 'regreso';
+
+/**
+ * MovimientosOut
+ */
+export type MovimientosOut = {
+    /**
+     * Movimientos
+     */
+    movimientos: Array<MovimientoOut>;
+    /**
+     * Horas Usadas
+     */
+    horas_usadas: number | null;
 };
 
 /**
@@ -3585,6 +3655,98 @@ export type GetCobranzaAdminCobranzaGetResponses = {
 };
 
 export type GetCobranzaAdminCobranzaGetResponse = GetCobranzaAdminCobranzaGetResponses[keyof GetCobranzaAdminCobranzaGetResponses];
+
+export type ListMovimientosRentasRentaIdMovimientosGetData = {
+    body?: never;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/movimientos';
+};
+
+export type ListMovimientosRentasRentaIdMovimientosGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListMovimientosRentasRentaIdMovimientosGetError = ListMovimientosRentasRentaIdMovimientosGetErrors[keyof ListMovimientosRentasRentaIdMovimientosGetErrors];
+
+export type ListMovimientosRentasRentaIdMovimientosGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: MovimientosOut;
+};
+
+export type ListMovimientosRentasRentaIdMovimientosGetResponse = ListMovimientosRentasRentaIdMovimientosGetResponses[keyof ListMovimientosRentasRentaIdMovimientosGetResponses];
+
+export type RegisterMovimientoRentasRentaIdMovimientosPostData = {
+    body: BodyRegisterMovimientoRentasRentaIdMovimientosPost;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/movimientos';
+};
+
+export type RegisterMovimientoRentasRentaIdMovimientosPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RegisterMovimientoRentasRentaIdMovimientosPostError = RegisterMovimientoRentasRentaIdMovimientosPostErrors[keyof RegisterMovimientoRentasRentaIdMovimientosPostErrors];
+
+export type RegisterMovimientoRentasRentaIdMovimientosPostResponses = {
+    /**
+     * Successful Response
+     */
+    201: MovimientoOut;
+};
+
+export type RegisterMovimientoRentasRentaIdMovimientosPostResponse = RegisterMovimientoRentasRentaIdMovimientosPostResponses[keyof RegisterMovimientoRentasRentaIdMovimientosPostResponses];
+
+export type DownloadFotoRentasRentaIdMovimientosMovimientoIdFotoGetData = {
+    body?: never;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+        /**
+         * Movimiento Id
+         */
+        movimiento_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/movimientos/{movimiento_id}/foto';
+};
+
+export type DownloadFotoRentasRentaIdMovimientosMovimientoIdFotoGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DownloadFotoRentasRentaIdMovimientosMovimientoIdFotoGetError = DownloadFotoRentasRentaIdMovimientosMovimientoIdFotoGetErrors[keyof DownloadFotoRentasRentaIdMovimientosMovimientoIdFotoGetErrors];
+
+export type DownloadFotoRentasRentaIdMovimientosMovimientoIdFotoGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
 
 export type HealthHealthGetData = {
     body?: never;

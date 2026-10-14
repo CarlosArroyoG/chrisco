@@ -108,7 +108,7 @@ def try_confirm(db: Session, renta: Renta) -> bool:
     return True
 
 
-def _lock(db: Session, renta: Renta) -> None:
+def lock_renta(db: Session, renta: Renta) -> None:
     """Serializa las revisiones de una misma renta y recarga su estado.
 
     Sin esto, dos personas que aprueban a la vez los dos últimos requisitos no se verían entre sí
@@ -189,7 +189,7 @@ def review_document(
     Una licencia solo se aprueba con su número y una vigencia que cubra toda la renta: la
     verificación es manual (no hay consulta oficial), así que queda registrado lo que se leyó.
     """
-    _lock(db, renta)
+    lock_renta(db, renta)
     _require_open(renta)
     documento = find(renta.documentos, doc_id, "Documento")
     if documento.estado != RevisionEstado.PENDIENTE:
@@ -252,7 +252,7 @@ def review_payment(
     db: Session, renta: Renta, pago_id: uuid.UUID, staff: User, confirmado: bool, nota: str | None
 ) -> tuple[Pago, bool]:
     """Confirma o rechaza un pago. Devuelve (pago, la renta quedó confirmada)."""
-    _lock(db, renta)
+    lock_renta(db, renta)
     if renta.estado not in _PAYABLE:
         raise Conflict("Esta renta ya no admite revisar pagos")
     pago = find(renta.pagos, pago_id, "Pago")
@@ -266,8 +266,18 @@ def review_payment(
     pago.revisado_por_id = staff.id
     pago.revisado_at = datetime.now(UTC)
     confirmed = try_confirm(db, renta)
+    try_close(renta)
     db.commit()
     return pago, confirmed
+
+
+def try_close(renta: Renta) -> bool:
+    """Una renta devuelta y cobrada por completo se cierra. Devuelve True si la cerró."""
+    quote = accepted_quote(renta)
+    if renta.estado != RentaEstado.DEVUELTA or quote is None or paid(renta) < quote.total:
+        return False
+    renta.estado = RentaEstado.CERRADA
+    return True
 
 
 # ---------------------------------------------------------------------- condiciones
@@ -278,7 +288,7 @@ def set_condicion(db: Session, renta: Renta, codigo: str, cumplida: bool) -> boo
 
     Devuelve True si con eso la renta quedó confirmada.
     """
-    _lock(db, renta)
+    lock_renta(db, renta)
     _require_open(renta)
     valid = {i.codigo for i in _requisitos(renta) if i.tipo == "condicion" and i.codigo != ANTICIPO}
     if codigo not in valid:

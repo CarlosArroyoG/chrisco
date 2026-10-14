@@ -19,6 +19,7 @@ import { Countdown } from '../../shared/countdown/countdown';
 import { StatusBadge } from '../../shared/status-badge/status-badge';
 import { CotizacionEditor } from './cotizacion-editor';
 import { CumplimientoPanel } from './cumplimiento-panel';
+import { MovimientosPanel } from './movimientos-panel';
 import { CotizacionView } from './cotizacion-view';
 
 const SECTIONS: { tipo: Requisito['tipo']; titulo: string }[] = [
@@ -43,6 +44,7 @@ const TRANSPORTE = { entrega: 'Entrega CHRISCO en la obra', recoge: 'Lo recoge e
     CotizacionView,
     CotizacionEditor,
     CumplimientoPanel,
+    MovimientosPanel,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -190,6 +192,9 @@ const TRANSPORTE = { entrega: 'Entrega CHRISCO en la obra', recoge: 'Lo recoge e
       @if (conCumplimiento()) {
         <app-cumplimiento-panel [renta]="r" (changed)="reload()" />
       }
+      @if (conMovimientos()) {
+        <app-movimientos-panel [renta]="r" (changed)="reload()" />
+      }
 
       @if (canQuote()) {
         <section class="card mt-4">
@@ -317,6 +322,16 @@ export class RentaDetalle implements OnInit {
     const estado = this.renta()?.estado;
     return (
       estado === 'apartada' ||
+      estado === 'confirmada' ||
+      estado === 'en_renta' ||
+      estado === 'devuelta' ||
+      estado === 'cerrada'
+    );
+  });
+  /** Desde que la renta se confirma hay entrega, devolución y cierre que seguir. */
+  protected readonly conMovimientos = computed(() => {
+    const estado = this.renta()?.estado;
+    return (
       estado === 'confirmada' ||
       estado === 'en_renta' ||
       estado === 'devuelta' ||

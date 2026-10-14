@@ -12,6 +12,7 @@ from pydantic import BaseModel, ValidationError
 
 from app.schemas.cumplimiento import PagoIn
 from app.schemas.empresa import CompanyData, RegistroEmpresaForm
+from app.schemas.movimiento import MovimientoIn
 
 
 def _validate[M: BaseModel](model: type[M], **fields: Any) -> M:
@@ -60,3 +61,14 @@ def pago_form(
 
 
 PagoForm = Annotated[PagoIn, Depends(pago_form)]
+
+
+def movimiento_form(
+    tipo: Annotated[str, Form()],
+    horometro: Annotated[str, Form()],
+    notas: Annotated[str | None, Form()] = None,
+) -> MovimientoIn:
+    return _validate(MovimientoIn, tipo=tipo, horometro=horometro, notas=notas or None)
+
+
+MovimientoForm = Annotated[MovimientoIn, Depends(movimiento_form)]

@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from app.models.cumplimiento import Pago, RentaDocumento
     from app.models.empresa import Empresa
     from app.models.equipo import Equipo
+    from app.models.movimiento import RentaMovimiento
     from app.models.user import User
 
 # Numeración de folios (CHR-2026-00001). Una secuencia no se salta ni repite aunque haya
@@ -112,3 +113,6 @@ class Renta(IdMixin, TimestampMixin, Base):
         back_populates="renta", order_by="RentaDocumento.created_at"
     )
     pagos: Mapped[list["Pago"]] = relationship(back_populates="renta", order_by="Pago.created_at")
+    movimientos: Mapped[list["RentaMovimiento"]] = relationship(
+        back_populates="renta", order_by="RentaMovimiento.created_at"
+    )
