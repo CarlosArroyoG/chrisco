@@ -1,0 +1,21 @@
+﻿services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: chrisco
+      POSTGRES_PASSWORD: chrisco_dev
+      POSTGRES_DB: chrisco
+    ports:
+      - "5433:5432"
+    volumes:
+      - chrisco_pgdata:/var/lib/postgresql/data
+      - ./backend/docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chrisco -d chrisco"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  chrisco_pgdata:

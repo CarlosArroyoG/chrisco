@@ -1,0 +1,13 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-chrisco-orange: #f58220;
+  --color-chrisco-orange-dark: #bf360c;
+  --color-chrisco-dark: #212b30;
+  --color-chrisco-charcoal: #263238;
+  --color-chrisco-slate: #37474f;
+}
+
+body {
+  @apply bg-slate-100 text-slate-800 antialiased;
+}

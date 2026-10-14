@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="100" fill="#212B30"/>
+  
+  <g transform="translate(65, 50) scale(1.5)">
+    <path d="M72 18 L122 68 L98 92 L76 70 L48 98 L88 138 L104 122 L120 138 L88 170 C80 178 68 178 60 170 L14 124 C6 116 6 104 14 96 L60 50 C68 42 80 42 88 50" fill="#78909C"/>
+    <path d="M148 18 C156 10 168 10 176 18 L222 64 C230 72 230 84 222 92 L176 138 C168 146 156 146 148 138 L124 114 L148 90 L160 102 L188 74 L148 34 L132 50 L116 34 L148 2 C156 -6 168 -6 176 2" fill="#F58220"/>
+  </g>
+  <text x="256" y="380" font-family="'Arial Black', Impact, sans-serif" font-weight="900" font-size="64" fill="#FFFFFF" text-anchor="middle" letter-spacing="4">CHRISCO</text>
+  <rect x="56" y="405" width="400" height="30" rx="8" fill="#F58220"/>
+  <text x="256" y="427" font-family="'Arial Black', sans-serif" font-weight="800" font-size="18" fill="#FFFFFF" text-anchor="middle" letter-spacing="12">CONSTRUCTORA</text>
+</svg>
