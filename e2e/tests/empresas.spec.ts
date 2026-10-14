@@ -1,3 +1,4 @@
+import { resetDatabase } from '../db';
 import { expect, test } from '@playwright/test';
 import { ADMIN, VENTAS } from '../env';
 import { login, logout, PDF } from './helpers';
@@ -6,6 +7,9 @@ import { linkFromMail, mailsTo } from './mail';
 const OWNER = { email: 'titular@constructora-e2e.com', password: 'titular-clave-larga-1', name: 'Titular E2E' };
 const GUEST = { email: 'compa@constructora-e2e.com', password: 'invitado-clave-larga-1', name: 'Compañero E2E' };
 const THIRD = { email: 'tercero@constructora-e2e.com', name: 'Tercero E2E' };
+
+// Cada archivo parte de un sistema limpio: no depende de lo que dejó otro.
+test.beforeAll(() => resetDatabase());
 
 // Una sola historia continua: cada paso depende del anterior.
 test.describe.serial('Registro, revisión y equipo de una empresa', () => {

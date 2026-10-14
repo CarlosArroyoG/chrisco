@@ -11,10 +11,20 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { debounceTime, distinctUntilChanged } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  merge,
+  of,
+  Subject,
+  switchMap,
+  tap,
+} from 'rxjs';
+import { periodFromInputs } from '../../../core/api/dates';
 import { apiErrorMessage } from '../../../core/api/errors';
 import { Categoria, EquipoCatalogo } from '../../../core/api/models';
-import { CatalogoService, fotoUrl } from '../../../core/catalogo/catalogo.service';
+import { CatalogoFiltros, CatalogoService, fotoUrl } from '../../../core/catalogo/catalogo.service';
 
 const PAGE_SIZE = 12;
 
@@ -42,6 +52,24 @@ const PAGE_SIZE = 12;
         }
       </select>
     </div>
+
+    <div class="mt-2 grid gap-2 sm:grid-cols-4">
+      <div>
+        <label for="cat-desde" class="label">Lo necesito desde</label>
+        <input id="cat-desde" type="datetime-local" [formControl]="desde" class="input" />
+      </div>
+      <div>
+        <label for="cat-hasta" class="label">Hasta</label>
+        <input id="cat-hasta" type="datetime-local" [formControl]="hasta" class="input" />
+      </div>
+      <label class="flex items-end gap-2 pb-2.5 text-sm font-semibold">
+        <input type="checkbox" [formControl]="soloDisponibles" class="size-4" />
+        Solo disponibles
+      </label>
+    </div>
+    @if (rangeHint()) {
+      <p class="mt-1 text-xs text-amber-700">{{ rangeHint() }}</p>
+    }
 
     @if (error()) {
       <p role="alert" class="alert-error mt-3">{{ error() }}</p>
@@ -90,6 +118,11 @@ const PAGE_SIZE = 12;
             @if (e.requiere_lowboy) {
               <p class="text-[11px] font-semibold text-amber-700">Se entrega en lowboy</p>
             }
+            @if (e.disponible === true) {
+              <p class="text-[11px] font-bold text-emerald-700">Disponible en esas fechas</p>
+            } @else if (e.disponible === false) {
+              <p class="text-[11px] font-bold text-rose-700">Ocupado en esas fechas</p>
+            }
           </div>
         </a>
       } @empty {
@@ -129,46 +162,83 @@ export class CatalogoPage implements OnInit {
   protected readonly fotoUrl = fotoUrl;
   protected readonly q = new FormControl('', { nonNullable: true });
   protected readonly categoria = new FormControl('', { nonNullable: true });
+  protected readonly desde = new FormControl('', { nonNullable: true });
+  protected readonly hasta = new FormControl('', { nonNullable: true });
+  protected readonly soloDisponibles = new FormControl(false, { nonNullable: true });
+
   protected readonly categorias = signal<Categoria[]>([]);
   protected readonly items = signal<EquipoCatalogo[]>([]);
   protected readonly total = signal(0);
   protected readonly page = signal(0);
   protected readonly loaded = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly rangeHint = signal<string | null>(null);
+  /** Cada consulta cancela a la anterior: una respuesta vieja no pisa a la nueva. */
+  private readonly load$ = new Subject<number>();
   protected readonly pages = computed(() => Math.max(1, Math.ceil(this.total() / PAGE_SIZE)));
 
   ngOnInit(): void {
+    this.load$
+      .pipe(
+        tap((page) => {
+          this.page.set(page);
+          this.loaded.set(false);
+          this.error.set(null);
+        }),
+        switchMap((page) =>
+          this.service.list(this.filters(page)).pipe(
+            catchError((err: unknown) => {
+              this.error.set(apiErrorMessage(err, 'No se pudo cargar el catálogo.'));
+              return of(null);
+            }),
+          ),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((result) => {
+        if (result) {
+          this.items.set(result.items);
+          this.total.set(result.total);
+        }
+        this.loaded.set(true);
+      });
+
     this.service.categorias().subscribe((categorias) => this.categorias.set(categorias));
     this.q.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.go(0));
-    this.categoria.valueChanges
+    merge(
+      this.categoria.valueChanges,
+      this.desde.valueChanges,
+      this.hasta.valueChanges,
+      this.soloDisponibles.valueChanges,
+    )
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.go(0));
     this.go(0);
   }
 
   protected go(page: number): void {
-    this.page.set(page);
-    this.loaded.set(false);
-    this.error.set(null);
-    this.service
-      .list({
-        q: this.q.value.trim(),
-        categoria_id: this.categoria.value,
-        limit: PAGE_SIZE,
-        offset: page * PAGE_SIZE,
-      })
-      .subscribe({
-        next: (result) => {
-          this.items.set(result.items);
-          this.total.set(result.total);
-          this.loaded.set(true);
-        },
-        error: (err: unknown) => {
-          this.loaded.set(true);
-          this.error.set(apiErrorMessage(err, 'No se pudo cargar el catálogo.'));
-        },
-      });
+    const periodo = periodFromInputs(this.desde.value, this.hasta.value);
+    // Con el periodo a medias o invertido no se pregunta disponibilidad, pero se avisa por qué.
+    const started = this.desde.value || this.hasta.value;
+    this.rangeHint.set(
+      started && !periodo
+        ? 'Elige un inicio y un fin (posterior al inicio) para ver la disponibilidad.'
+        : null,
+    );
+    this.load$.next(page);
+  }
+
+  private filters(page: number): CatalogoFiltros {
+    const periodo = periodFromInputs(this.desde.value, this.hasta.value);
+    return {
+      q: this.q.value.trim(),
+      categoria_id: this.categoria.value,
+      ...periodo,
+      solo_disponibles: periodo && this.soloDisponibles.value ? true : undefined,
+      limit: PAGE_SIZE,
+      offset: page * PAGE_SIZE,
+    };
   }
 }

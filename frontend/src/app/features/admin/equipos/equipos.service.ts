@@ -2,6 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
+  Bloqueo,
+  BloqueoIn,
   Equipo,
   EquipoInput,
   EquipoStatus,
@@ -50,6 +52,18 @@ export class EquiposService {
 
   removeFoto(id: string, fotoId: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}/fotos/${fotoId}`);
+  }
+
+  bloqueos(id: string): Observable<Bloqueo[]> {
+    return this.http.get<Bloqueo[]>(`${this.base}/${id}/bloqueos`);
+  }
+
+  createBloqueo(id: string, body: BloqueoIn): Observable<Bloqueo> {
+    return this.http.post<Bloqueo>(`${this.base}/${id}/bloqueos`, body);
+  }
+
+  releaseBloqueo(bloqueoId: string): Observable<void> {
+    return this.http.post<void>(`${API_URL}/admin/bloqueos/${bloqueoId}/liberar`, {});
   }
 
   /** Con `dryRun` solo valida el archivo y reporta errores por fila; no guarda nada. */

@@ -1,12 +1,16 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Categoria, EquipoCatalogo, Page } from '../api/models';
+import { Categoria, Disponibilidad, EquipoCatalogo, Page } from '../api/models';
 import { API_URL } from '../auth/auth.service';
 
 export interface CatalogoFiltros {
   q?: string;
   categoria_id?: string;
+  /** Con `desde` y `hasta` cada equipo indica si está libre en ese periodo. */
+  desde?: string;
+  hasta?: string;
+  solo_disponibles?: boolean;
   limit?: number;
   offset?: number;
 }
@@ -37,6 +41,12 @@ export class CatalogoService {
 
   get(id: string): Observable<EquipoCatalogo> {
     return this.http.get<EquipoCatalogo>(`${API_URL}/equipos/${id}`);
+  }
+
+  disponibilidad(id: string, desde: string, hasta: string): Observable<Disponibilidad> {
+    return this.http.get<Disponibilidad>(`${API_URL}/equipos/${id}/disponibilidad`, {
+      params: toParams({ desde, hasta }),
+    });
   }
 
   categorias(): Observable<Categoria[]> {

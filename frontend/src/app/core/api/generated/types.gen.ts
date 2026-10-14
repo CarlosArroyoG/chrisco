@@ -5,6 +5,76 @@ export type ClientOptions = {
 };
 
 /**
+ * BloqueoEstado
+ */
+export type BloqueoEstado = 'activo' | 'liberado' | 'expirado';
+
+/**
+ * BloqueoIn
+ *
+ * Bloqueo que pone el personal: mantenimiento programado u otra razón.
+ */
+export type BloqueoIn = {
+    /**
+     * Desde
+     */
+    desde: string;
+    /**
+     * Hasta
+     */
+    hasta: string;
+    /**
+     * Tipo
+     */
+    tipo: 'mantenimiento' | 'manual';
+    /**
+     * Motivo
+     */
+    motivo: string;
+};
+
+/**
+ * BloqueoOut
+ */
+export type BloqueoOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Equipo Id
+     */
+    equipo_id: string;
+    tipo: BloqueoTipo;
+    estado: BloqueoEstado;
+    /**
+     * Desde
+     */
+    desde: string;
+    /**
+     * Hasta
+     */
+    hasta: string;
+    /**
+     * Vence En
+     */
+    vence_en: string | null;
+    /**
+     * Motivo
+     */
+    motivo: string | null;
+    /**
+     * Creado Por Nombre
+     */
+    creado_por_nombre: string | null;
+};
+
+/**
+ * BloqueoTipo
+ */
+export type BloqueoTipo = 'solicitud' | 'apartado' | 'renta' | 'mantenimiento' | 'manual';
+
+/**
  * Body_add_foto_admin_equipos__equipo_id__fotos_post
  */
 export type BodyAddFotoAdminEquiposEquipoIdFotosPost = {
@@ -170,6 +240,28 @@ export type CompanyUserOut = {
      * Email Verified At
      */
     email_verified_at: string | null;
+};
+
+/**
+ * DisponibilidadOut
+ */
+export type DisponibilidadOut = {
+    /**
+     * Disponible
+     */
+    disponible: boolean;
+    /**
+     * Desde
+     */
+    desde: string;
+    /**
+     * Hasta
+     */
+    hasta: string;
+    /**
+     * Ocupado
+     */
+    ocupado: Array<Ocupacion>;
 };
 
 /**
@@ -343,6 +435,10 @@ export type EquipoCatalogOut = {
      * Fotos
      */
     fotos: Array<FotoOut>;
+    /**
+     * Disponible
+     */
+    disponible?: boolean | null;
 };
 
 /**
@@ -492,6 +588,7 @@ export type EquipoOut = {
         [key: string]: unknown;
     };
     status: EquipoStatus;
+    estado_actual: EstadoActual;
     /**
      * Fotos
      */
@@ -583,6 +680,13 @@ export type EquipoUpdate = {
 };
 
 /**
+ * EstadoActual
+ *
+ * Situación de un equipo en este momento, para quien administra la flota.
+ */
+export type EstadoActual = 'libre' | 'bloqueado' | 'rentado' | 'mantenimiento' | 'baja';
+
+/**
  * FotoOut
  */
 export type FotoOut = {
@@ -664,6 +768,22 @@ export type MessageOut = {
      * Detail
      */
     detail: string;
+};
+
+/**
+ * Ocupacion
+ *
+ * Un periodo ocupado, sin decir por qué (es lo único que ve un cliente).
+ */
+export type Ocupacion = {
+    /**
+     * Desde
+     */
+    desde: string;
+    /**
+     * Hasta
+     */
+    hasta: string;
 };
 
 /**
@@ -1730,6 +1850,98 @@ export type DeleteFotoAdminEquiposEquipoIdFotosFotoIdDeleteResponses = {
 
 export type DeleteFotoAdminEquiposEquipoIdFotosFotoIdDeleteResponse = DeleteFotoAdminEquiposEquipoIdFotosFotoIdDeleteResponses[keyof DeleteFotoAdminEquiposEquipoIdFotosFotoIdDeleteResponses];
 
+export type ListBloqueosAdminEquiposEquipoIdBloqueosGetData = {
+    body?: never;
+    path: {
+        /**
+         * Equipo Id
+         */
+        equipo_id: string;
+    };
+    query?: never;
+    url: '/admin/equipos/{equipo_id}/bloqueos';
+};
+
+export type ListBloqueosAdminEquiposEquipoIdBloqueosGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListBloqueosAdminEquiposEquipoIdBloqueosGetError = ListBloqueosAdminEquiposEquipoIdBloqueosGetErrors[keyof ListBloqueosAdminEquiposEquipoIdBloqueosGetErrors];
+
+export type ListBloqueosAdminEquiposEquipoIdBloqueosGetResponses = {
+    /**
+     * Response List Bloqueos Admin Equipos  Equipo Id  Bloqueos Get
+     *
+     * Successful Response
+     */
+    200: Array<BloqueoOut>;
+};
+
+export type ListBloqueosAdminEquiposEquipoIdBloqueosGetResponse = ListBloqueosAdminEquiposEquipoIdBloqueosGetResponses[keyof ListBloqueosAdminEquiposEquipoIdBloqueosGetResponses];
+
+export type CreateBloqueoAdminEquiposEquipoIdBloqueosPostData = {
+    body: BloqueoIn;
+    path: {
+        /**
+         * Equipo Id
+         */
+        equipo_id: string;
+    };
+    query?: never;
+    url: '/admin/equipos/{equipo_id}/bloqueos';
+};
+
+export type CreateBloqueoAdminEquiposEquipoIdBloqueosPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateBloqueoAdminEquiposEquipoIdBloqueosPostError = CreateBloqueoAdminEquiposEquipoIdBloqueosPostErrors[keyof CreateBloqueoAdminEquiposEquipoIdBloqueosPostErrors];
+
+export type CreateBloqueoAdminEquiposEquipoIdBloqueosPostResponses = {
+    /**
+     * Successful Response
+     */
+    201: BloqueoOut;
+};
+
+export type CreateBloqueoAdminEquiposEquipoIdBloqueosPostResponse = CreateBloqueoAdminEquiposEquipoIdBloqueosPostResponses[keyof CreateBloqueoAdminEquiposEquipoIdBloqueosPostResponses];
+
+export type ReleaseBloqueoAdminBloqueosBloqueoIdLiberarPostData = {
+    body?: never;
+    path: {
+        /**
+         * Bloqueo Id
+         */
+        bloqueo_id: string;
+    };
+    query?: never;
+    url: '/admin/bloqueos/{bloqueo_id}/liberar';
+};
+
+export type ReleaseBloqueoAdminBloqueosBloqueoIdLiberarPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ReleaseBloqueoAdminBloqueosBloqueoIdLiberarPostError = ReleaseBloqueoAdminBloqueosBloqueoIdLiberarPostErrors[keyof ReleaseBloqueoAdminBloqueosBloqueoIdLiberarPostErrors];
+
+export type ReleaseBloqueoAdminBloqueosBloqueoIdLiberarPostResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type ReleaseBloqueoAdminBloqueosBloqueoIdLiberarPostResponse = ReleaseBloqueoAdminBloqueosBloqueoIdLiberarPostResponses[keyof ReleaseBloqueoAdminBloqueosBloqueoIdLiberarPostResponses];
+
 export type GetFotoEquiposFotosFotoIdSizeGetData = {
     body?: never;
     path: {
@@ -1774,6 +1986,18 @@ export type ListCatalogoEquiposGetData = {
          * Categoria Id
          */
         categoria_id?: string | null;
+        /**
+         * Desde
+         */
+        desde?: string | null;
+        /**
+         * Hasta
+         */
+        hasta?: string | null;
+        /**
+         * Solo Disponibles
+         */
+        solo_disponibles?: boolean;
         /**
          * Limit
          */
@@ -1833,6 +2057,45 @@ export type GetCatalogoEquiposEquipoIdGetResponses = {
 };
 
 export type GetCatalogoEquiposEquipoIdGetResponse = GetCatalogoEquiposEquipoIdGetResponses[keyof GetCatalogoEquiposEquipoIdGetResponses];
+
+export type GetDisponibilidadEquiposEquipoIdDisponibilidadGetData = {
+    body?: never;
+    path: {
+        /**
+         * Equipo Id
+         */
+        equipo_id: string;
+    };
+    query: {
+        /**
+         * Desde
+         */
+        desde: string;
+        /**
+         * Hasta
+         */
+        hasta: string;
+    };
+    url: '/equipos/{equipo_id}/disponibilidad';
+};
+
+export type GetDisponibilidadEquiposEquipoIdDisponibilidadGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetDisponibilidadEquiposEquipoIdDisponibilidadGetError = GetDisponibilidadEquiposEquipoIdDisponibilidadGetErrors[keyof GetDisponibilidadEquiposEquipoIdDisponibilidadGetErrors];
+
+export type GetDisponibilidadEquiposEquipoIdDisponibilidadGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: DisponibilidadOut;
+};
+
+export type GetDisponibilidadEquiposEquipoIdDisponibilidadGetResponse = GetDisponibilidadEquiposEquipoIdDisponibilidadGetResponses[keyof GetDisponibilidadEquiposEquipoIdDisponibilidadGetResponses];
 
 export type HealthHealthGetData = {
     body?: never;

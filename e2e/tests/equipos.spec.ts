@@ -1,3 +1,4 @@
+import { resetDatabase } from '../db';
 import { expect, test } from '@playwright/test';
 import { ADMIN, VENTAS } from '../env';
 import { createApprovedClient, logout, PNG, signIn } from './helpers';
@@ -20,6 +21,9 @@ const csv = (contenido: string) => ({
   mimeType: 'text/csv',
   buffer: Buffer.from(contenido, 'utf-8'),
 });
+
+// Cada archivo parte de un sistema limpio: no depende de lo que dejó otro.
+test.beforeAll(() => resetDatabase());
 
 test.describe.serial('Registro de equipos y catálogo', () => {
   test('el admin crea una categoría con especificaciones propias', async ({ page }) => {

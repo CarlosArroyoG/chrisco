@@ -11,7 +11,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, of, Subject, switchMap, tap } from 'rxjs';
 import { apiErrorMessage } from '../../../core/api/errors';
 import { Categoria, Equipo, EquipoStatus } from '../../../core/api/models';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -72,7 +72,7 @@ const PAGE_SIZE = 25;
             <th class="p-3">Equipo</th>
             <th class="p-3">Categoría</th>
             <th class="p-3">Tarifa</th>
-            <th class="p-3">Estado</th>
+            <th class="p-3">Situación</th>
             <th class="p-3"></th>
           </tr>
         </thead>
@@ -110,7 +110,7 @@ const PAGE_SIZE = 25;
                   {{ e.tarifa_dia | currency: 'MXN' : 'symbol-narrow' : '1.0-2' }}/día
                 }
               </td>
-              <td class="p-3"><app-status-badge [status]="e.status" /></td>
+              <td class="p-3"><app-status-badge [status]="e.estado_actual" /></td>
               <td class="p-3">
                 <a [routerLink]="['/admin/equipos', e.id]" class="link">{{
                   isAdmin() ? 'Editar' : 'Ver'
@@ -168,10 +168,45 @@ export class EquiposPage implements OnInit {
   protected readonly page = signal(0);
   protected readonly loaded = signal(false);
   protected readonly error = signal<string | null>(null);
+  /** Cada consulta cancela a la anterior: una respuesta vieja no pisa a la nueva. */
+  private readonly load$ = new Subject<number>();
   protected readonly pages = computed(() => Math.max(1, Math.ceil(this.total() / PAGE_SIZE)));
   protected readonly isAdmin = computed(() => this.auth.user()?.role === 'admin');
 
   ngOnInit(): void {
+    this.load$
+      .pipe(
+        tap((page) => {
+          this.page.set(page);
+          this.loaded.set(false);
+          this.error.set(null);
+        }),
+        switchMap((page) =>
+          this.service
+            .list({
+              q: this.q.value.trim(),
+              categoria_id: this.categoria.value,
+              status_filter: this.status.value || undefined,
+              limit: PAGE_SIZE,
+              offset: page * PAGE_SIZE,
+            })
+            .pipe(
+              catchError((err: unknown) => {
+                this.error.set(apiErrorMessage(err, 'No se pudo cargar la lista de equipos.'));
+                return of(null);
+              }),
+            ),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((result) => {
+        if (result) {
+          this.items.set(result.items);
+          this.total.set(result.total);
+        }
+        this.loaded.set(true);
+      });
+
     this.catalogo.categorias().subscribe((categorias) => this.categorias.set(categorias));
     // Cualquier cambio de filtro regresa a la primera página.
     this.q.valueChanges
@@ -185,27 +220,6 @@ export class EquiposPage implements OnInit {
   }
 
   protected go(page: number): void {
-    this.page.set(page);
-    this.loaded.set(false);
-    this.error.set(null);
-    this.service
-      .list({
-        q: this.q.value.trim(),
-        categoria_id: this.categoria.value,
-        status_filter: this.status.value || undefined,
-        limit: PAGE_SIZE,
-        offset: page * PAGE_SIZE,
-      })
-      .subscribe({
-        next: (result) => {
-          this.items.set(result.items);
-          this.total.set(result.total);
-          this.loaded.set(true);
-        },
-        error: (err: unknown) => {
-          this.loaded.set(true);
-          this.error.set(apiErrorMessage(err, 'No se pudo cargar la lista de equipos.'));
-        },
-      });
+    this.load$.next(page);
   }
 }

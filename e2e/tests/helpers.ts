@@ -70,3 +70,44 @@ export async function createApprovedClient(request: APIRequestContext, data: Cli
   expect(empresa, 'la empresa recién registrada debe aparecer pendiente').toBeTruthy();
   expect((await request.post(`/api/admin/empresas/${empresa.id}/aprobar`, { headers })).ok()).toBeTruthy();
 }
+
+/** Encabezados de un admin ya autenticado, para preparar datos por la API. */
+export async function adminHeaders(request: APIRequestContext): Promise<{ Authorization: string }> {
+  const session = await request.post('/api/auth/login', {
+    data: { email: ADMIN.email, password: ADMIN.password },
+  });
+  return { Authorization: `Bearer ${(await session.json()).access_token}` };
+}
+
+/** Crea por la API una categoría sin especificaciones y los equipos dados; devuelve sus ids. */
+export async function seedEquipos(
+  request: APIRequestContext,
+  categoria: string,
+  equipos: { codigo: string; nombre: string }[],
+): Promise<string[]> {
+  const headers = await adminHeaders(request);
+  const cat = await request.post('/api/admin/categorias', {
+    data: { nombre: categoria, spec_fields: [] },
+    headers,
+  });
+  expect(cat.ok(), await cat.text()).toBeTruthy();
+  const categoriaId = (await cat.json()).id;
+  const ids: string[] = [];
+  for (const [i, equipo] of equipos.entries()) {
+    const res = await request.post('/api/admin/equipos', {
+      data: {
+        ...equipo,
+        categoria_id: categoriaId,
+        marca: 'Marca E2E',
+        modelo: 'Modelo E2E',
+        numero_serie: `${equipo.codigo}-SERIE-${i}`,
+        tarifa_hora: 1500,
+        specs: {},
+      },
+      headers,
+    });
+    expect(res.ok(), await res.text()).toBeTruthy();
+    ids.push((await res.json()).id);
+  }
+  return ids;
+}

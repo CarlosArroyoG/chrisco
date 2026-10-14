@@ -1,6 +1,15 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { catchError, of, Subject, switchMap, tap } from 'rxjs';
 import { apiErrorMessage } from '../../core/api/errors';
 import { EmpresaListItem, EmpresaStatus } from '../../core/api/models';
 import { StatusBadge } from '../../shared/status-badge/status-badge';
@@ -83,6 +92,7 @@ const FILTERS: { value: EmpresaStatus | undefined; label: string }[] = [
 })
 export class AdminHome implements OnInit {
   private readonly service = inject(AdminEmpresasService);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly filters = FILTERS;
   protected readonly filter = signal<EmpresaStatus | undefined>('pendiente');
@@ -90,27 +100,35 @@ export class AdminHome implements OnInit {
   protected readonly loaded = signal(false);
   protected readonly error = signal<string | null>(null);
 
+  /** Cada consulta cancela a la anterior: una respuesta vieja no pisa a la nueva. */
+  private readonly load$ = new Subject<EmpresaStatus | undefined>();
+
   ngOnInit(): void {
-    this.load();
+    this.load$
+      .pipe(
+        tap(() => {
+          this.loaded.set(false);
+          this.error.set(null);
+        }),
+        switchMap((status) =>
+          this.service.list(status).pipe(
+            catchError((err: unknown) => {
+              this.error.set(apiErrorMessage(err, 'No se pudo cargar la lista de empresas.'));
+              return of(null);
+            }),
+          ),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((list) => {
+        if (list) this.empresas.set(list);
+        this.loaded.set(true);
+      });
+    this.load$.next(this.filter());
   }
 
   protected select(status: EmpresaStatus | undefined): void {
     this.filter.set(status);
-    this.load();
-  }
-
-  private load(): void {
-    this.loaded.set(false);
-    this.error.set(null);
-    this.service.list(this.filter()).subscribe({
-      next: (list) => {
-        this.empresas.set(list);
-        this.loaded.set(true);
-      },
-      error: (err: unknown) => {
-        this.loaded.set(true);
-        this.error.set(apiErrorMessage(err, 'No se pudo cargar la lista de empresas.'));
-      },
-    });
+    this.load$.next(status);
   }
 }

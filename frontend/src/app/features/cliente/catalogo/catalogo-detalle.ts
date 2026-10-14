@@ -1,14 +1,14 @@
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { apiErrorMessage } from '../../../core/api/errors';
-import { EquipoCatalogo } from '../../../core/api/models';
+import { EquipoCatalogo, Ocupacion } from '../../../core/api/models';
 import { CatalogoService, fotoUrl } from '../../../core/catalogo/catalogo.service';
 
 /** Ficha de un equipo del catálogo: fotos, especificaciones, tarifas y requisitos. */
 @Component({
   selector: 'app-catalogo-detalle',
-  imports: [CurrencyPipe, RouterLink],
+  imports: [CurrencyPipe, DatePipe, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a routerLink="/cliente/catalogo" class="link text-xs">← Volver al catálogo</a>
@@ -94,6 +94,26 @@ import { CatalogoService, fotoUrl } from '../../../core/catalogo/catalogo.servic
           }
         </section>
       </div>
+
+      <section class="card mt-4">
+        <h2 class="text-sm font-black">Disponibilidad en los próximos 90 días</h2>
+        @if (ocupado().length) {
+          <ul class="mt-2 space-y-1 text-sm">
+            @for (o of ocupado(); track o.desde) {
+              <li class="text-rose-700">
+                Ocupado del {{ o.desde | date: 'dd/MM/yyyy HH:mm' }} al
+                {{ o.hasta | date: 'dd/MM/yyyy HH:mm' }}
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="mt-2 text-sm text-emerald-700">Sin reservas: disponible en cualquier fecha.</p>
+        }
+        <p class="mt-2 text-[11px] text-slate-500">
+          Fuera de esos horarios el equipo está libre. Las reservas provisionales pueden liberarse
+          sin aviso.
+        </p>
+      </section>
     }
   `,
 })
@@ -106,12 +126,18 @@ export class CatalogoDetalle implements OnInit {
   protected readonly fotoUrl = fotoUrl;
   protected readonly equipo = signal<EquipoCatalogo | null>(null);
   protected readonly selected = signal(0);
+  protected readonly ocupado = signal<Ocupacion[]>([]);
   protected readonly error = signal<string | null>(null);
 
   ngOnInit(): void {
     this.service.get(this.id()).subscribe({
       next: (equipo) => this.equipo.set(equipo),
       error: (err: unknown) => this.error.set(apiErrorMessage(err, 'No se pudo cargar el equipo.')),
+    });
+    const hoy = new Date();
+    const en90dias = new Date(hoy.getTime() + 90 * 24 * 3600_000);
+    this.service.disponibilidad(this.id(), hoy.toISOString(), en90dias.toISOString()).subscribe({
+      next: (disponibilidad) => this.ocupado.set(disponibilidad.ocupado),
     });
   }
 }

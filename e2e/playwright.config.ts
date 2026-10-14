@@ -4,7 +4,8 @@ import { API_PORT, BACKEND_ENV, WEB_PORT, WEB_URL } from './env';
 export default defineConfig({
   testDir: './tests',
   globalSetup: './global-setup.ts',
-  // El recorrido es una historia continua (registro → revisión → equipo): no se paraleliza.
+  // Los archivos corren uno tras otro y cada uno reinicia la base de datos (`resetDatabase`).
+  // Dentro de un archivo el recorrido es una historia continua (registro → revisión → equipo): no se paraleliza.
   workers: 1,
   fullyParallel: false,
   timeout: 60_000,

@@ -27,6 +27,8 @@ import {
   SpecGroup,
   specValues,
 } from '../../../shared/spec-fields/spec-fields';
+import { StatusBadge } from '../../../shared/status-badge/status-badge';
+import { EquipoBloqueos } from './equipo-bloqueos';
 import { EquiposService } from './equipos.service';
 
 /** Exige al menos una tarifa (por hora o por día), igual que la API. */
@@ -38,13 +40,18 @@ function atLeastOneRate(group: AbstractControl): ValidationErrors | null {
 /** Alta y edición de un equipo, con sus especificaciones y fotos. Solo lectura para ventas. */
 @Component({
   selector: 'app-equipo-form',
-  imports: [ReactiveFormsModule, RouterLink, SpecFields],
+  imports: [ReactiveFormsModule, RouterLink, SpecFields, StatusBadge, EquipoBloqueos],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a routerLink="/admin/equipos" class="link text-xs">← Volver a equipos</a>
-    <h1 class="mt-2 text-lg font-black">
-      {{ id() ? (equipo()?.nombre ?? 'Equipo') : 'Nuevo equipo' }}
-    </h1>
+    <div class="mt-2 flex flex-wrap items-center gap-3">
+      <h1 class="text-lg font-black">
+        {{ id() ? (equipo()?.nombre ?? 'Equipo') : 'Nuevo equipo' }}
+      </h1>
+      @if (equipo(); as e) {
+        <app-status-badge [status]="e.estado_actual" />
+      }
+    </div>
 
     @if (ready()) {
       <form [formGroup]="form" (ngSubmit)="save()" class="mt-3 space-y-4" novalidate>
@@ -229,6 +236,8 @@ function atLeastOneRate(group: AbstractControl): ValidationErrors | null {
           <p role="alert" class="alert-error mt-2">{{ photoError() }}</p>
         }
       </section>
+
+      <app-equipo-bloqueos [equipoId]="e.id" [canEdit]="canEdit()" (changed)="refreshSituacion()" />
     }
   `,
 })
@@ -360,6 +369,15 @@ export class EquipoForm implements OnInit {
         this.saving.set(false);
         this.error.set(apiErrorMessage(err, 'No se pudo guardar el equipo.'));
       },
+    });
+  }
+
+  /** Tras cambiar un bloqueo se consulta solo la situación, sin tocar lo que se esté editando. */
+  protected refreshSituacion(): void {
+    const id = this.id();
+    if (!id) return;
+    this.service.get(id).subscribe((actual) => {
+      this.equipo.update((e) => (e ? { ...e, estado_actual: actual.estado_actual } : e));
     });
   }
 
