@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.core.errors import Forbidden, InvalidInput, Unauthorized
 from app.core.security import TokenType, decode_token, hash_password, verify_password
-from app.models.user import User
+from app.models.user import Role, User
 
 INVALID_LINK = "El enlace no es válido o ya venció"
 
@@ -27,6 +27,12 @@ def user_from_token(db: Session, token: str, token_type: TokenType) -> User | No
 
 def get_by_email(db: Session, email: str) -> User | None:
     return db.scalar(select(User).where(User.email == email.lower()))
+
+
+def staff_users(db: Session) -> list[User]:
+    """Personal activo de CHRISCO (admin y ventas): a quien se avisa de lo que requiere atención."""
+    query = select(User).where(User.role.in_((Role.ADMIN, Role.VENTAS)), User.is_active)
+    return list(db.scalars(query))
 
 
 def unusable_password_hash() -> str:

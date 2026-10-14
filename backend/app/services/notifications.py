@@ -3,12 +3,17 @@
 from app.core.config import get_settings
 from app.core.security import create_token
 from app.models.empresa import Empresa
+from app.models.renta import Renta
 from app.models.user import User
 from app.services.mailer import Mail
 
 
 def _link(path: str, token: str) -> str:
     return f"{get_settings().frontend_url}/{path}?token={token}"
+
+
+def _url(path: str) -> str:
+    return f"{get_settings().frontend_url}{path}"
 
 
 def verification_mail(user: User) -> Mail:
@@ -76,5 +81,44 @@ def company_rejected_mail(user: User, empresa: Empresa) -> Mail:
             f"No pudimos aprobar a {empresa.razon_social}.\n"
             f"Motivo: {empresa.motivo_rechazo}\n\n"
             f"Corrige tus datos y vuelve a enviarlos desde tu cuenta: {get_settings().frontend_url}"
+        ),
+    )
+
+
+def quote_ready_mail(user: User, renta: Renta) -> Mail:
+    return Mail(
+        to=user.email,
+        subject=f"Tu cotización {renta.folio} está lista",
+        body=(
+            f"Hola {user.full_name},\n\n"
+            f"Ya tienes la cotización de {renta.equipo.nombre} ({renta.folio}). "
+            "Revísala y acéptala para apartar el equipo:\n"
+            f"{_url(f'/cliente/rentas/{renta.id}')}\n\n"
+            "Al aceptar, el equipo queda apartado unas horas mientras cumples los requisitos."
+        ),
+    )
+
+
+def quote_accepted_mail(staff: User, renta: Renta) -> Mail:
+    return Mail(
+        to=staff.email,
+        subject=f"{renta.empresa.razon_social} aceptó la cotización {renta.folio}",
+        body=(
+            f"{renta.empresa.razon_social} aceptó la cotización de {renta.equipo.nombre}.\n"
+            "El equipo quedó apartado; falta que cumpla los requisitos y pague el anticipo:\n"
+            f"{_url(f'/admin/rentas/{renta.id}')}"
+        ),
+    )
+
+
+def request_rejected_mail(user: User, renta: Renta) -> Mail:
+    return Mail(
+        to=user.email,
+        subject=f"Sobre tu solicitud {renta.folio}",
+        body=(
+            f"Hola {user.full_name},\n\n"
+            f"No pudimos atender tu solicitud de {renta.equipo.nombre} ({renta.folio}).\n"
+            f"Motivo: {renta.motivo_cierre}\n\n"
+            f"Puedes pedir otro equipo o fechas distintas: {_url('/cliente/catalogo')}"
         ),
     )

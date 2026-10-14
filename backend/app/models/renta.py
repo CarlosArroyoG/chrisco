@@ -21,6 +21,7 @@ from app.db.base import Base, IdMixin, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.bloqueo import Bloqueo
+    from app.models.cotizacion import Cotizacion
     from app.models.empresa import Empresa
     from app.models.equipo import Equipo
     from app.models.user import User
@@ -88,6 +89,8 @@ class Renta(IdMixin, TimestampMixin, Base):
         Enum(Transporte, name="transporte", values_callable=lambda e: [m.value for m in e])
     )
     notas: Mapped[str | None] = mapped_column(Text)
+    # Por qué terminó sin avanzar (rechazada por ventas o cancelada con motivo).
+    motivo_cierre: Mapped[str | None] = mapped_column(Text)
     # Los requisitos se guardan tal como se mostraron: cambiar las reglas no reescribe la historia.
     requisitos: Mapped[list[dict[str, Any]]] = mapped_column(
         JSONB, default=list, server_default=text("'[]'::jsonb")
@@ -97,3 +100,6 @@ class Renta(IdMixin, TimestampMixin, Base):
     solicitante: Mapped["User"] = relationship()
     equipo: Mapped["Equipo"] = relationship()
     bloqueo: Mapped["Bloqueo | None"] = relationship()
+    cotizaciones: Mapped[list["Cotizacion"]] = relationship(
+        back_populates="renta", order_by="Cotizacion.version"
+    )

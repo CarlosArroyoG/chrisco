@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.core.config import get_settings
 from app.core.errors import Conflict, NotFound
 from app.models.bloqueo import Bloqueo, BloqueoEstado
+from app.models.cotizacion import Cotizacion, CotizacionEstado
 from app.models.empresa import Empresa
 from app.models.equipo import Equipo
 from app.models.renta import Renta, RentaEstado, renta_folio_seq
@@ -34,6 +35,21 @@ def expire_stale(db: Session) -> int:
     db.execute(
         update(Renta)
         .where(Renta.estado.in_(_PROVISIONAL), Renta.bloqueo_id.in_(expired))
+        .values(estado=RentaEstado.VENCIDA)
+    )
+    # Una cotización que pasó su vigencia sin respuesta vence; y una solicitud cotizada que se
+    # quedó sin cotización viva vence con ella.
+    db.execute(
+        update(Cotizacion)
+        .where(Cotizacion.estado == CotizacionEstado.VIGENTE, Cotizacion.valida_hasta <= func.now())
+        .values(estado=CotizacionEstado.VENCIDA)
+    )
+    alive = select(Cotizacion.renta_id).where(
+        Cotizacion.estado.in_((CotizacionEstado.VIGENTE, CotizacionEstado.ACEPTADA))
+    )
+    db.execute(
+        update(Renta)
+        .where(Renta.estado == RentaEstado.COTIZADA, Renta.id.not_in(alive))
         .values(estado=RentaEstado.VENCIDA)
     )
     return holds
@@ -155,6 +171,7 @@ def cancel(db: Session, renta: Renta) -> Renta:
     if renta.estado not in _CANCELABLE:
         raise Conflict("Esta renta ya no se puede cancelar")
     renta.estado = RentaEstado.CANCELADA
+    renta.motivo_cierre = "Cancelada a solicitud del cliente o del personal"
     if renta.bloqueo is not None and renta.bloqueo.estado == BloqueoEstado.ACTIVO:
         renta.bloqueo.estado = BloqueoEstado.LIBERADO  # el equipo queda libre al instante
     db.commit()
@@ -181,6 +198,7 @@ def to_out(renta: Renta) -> RentaOut:
         notas=renta.notas,
         requisitos=[Requisito.model_validate(r) for r in renta.requisitos],
         vence_en=renta.bloqueo.vence_en if provisional and renta.bloqueo else None,
+        motivo_cierre=renta.motivo_cierre,
         created_at=renta.created_at,
     )
 

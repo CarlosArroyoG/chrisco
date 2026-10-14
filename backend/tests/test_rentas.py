@@ -1,7 +1,7 @@
 import re
 import threading
 import uuid
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 
 import pytest
 from sqlalchemy import text
@@ -17,54 +17,7 @@ from app.models.user import Role
 from app.schemas.renta import SolicitudIn
 from app.services import accounts, rentas
 from tests.conftest import auth, equipo_payload
-
-NOW = datetime.now(UTC).replace(microsecond=0)
-
-
-def h(hours: float) -> datetime:
-    return NOW + timedelta(hours=hours)
-
-
-def solicitud(equipo_id: str, a: float = 24, b: float = 32, **extra) -> dict:
-    return {
-        "equipo_id": equipo_id,
-        "desde": h(a).isoformat(),
-        "hasta": h(b).isoformat(),
-        "destino": "Autopista Morelia - Guadalajara km 45",
-        "operador_modo": "chrisco",
-        "transporte": "entrega",
-        **extra,
-    }
-
-
-def pedir(client, headers, equipo_id, a=24, b=32, **extra):
-    return client.post(
-        "/rentas/solicitudes", json=solicitud(equipo_id, a, b, **extra), headers=headers
-    )
-
-
-@pytest.fixture
-def otra_empresa_h(client, register, verify_email, set_company_status, login):
-    """Cliente de una segunda empresa, también aprobada."""
-    from app.models.empresa import EmpresaStatus
-
-    register(rfc="OTR020202XY9", email="otro@otra-empresa.com", razon_social="Otra Empresa SA")
-    verify_email("otro@otra-empresa.com")
-    set_company_status("OTR020202XY9", EmpresaStatus.APROBADA)
-    return auth(login("otro@otra-empresa.com"))
-
-
-def vencer(db, renta_id) -> None:
-    """Hace que la reserva de esa solicitud haya vencido hace un minuto."""
-    db.execute(
-        text(
-            "UPDATE bloqueos SET vence_en = now() - interval '1 minute' "
-            "WHERE id = (SELECT bloqueo_id FROM rentas WHERE id = :id)"
-        ),
-        {"id": renta_id},
-    )
-    db.commit()
-
+from tests.rentas_helpers import h, pedir, solicitud, vencer
 
 # ---------------------------------------------------------------- vista previa
 

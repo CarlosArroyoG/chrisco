@@ -1,3 +1,4 @@
+from decimal import Decimal
 from functools import lru_cache
 from pathlib import Path
 
@@ -49,6 +50,11 @@ class Settings(BaseSettings):
     max_active_requests_per_company: int = 3
     sales_whatsapp_number: str = ""  # solo dígitos con código de país, p. ej. 5217221234567
     timezone: str = "America/Mexico_City"  # para mostrar fechas en los mensajes
+
+    # Cotizaciones.
+    iva_rate: Decimal = Decimal("0.16")
+    anticipo_default_percent: int = 30  # del total; ventas puede cambiarlo en cada cotización
+    cotizacion_valida_horas: int = 24
 
 
 @lru_cache

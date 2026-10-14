@@ -275,3 +275,17 @@ def make_equipo(
         return res.json()
 
     return _make
+
+
+@pytest.fixture
+def otra_empresa_h(
+    register: Callable[..., object],
+    verify_email: Callable[[str], None],
+    set_company_status: Callable[[str, EmpresaStatus], None],
+    login: Callable[..., dict[str, str]],
+) -> dict[str, str]:
+    """Cliente de una segunda empresa, también aprobada."""
+    register(rfc="OTR020202XY9", email="otro@otra-empresa.com", razon_social="Otra Empresa SA")
+    verify_email("otro@otra-empresa.com")
+    set_company_status("OTR020202XY9", EmpresaStatus.APROBADA)
+    return auth(login("otro@otra-empresa.com"))

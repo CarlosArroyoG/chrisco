@@ -69,6 +69,8 @@ class RentaOut(BaseModel):
     requisitos: list[Requisito]
     # Mientras sigue reservada de forma provisional: cuándo se libera el equipo si nadie avanza.
     vence_en: datetime | None
+    # Por qué terminó sin avanzar (rechazada por ventas o cancelada con motivo).
+    motivo_cierre: str | None
     created_at: datetime
 
 

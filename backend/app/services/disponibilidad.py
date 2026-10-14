@@ -205,20 +205,28 @@ def place_hold(
     hasta: datetime,
     user: User,
     *,
+    tipo: BloqueoTipo = BloqueoTipo.SOLICITUD,
     commit: bool = True,
 ) -> Bloqueo:
-    """Reserva provisional mientras ventas cotiza. Vence sola a los 20 min.
+    """Reserva provisional: `solicitud` (20 min, mientras ventas cotiza) o `apartado` (3 h, ya
+    aceptada la cotización, mientras el cliente cumple requisitos). Vence sola.
 
     Con `commit=False` solo se aparta (flush) y quien llama decide cuándo confirmar: así la
     reserva y la renta que la usa se guardan juntas o no se guarda nada.
     """
     if equipo.status != EquipoStatus.ACTIVO:
         raise Conflict(_UNAVAILABLE)
-    minutes = get_settings().hold_solicitud_minutes
+    assert tipo in HOLD_TYPES
+    settings = get_settings()
+    minutes = (
+        settings.hold_solicitud_minutes
+        if tipo == BloqueoTipo.SOLICITUD
+        else settings.hold_apartado_minutes
+    )
     bloqueo = _insert(
         db,
         equipo,
-        BloqueoTipo.SOLICITUD,
+        tipo,
         desde,
         hasta,
         vence_en=db_now(db) + timedelta(minutes=minutes),
@@ -238,22 +246,24 @@ def _live_hold(db: Session, bloqueo: Bloqueo, expected: BloqueoTipo) -> None:
         raise Conflict("La reserva venció; hay que volver a solicitar el equipo")
 
 
-def promote_to_apartado(db: Session, bloqueo: Bloqueo) -> Bloqueo:
+def promote_to_apartado(db: Session, bloqueo: Bloqueo, *, commit: bool = True) -> Bloqueo:
     """La cotización fue aceptada: se aparta el equipo por más tiempo (3 h) mientras se cumplen
     los requisitos y llega el anticipo."""
     _live_hold(db, bloqueo, BloqueoTipo.SOLICITUD)
     bloqueo.tipo = BloqueoTipo.APARTADO
     bloqueo.vence_en = db_now(db) + timedelta(minutes=get_settings().hold_apartado_minutes)
-    db.commit()
+    if commit:
+        db.commit()
     return bloqueo
 
 
-def confirm_rental(db: Session, bloqueo: Bloqueo) -> Bloqueo:
+def confirm_rental(db: Session, bloqueo: Bloqueo, *, commit: bool = True) -> Bloqueo:
     """Se cumplieron los requisitos: la renta queda firme y deja de vencer."""
     _live_hold(db, bloqueo, BloqueoTipo.APARTADO)
     bloqueo.tipo = BloqueoTipo.RENTA
     bloqueo.vence_en = None
-    db.commit()
+    if commit:
+        db.commit()
     return bloqueo
 
 
