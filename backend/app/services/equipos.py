@@ -1,6 +1,7 @@
 """Registro de equipos: alta, edición, búsqueda y fotos."""
 
 import uuid
+from datetime import datetime
 from typing import Any
 
 from sqlalchemy import func, or_, select
@@ -9,8 +10,8 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.core.errors import Conflict, NotFound
 from app.models.equipo import Equipo, EquipoFoto, EquipoStatus
-from app.schemas.equipo import EquipoCatalogOut, EquipoIn, EquipoUpdate, FotoOut
-from app.services import categorias, images, specs
+from app.schemas.equipo import EquipoCatalogOut, EquipoIn, EquipoOut, EquipoUpdate, FotoOut
+from app.services import categorias, disponibilidad, images, specs
 from app.services.storage import PrivateStorage
 
 MAX_PHOTOS = 10
@@ -78,6 +79,7 @@ def search(
     q: str | None = None,
     categoria_id: uuid.UUID | None = None,
     status: EquipoStatus | None = None,
+    libre_entre: tuple[datetime, datetime] | None = None,
     limit: int = 50,
     offset: int = 0,
 ) -> tuple[list[Equipo], int]:
@@ -100,6 +102,8 @@ def search(
         )
     if categoria_id:
         query = query.where(Equipo.categoria_id == categoria_id)
+    if libre_entre:
+        query = query.where(disponibilidad.free_between(*libre_entre))
     if status:
         query = query.where(Equipo.status == status)
     total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
@@ -149,7 +153,26 @@ def get_photo(db: Session, foto_id: uuid.UUID) -> EquipoFoto:
     return foto
 
 
-def catalog_out(equipo: Equipo) -> EquipoCatalogOut:
+def to_out_many(db: Session, items: list[Equipo]) -> list[EquipoOut]:
+    """Vista completa para el personal, con la situación actual de cada equipo."""
+    estados = disponibilidad.estado_actual(db, items)
+    return [
+        EquipoOut.model_validate(
+            {
+                **{f: getattr(e, f) for f in EquipoOut.model_fields if f != "estado_actual"},
+                "estado_actual": estados[e.id],
+            },
+            from_attributes=True,
+        )
+        for e in items
+    ]
+
+
+def to_out(db: Session, equipo: Equipo) -> EquipoOut:
+    return to_out_many(db, [equipo])[0]
+
+
+def catalog_out(equipo: Equipo, disponible: bool | None = None) -> EquipoCatalogOut:
     """Lo que ve un cliente: sin número de serie, horómetro ni notas internas."""
     shown: dict[str, Any] = {
         f: getattr(equipo, f)
@@ -173,4 +196,5 @@ def catalog_out(equipo: Equipo) -> EquipoCatalogOut:
         categoria_nombre=equipo.categoria.nombre,
         specs=specs.display_specs(specs.parse_fields(equipo.categoria.spec_fields), equipo.specs),
         fotos=[FotoOut.model_validate(f) for f in equipo.fotos],
+        disponible=disponible,
     )

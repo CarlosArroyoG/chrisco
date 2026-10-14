@@ -28,12 +28,12 @@ def list_equipos(
     items, total = equipos.search(
         db, q=q, categoria_id=categoria_id, status=status_filter, limit=limit, offset=offset
     )
-    return Page(items=[EquipoOut.model_validate(e) for e in items], total=total)
+    return Page(items=equipos.to_out_many(db, items), total=total)
 
 
 @router.post("", response_model=EquipoOut, status_code=status.HTTP_201_CREATED)
 def create_equipo(_: AdminUser, body: EquipoIn, db: DbSession) -> EquipoOut:
-    return EquipoOut.model_validate(equipos.create(db, body))
+    return equipos.to_out(db, equipos.create(db, body))
 
 
 # Las rutas fijas van antes que `/{equipo_id}` para que "importar" no se lea como un id.
@@ -60,7 +60,7 @@ def import_equipos(
 
 @router.get("/{equipo_id}", response_model=EquipoOut)
 def get_equipo(_: StaffUser, equipo_id: uuid.UUID, db: DbSession) -> EquipoOut:
-    return EquipoOut.model_validate(equipos.get_equipo(db, equipo_id))
+    return equipos.to_out(db, equipos.get_equipo(db, equipo_id))
 
 
 @router.put("/{equipo_id}", response_model=EquipoOut)
@@ -68,7 +68,7 @@ def update_equipo(
     _: AdminUser, equipo_id: uuid.UUID, body: EquipoUpdate, db: DbSession
 ) -> EquipoOut:
     equipo = equipos.get_equipo(db, equipo_id)
-    return EquipoOut.model_validate(equipos.update(db, equipo, body))
+    return equipos.to_out(db, equipos.update(db, equipo, body))
 
 
 @router.post("/{equipo_id}/fotos", response_model=FotoOut, status_code=status.HTTP_201_CREATED)

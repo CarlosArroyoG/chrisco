@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from app.core.security import MIN_PASSWORD_LENGTH, hash_password
 from app.db.session import SessionLocal
 from app.models.user import Role, User
-from app.services import accounts
+from app.services import accounts, disponibilidad
 
 # Los clientes no se crean aquí: se registran solos con su empresa.
 STAFF_ROLES = [Role.ADMIN, Role.VENTAS, Role.OPERADOR]
@@ -31,6 +31,14 @@ def create_user(email: str, full_name: str, role: Role, password: str) -> None:
     print(f"Usuario creado: {email.lower()} ({role.value})")
 
 
+def expire_holds() -> None:
+    """Marca como vencidas las reservas provisionales que ya caducaron (apto para cron)."""
+    with SessionLocal() as db:
+        count = disponibilidad.expire_holds(db)
+        db.commit()
+    print(f"{count} reserva(s) vencida(s)")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="app.cli")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -41,7 +49,12 @@ def main() -> None:
     cu.add_argument("--name", required=True)
     cu.add_argument("--role", required=True, choices=[r.value for r in STAFF_ROLES])
     cu.add_argument("--password", help="Si se omite, se pide por teclado")
+    sub.add_parser("expire-holds", help="Marca como vencidas las reservas provisionales caducadas")
     args = parser.parse_args()
+
+    if args.command == "expire-holds":
+        expire_holds()
+        return
 
     password = args.password or getpass.getpass("Contraseña: ")
     if len(password) < MIN_PASSWORD_LENGTH:

@@ -16,6 +16,7 @@ from pydantic import (
 
 from app.models.equipo import EquipoStatus
 from app.schemas.common import Hours, Money
+from app.schemas.disponibilidad import EstadoActual
 
 Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 _CODIGO_RE = re.compile(r"^[A-Z0-9][A-Z0-9-]{1,29}$")
@@ -147,6 +148,7 @@ class EquipoOut(BaseModel):
     notas: str | None
     specs: dict[str, Any]
     status: EquipoStatus
+    estado_actual: EstadoActual
     fotos: list[FotoOut]
     created_at: datetime
     updated_at: datetime
@@ -176,6 +178,8 @@ class EquipoCatalogOut(BaseModel):
     requiere_operador_certificado: bool
     specs: list[SpecValueOut]
     fotos: list[FotoOut]
+    # Solo se llena cuando se consulta un periodo concreto (`desde` y `hasta`).
+    disponible: bool | None = None
 
 
 class RowError(BaseModel):

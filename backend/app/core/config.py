@@ -37,6 +37,10 @@ class Settings(BaseSettings):
     smtp_password: str | None = None
     smtp_starttls: bool = True
 
+    # Cuánto dura una reserva provisional del equipo (ver `app.models.bloqueo`).
+    hold_solicitud_minutes: int = 20
+    hold_apartado_minutes: int = 180
+
     # Máximo de usuarios activos por empresa cliente.
     max_users_per_company: int = 3
 
