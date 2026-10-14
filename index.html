@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CHRISCO Go - Maquinaria Pesada</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#F58220">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CHRISCO Go">
+  <link rel="apple-touch-icon" href="icon.svg">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            chrisco: {
+              orange: '#F58220',
+              orangeDark: '#BF360C',
+              dark: '#212B30',
+              charcoal: '#263238',
+              slate: '#37474F'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .role-screen { display: none; }
+    .role-screen.active { display: block; }
+    .map-grid-pattern {
+      background-color: #e5e7eb;
+      background-image: radial-gradient(#9ca3af 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 min-h-screen flex flex-col antialiased select-none pb-14 md:pb-0">
+
+  <!-- ======================================================== -->
+  <!-- PANTALLA 0: LOGIN CON USUARIOS HARDCODEADOS             -->
+  <!-- ======================================================== -->
+  <section id="login-screen" class="fixed inset-0 bg-chrisco-dark z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
+      <div class="flex justify-center mb-4">
+        <svg class="h-16 w-auto" viewBox="0 0 260 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(10, 5)">
+            <path d="M72 18 L122 68 L98 92 L76 70 L48 98 L88 138 L104 122 L120 138 L88 170 C80 178 68 178 60 170 L14 124 C6 116 6 104 14 96 L60 50 C68 42 80 42 88 50" fill="#4A4F54"/>
+            <path d="M148 18 C156 10 168 10 176 18 L222 64 C230 72 230 84 222 92 L176 138 C168 146 156 146 148 138 L124 114 L148 90 L160 102 L188 74 L148 34 L132 50 L116 34 L148 2 C156 -6 168 -6 176 2" fill="#F58220"/>
+          </g>
+          <text x="130" y="180" font-family="'Arial Black', Impact, sans-serif" font-weight="900" font-size="34" fill="#212B30" text-anchor="middle" letter-spacing="2">CHRISCO</text>
+          <rect x="20" y="188" width="220" height="15" rx="3" fill="#F58220"/>
+          <text x="130" y="199.5" font-family="'Arial Black', sans-serif" font-weight="800" font-size="9" fill="#FFFFFF" text-anchor="middle" letter-spacing="6">CONSTRUCTORA</text>
+        </svg>
+      </div>
+
+      <h2 class="text-lg font-black text-slate-800">Acceso a Plataforma</h2>
+      <p class="text-xs text-slate-500 mb-5">Ingrese credenciales operativas autorizadas</p>
+
+      <form onsubmit="handleLogin(event)" class="space-y-3 text-left text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Usuario:</label>
+          <input type="text" id="login-user" required placeholder="admin / user / operador" class="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-chrisco-orange">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Contraseña:</label>
+          <input type="password" id="login-pass" required placeholder="••••••••" class="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-chrisco-orange">
+        </div>
+        <button type="submit" class="w-full py-3 bg-chrisco-orange hover:bg-chrisco-orangeDark text-white font-bold rounded-xl shadow-md transition mt-2">
+          Iniciar Sesión
+        </button>
+      </form>
+
+      <div class="mt-5 p-3 bg-slate-50 rounded-lg text-[10px] text-slate-500 text-left border border-slate-200">
+        <span class="font-bold block text-slate-700 mb-1">Credenciales Hardcodeadas:</span>
+        <div>• <b>admin</b> / <span class="font-mono">admin12345</span> (Admin)</div>
+        <div>• <b>user</b> / <span class="font-mono">user12345</span> (Cliente)</div>
+        <div>• <b>operador</b> / <span class="font-mono">operador1345</span> (Operador)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOPBAR PRINCIPAL -->
+  <header class="bg-chrisco-dark text-white border-b border-chrisco-slate sticky top-0 z-40 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <svg class="h-10 w-auto" viewBox="0 0 260 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(10, 5)">
+            <path d="M72 18 L122 68 L98 92 L76 70 L48 98 L88 138 L104 122 L120 138 L88 170 C80 178 68 178 60 170 L14 124 C6 116 6 104 14 96 L60 50 C68 42 80 42 88 50" fill="#4A4F54"/>
+            <path d="M148 18 C156 10 168 10 176 18 L222 64 C230 72 230 84 222 92 L176 138 C168 146 156 146 148 138 L124 114 L148 90 L160 102 L188 74 L148 34 L132 50 L116 34 L148 2 C156 -6 168 -6 176 2" fill="#F58220"/>
+          </g>
+          <text x="130" y="180" font-family="'Arial Black', Impact, sans-serif" font-weight="900" font-size="34" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">CHRISCO</text>
+          <rect x="20" y="188" width="220" height="15" rx="3" fill="#F58220"/>
+          <text x="130" y="199.5" font-family="'Arial Black', sans-serif" font-weight="800" font-size="9" fill="#FFFFFF" text-anchor="middle" letter-spacing="6">CONSTRUCTORA</text>
+        </svg>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span id="user-display-badge" class="text-xs bg-chrisco-orange/20 text-orange-400 border border-orange-500/30 px-2.5 py-1 rounded-full font-bold">
+          Rol: -
+        </span>
+        <button onclick="logout()" class="text-slate-300 hover:text-rose-400 p-2 text-xs flex items-center gap-1 font-semibold">
+          <i data-lucide="log-out" class="w-4 h-4"></i> Salir
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR DE PERFILES -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6">
+
+    <!-- 1. VISTA CLIENTE -->
+    <section id="role-screen-client" class="role-screen space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-5 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <h2 class="text-lg font-black text-slate-800 mb-1">Pedir Maquinaria (Estilo Uber)</h2>
+          <p class="text-xs text-slate-500 mb-4">Cotiza por hora y despacha a frente de obra.</p>
+
+          <div class="space-y-3 mb-4">
+            <input type="text" readonly value="Patio Toluca CHRISCO" class="w-full bg-slate-50 text-xs px-3 py-2.5 rounded-xl border font-semibold text-slate-700">
+            <input type="text" id="dest-input" value="Autopista Morelia - Gdl" class="w-full bg-white text-xs px-3 py-2.5 rounded-xl border border-slate-300 font-semibold">
+          </div>
+
+          <div class="space-y-2 mb-4">
+            <div class="p-3 rounded-xl border-2 border-chrisco-orange bg-orange-50/50 flex justify-between items-center">
+              <div>
+                <h4 class="font-bold text-xs">Vögele MT 3000-2 Offset</h4>
+                <span class="text-[10px] text-slate-500">Alimentador asfáltico continuo</span>
+              </div>
+              <span class="font-black text-xs text-slate-900">$3,400/h</span>
+            </div>
+          </div>
+
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-3 mb-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Empresa Contratante:</label>
+              <input type="text" value="ICA Infraestructura" class="w-full border rounded-lg p-2 bg-white">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Operador:</label>
+              <select id="driver-mode" onchange="toggleExternalDriver()" class="w-full border rounded-lg p-2 bg-white font-semibold">
+                <option value="interno">Operador Oficial CHRISCO</option>
+                <option value="externo">Chofer Ajeno a la Empresa</option>
+              </select>
+            </div>
+            <div id="box-licencia" class="hidden p-2 bg-rose-50 border border-rose-200 rounded-lg space-y-1.5">
+              <span class="text-rose-800 font-bold block">Licencia de Chofer Ajeno:</span>
+              <input type="file" class="w-full text-[10px]">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Contrato Firmado (PDF):</label>
+              <input type="file" class="w-full text-[10px]">
+            </div>
+          </div>
+
+          <button onclick="solicitarEquipo()" class="w-full py-3 bg-chrisco-orange hover:bg-chrisco-orangeDark text-white font-bold text-xs rounded-xl shadow">
+            Confirmar Despacho en Lowboy
+          </button>
+        </div>
+
+        <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+          <div class="p-3 border-b bg-slate-50 font-bold text-xs">Ruta Terrestre en Vivo (Lowboy TR-301)</div>
+          <div class="h-80 map-grid-pattern relative flex items-center justify-center p-4">
+            <div class="p-3 bg-chrisco-orange text-white rounded-full shadow-2xl animate-bounce">
+              <i data-lucide="truck" class="w-6 h-6"></i>
+            </div>
+          </div>
+          <div class="p-3 bg-slate-900 text-white flex justify-between items-center text-xs">
+            <span>Chofer Lowboy: <b>Marcos Valdés</b> (Kenworth T800)</span>
+            <span class="text-emerald-400 font-bold">ETA: 32 min</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. VISTA OPERADOR -->
+    <section id="role-screen-operator" class="role-screen space-y-5 max-w-xl mx-auto">
+      <div class="bg-chrisco-charcoal text-white p-4 rounded-xl flex justify-between items-center">
+        <div>
+          <span class="text-[10px] text-orange-400 font-bold uppercase">Modo Conductor</span>
+          <h3 class="font-bold text-sm">Operador en Turno</h3>
+        </div>
+        <span class="bg-emerald-500/20 text-emerald-400 text-xs px-2.5 py-0.5 rounded-full font-bold">En Obra</span>
+      </div>
+
+      <div class="bg-white p-5 rounded-xl border border-slate-200 space-y-3 text-xs">
+        <h4 class="font-bold text-slate-800">Check-in Inicial</h4>
+        <input type="number" step="0.1" value="2480.4" class="w-full border p-2 rounded-lg font-mono font-bold">
+        <label class="block text-slate-500">Foto Horómetro:</label>
+        <input type="file" class="w-full text-[10px]">
+        <button onclick="alert('Check-in validado')" class="w-full py-2 bg-slate-800 text-white rounded-lg font-bold">Registrar Check-in</button>
+      </div>
+
+      <div class="bg-white p-5 rounded-xl border border-slate-200 text-center space-y-2">
+        <span class="text-xs uppercase text-slate-400 font-bold">Jornada Activa</span>
+        <div class="text-3xl font-black font-mono text-slate-900">08:34:12</div>
+        <div class="text-xs text-emerald-700 font-bold">Importe Devengado: $28,900 MXN</div>
+      </div>
+
+      <div class="bg-white p-5 rounded-xl border border-slate-200 space-y-3 text-xs">
+        <h4 class="font-bold text-slate-800">Check-out Retorno</h4>
+        <input type="number" step="0.1" value="2488.9" class="w-full border p-2 rounded-lg font-mono font-bold">
+        <label class="block text-slate-500">Foto Horómetro Final:</label>
+        <input type="file" class="w-full text-[10px]">
+        <button onclick="alert('Cierre de jornada enviado con éxito')" class="w-full py-2 bg-emerald-700 text-white rounded-lg font-bold">Cerrar Turno</button>
+      </div>
+    </section>
+
+    <!-- 3. VISTA ADMIN -->
+    <section id="role-screen-admin" class="role-screen space-y-5">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+        <div class="bg-white p-4 rounded-xl border"><span class="text-slate-400">Equipos en Renta:</span><div class="text-xl font-black">5 / 6</div></div>
+        <div class="bg-white p-4 rounded-xl border"><span class="text-slate-400">Horas del Día:</span><div class="text-xl font-black">43.5 h</div></div>
+        <div class="bg-white p-4 rounded-xl border"><span class="text-slate-400">Devengado:</span><div class="text-xl font-black text-emerald-600">$118,250</div></div>
+        <div class="bg-white p-4 rounded-xl border"><span class="text-slate-400">Servicios Próximos:</span><div class="text-xl font-black text-rose-600">2 Alertas</div></div>
+      </div>
+
+      <div class="bg-white rounded-xl border overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-chrisco-charcoal text-white text-[10px] uppercase font-bold">
+            <tr>
+              <th class="p-3">Folio</th>
+              <th class="p-3">Cliente</th>
+              <th class="p-3">Equipo</th>
+              <th class="p-3">Chofer / Licencia</th>
+              <th class="p-3">Horómetro</th>
+              <th class="p-3">Estatus</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr>
+              <td class="p-3 font-mono font-bold">CHR-CTR-2026-001</td>
+              <td class="p-3">ICA Infraestructura</td>
+              <td class="p-3">Vögele MT 3000-2</td>
+              <td class="p-3"><span class="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded font-bold">CHRISCO</span> Roberto Esquivel</td>
+              <td class="p-3 font-mono">2,400.0 ➔ 2,480.4 h</td>
+              <td class="p-3"><span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold text-[10px]">Cerrado</span></td>
+            </tr>
+            <tr>
+              <td class="p-3 font-mono font-bold">CHR-CTR-2026-002</td>
+              <td class="p-3">CAABSA Desarrollos</td>
+              <td class="p-3">SprayJet 1800-3</td>
+              <td class="p-3"><span class="bg-rose-100 text-rose-800 text-[10px] px-1.5 py-0.5 rounded font-bold">Ajeno</span> Gonzalo Morales (Licencia OK)</td>
+              <td class="p-3 font-mono">1,800.0 h (En uso)</td>
+              <td class="p-3"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold text-[10px]">En Obra</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    // 1. USUARIOS HARDCODEADOS
+    const USERS_DB = {
+      'admin': { pass: 'admin12345', role: 'admin', label: 'Admin (Torre de Control)' },
+      'user': { pass: 'user12345', role: 'client', label: 'Cliente (Constructora)' },
+      'operador': { pass: 'operador1345', role: 'operator', label: 'Operador (Campo)' }
+    };
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('login-user').value.trim().toLowerCase();
+      const p = document.getElementById('login-pass').value.trim();
+
+      if (USERS_DB[u] && USERS_DB[u].pass === p) {
+        sessionStorage.setItem('chrisco_session', JSON.stringify(USERS_DB[u]));
+        applySession(USERS_DB[u]);
+        document.getElementById('login-screen').classList.add('hidden');
+      } else {
+        alert('Credenciales incorrectas. Verifique usuario y contraseña.');
+      }
+    }
+
+    function applySession(userData) {
+      document.querySelectorAll('.role-screen').forEach(el => el.classList.remove('active'));
+      const active = document.getElementById(`role-screen-${userData.role}`);
+      if (active) active.classList.add('active');
+      document.getElementById('user-display-badge').innerText = `Rol: ${userData.label}`;
+      lucide.createIcons();
+    }
+
+    function logout() {
+      sessionStorage.removeItem('chrisco_session');
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('login-user').value = '';
+      document.getElementById('login-pass').value = '';
+    }
+
+    function toggleExternalDriver() {
+      const mode = document.getElementById('driver-mode').value;
+      const box = document.getElementById('box-licencia');
+      if (mode === 'externo') box.classList.remove('hidden');
+      else box.classList.add('hidden');
+    }
+
+    function solicitarEquipo() {
+      alert('¡Despacho solicitado con éxito en Lowboy TR-301!');
+    }
+
+    // Comprobar sesión existente
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = sessionStorage.getItem('chrisco_session');
+      if (saved) {
+        applySession(JSON.parse(saved));
+        document.getElementById('login-screen').classList.add('hidden');
+      }
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(console.error);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "CHRISCO Operaciones & Maquinaria",
+  "short_name": "CHRISCO Go",
+  "description": "Plataforma de arrendamiento, control de horómetros y logística de maquinaria pesada",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#212B30",
+  "theme_color": "#F58220",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
