@@ -8,7 +8,11 @@ from pwdlib import PasswordHash
 from app.core.config import get_settings
 
 ALGORITHM = "HS256"
-TokenType = Literal["access", "refresh"]
+MIN_PASSWORD_LENGTH = 10
+MAX_PASSWORD_LENGTH = 128
+
+# access/refresh: sesión. Los demás son enlaces de un solo propósito enviados por correo.
+TokenType = Literal["access", "refresh", "verify_email", "invite", "reset_password"]
 
 _password_hash = PasswordHash.recommended()
 # Hash de relleno: se verifica cuando el usuario no existe para que el tiempo de
@@ -26,20 +30,25 @@ def verify_password(password: str, password_hash: str | None) -> bool:
     )
 
 
-def create_token(user_id: uuid.UUID, token_version: int, token_type: TokenType) -> str:
+def _lifetime(token_type: TokenType) -> timedelta:
     settings = get_settings()
-    lifetime = (
-        timedelta(minutes=settings.access_token_minutes)
-        if token_type == "access"
-        else timedelta(days=settings.refresh_token_days)
-    )
+    return {
+        "access": timedelta(minutes=settings.access_token_minutes),
+        "refresh": timedelta(days=settings.refresh_token_days),
+        "verify_email": timedelta(hours=settings.verify_email_hours),
+        "invite": timedelta(days=settings.invite_days),
+        "reset_password": timedelta(minutes=settings.reset_password_minutes),
+    }[token_type]
+
+
+def create_token(user_id: uuid.UUID, token_version: int, token_type: TokenType) -> str:
     payload = {
         "sub": str(user_id),
         "ver": token_version,
         "type": token_type,
-        "exp": datetime.now(UTC) + lifetime,
+        "exp": datetime.now(UTC) + _lifetime(token_type),
     }
-    return jwt.encode(payload, settings.secret_key, algorithm=ALGORITHM)
+    return jwt.encode(payload, get_settings().secret_key, algorithm=ALGORITHM)
 
 
 def decode_token(token: str, expected_type: TokenType) -> tuple[uuid.UUID, int] | None:
