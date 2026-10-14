@@ -14,6 +14,7 @@ from app.core.errors import Conflict
 from app.db.session import SessionLocal
 from app.models.bloqueo import Bloqueo, BloqueoEstado, BloqueoTipo
 from app.models.renta import Renta, RentaEstado
+from app.schemas.cumplimiento import RevisionIn
 from app.services import accounts, cumplimiento
 from tests.conftest import PDF, auth, equipo_payload
 from tests.rentas_helpers import ANTICIPO, TOTAL, apartar, cotizar, pedir, vencer
@@ -505,7 +506,7 @@ def test_dos_revisiones_simultaneas_de_lo_ultimo_confirman_la_renta(
             persona = accounts.get_by_email(session, "ventas@chrisco-pruebas.com")
             barrier.wait()
             _, confirmada = cumplimiento.review_document(
-                session, renta, uuid.UUID(doc_id), persona, True, None
+                session, renta, uuid.UUID(doc_id), persona, RevisionIn(aprobado=True)
             )
             resultados.append(confirmada)
 

@@ -33,7 +33,7 @@ def compute(equipo: Equipo, operador_modo: OperadorModo, transporte: Transporte)
             Requisito(
                 codigo="licencia_federal",
                 titulo="Licencia federal vigente del operador",
-                detalle="Súbela con foto: verificamos su vigencia con el código QR de la licencia.",
+                detalle="Sube una foto clara (frente y vuelta); ventas revisa su vigencia.",
                 tipo="documento",
             )
         )

@@ -623,6 +623,14 @@ export type DocumentoOut = {
      * Revisado At
      */
     revisado_at: string | null;
+    /**
+     * Numero
+     */
+    numero: string | null;
+    /**
+     * Vigente Hasta
+     */
+    vigente_hasta: string | null;
 };
 
 /**
@@ -1486,6 +1494,14 @@ export type RevisionIn = {
      * Nota
      */
     nota?: string | null;
+    /**
+     * Numero
+     */
+    numero?: string | null;
+    /**
+     * Vigente Hasta
+     */
+    vigente_hasta?: string | null;
 };
 
 /**

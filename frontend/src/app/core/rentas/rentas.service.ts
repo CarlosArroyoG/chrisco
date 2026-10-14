@@ -134,10 +134,18 @@ export class RentasService {
     });
   }
 
-  revisarDocumento(id: string, docId: string, aprobado: boolean, nota?: string) {
+  /** `licencia` solo al aprobar una licencia: lo que el personal leyó de la foto. */
+  revisarDocumento(
+    id: string,
+    docId: string,
+    aprobado: boolean,
+    nota?: string,
+    licencia?: { numero: string; vigente_hasta: string },
+  ) {
     return this.http.post<Cumplimiento>(`${this.base}/${id}/documentos/${docId}/revisar`, {
       aprobado,
       nota: nota ?? null,
+      ...licencia,
     });
   }
 

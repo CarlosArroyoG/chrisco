@@ -23,6 +23,8 @@ class DocumentoOut(BaseModel):
     subido_por_nombre: str
     created_at: datetime
     revisado_at: datetime | None
+    numero: str | None
+    vigente_hasta: date | None
 
 
 class PagoIn(BaseModel):
@@ -56,6 +58,9 @@ class RevisionIn(BaseModel):
 
     aprobado: bool
     nota: Annotated[str, StringConstraints(max_length=300)] | None = None
+    # Solo al aprobar una licencia: número y último día de vigencia leídos de la foto.
+    numero: Annotated[str, StringConstraints(min_length=3, max_length=40)] | None = None
+    vigente_hasta: date | None = None
 
     @model_validator(mode="after")
     def _reason_when_rejecting(self) -> "RevisionIn":

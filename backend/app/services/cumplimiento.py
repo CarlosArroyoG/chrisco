@@ -20,6 +20,7 @@ from app.schemas.cumplimiento import (
     DocumentoOut,
     PagoIn,
     PagoOut,
+    RevisionIn,
     Situacion,
 )
 from app.schemas.renta import Requisito
@@ -162,17 +163,43 @@ def find[T: (RentaDocumento, Pago)](items: list[T], item_id: uuid.UUID, label: s
     return found
 
 
+LICENCIA = "licencia_federal"
+
+
+def _check_license(renta: Renta, revision: RevisionIn) -> None:
+    if revision.numero is None or revision.vigente_hasta is None:
+        raise InvalidInput("Para aprobar la licencia captura su número y su vigencia")
+    last_day = renta.hasta.astimezone(ZoneInfo(get_settings().timezone)).date()
+    if revision.vigente_hasta < last_day:
+        raise InvalidInput(
+            f"La licencia vence el {revision.vigente_hasta:%d/%m/%Y}, antes de que termine la "
+            f"renta ({last_day:%d/%m/%Y}); recházala para que suban una vigente"
+        )
+
+
 def review_document(
-    db: Session, renta: Renta, doc_id: uuid.UUID, staff: User, aprobado: bool, nota: str | None
+    db: Session,
+    renta: Renta,
+    doc_id: uuid.UUID,
+    staff: User,
+    revision: RevisionIn,
 ) -> tuple[RentaDocumento, bool]:
-    """Aprueba o rechaza un documento. Devuelve (documento, la renta quedó confirmada)."""
+    """Aprueba o rechaza un documento. Devuelve (documento, la renta quedó confirmada).
+
+    Una licencia solo se aprueba con su número y una vigencia que cubra toda la renta: la
+    verificación es manual (no hay consulta oficial), así que queda registrado lo que se leyó.
+    """
     _lock(db, renta)
     _require_open(renta)
     documento = find(renta.documentos, doc_id, "Documento")
     if documento.estado != RevisionEstado.PENDIENTE:
         raise Conflict("Este documento ya fue revisado")
-    documento.estado = RevisionEstado.APROBADO if aprobado else RevisionEstado.RECHAZADO
-    documento.nota_revision = nota
+    if revision.aprobado and documento.requisito == LICENCIA:
+        _check_license(renta, revision)
+        documento.numero = revision.numero
+        documento.vigente_hasta = revision.vigente_hasta
+    documento.estado = RevisionEstado.APROBADO if revision.aprobado else RevisionEstado.RECHAZADO
+    documento.nota_revision = revision.nota
     documento.revisado_por_id = staff.id
     documento.revisado_at = datetime.now(UTC)
     confirmed = try_confirm(db, renta)
@@ -276,6 +303,8 @@ def document_out(documento: RentaDocumento) -> DocumentoOut:
         subido_por_nombre=documento.subido_por.full_name,
         created_at=documento.created_at,
         revisado_at=documento.revisado_at,
+        numero=documento.numero,
+        vigente_hasta=documento.vigente_hasta,
     )
 
 

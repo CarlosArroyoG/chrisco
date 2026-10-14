@@ -93,9 +93,7 @@ def review_documento(
     background: BackgroundTasks,
 ) -> CumplimientoOut:
     renta = rentas.get_for_user(db, staff, renta_id)
-    documento, confirmed = cumplimiento.review_document(
-        db, renta, doc_id, staff, body.aprobado, body.nota
-    )
+    documento, confirmed = cumplimiento.review_document(db, renta, doc_id, staff, body)
     if not body.aprobado:
         mail = notifications.document_rejected_mail(
             renta.solicitante, renta, documento.requisito, body.nota

@@ -57,6 +57,9 @@ class RentaDocumento(IdMixin, TimestampMixin, Base):
         Uuid, ForeignKey("users.id", ondelete="SET NULL")
     )
     revisado_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Solo licencias: lo que el personal lee de la foto al aprobarla.
+    numero: Mapped[str | None] = mapped_column(String(40))
+    vigente_hasta: Mapped[date | None] = mapped_column(Date)
 
     renta: Mapped["Renta"] = relationship(back_populates="documentos")
     subido_por: Mapped["User"] = relationship(foreign_keys=[subido_por_id])

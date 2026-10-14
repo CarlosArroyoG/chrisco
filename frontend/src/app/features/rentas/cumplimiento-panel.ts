@@ -104,12 +104,18 @@ interface Rechazo {
                       @if (d.nota_revision) {
                         <span class="text-rose-700">{{ d.nota_revision }}</span>
                       }
+                      @if (d.numero && d.vigente_hasta) {
+                        <span class="text-slate-500">
+                          Licencia {{ d.numero }}, vigente hasta
+                          {{ d.vigente_hasta | date: 'dd/MM/yyyy' }}
+                        </span>
+                      }
                       @if (isStaff() && d.estado === 'pendiente') {
                         <button
                           type="button"
                           class="link"
                           [disabled]="busy()"
-                          (click)="revisarDocumento(d.id, true)"
+                          (click)="aprobarDocumento(d.id, item.codigo)"
                         >
                           Aprobar
                         </button>
@@ -152,6 +158,38 @@ interface Rechazo {
             </li>
           }
         </ul>
+
+        @if (licencia()) {
+          <form [formGroup]="licenciaForm" (ngSubmit)="confirmarLicencia()" class="mt-3 space-y-2">
+            <p class="text-xs text-slate-500">
+              Revisa la foto y captura lo que dice la licencia. Debe vencer después de que termine
+              la renta.
+            </p>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label for="lic-numero" class="label">Número de licencia</label>
+                <input id="lic-numero" formControlName="numero" class="input" maxlength="40" />
+              </div>
+              <div>
+                <label for="lic-vigencia" class="label">Vigente hasta</label>
+                <input
+                  id="lic-vigencia"
+                  type="date"
+                  formControlName="vigente_hasta"
+                  class="input"
+                />
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <button type="submit" class="btn-primary" [disabled]="licenciaForm.invalid || busy()">
+                Aprobar licencia
+              </button>
+              <button type="button" class="link text-xs" (click)="licencia.set(null)">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        }
 
         @if (rechazo()) {
           <form [formGroup]="notaForm" (ngSubmit)="confirmarRechazo()" class="mt-3 space-y-2">
@@ -278,6 +316,8 @@ export class CumplimientoPanel implements OnInit {
   protected readonly busy = signal(false);
   protected readonly rechazo = signal<Rechazo | null>(null);
   protected readonly comprobante = signal<File | null>(null);
+  /** Id de la licencia que se está aprobando (pide número y vigencia). */
+  protected readonly licencia = signal<string | null>(null);
 
   protected readonly isStaff = computed(() => this.auth.user()?.role !== 'cliente');
   protected readonly canUpload = computed(
@@ -287,6 +327,10 @@ export class CumplimientoPanel implements OnInit {
 
   protected readonly notaForm = this.fb.group({
     nota: ['', [Validators.required, Validators.minLength(3)]],
+  });
+  protected readonly licenciaForm = this.fb.group({
+    numero: ['', [Validators.required, Validators.minLength(3)]],
+    vigente_hasta: ['', Validators.required],
   });
   protected readonly pagoForm = this.fb.group({
     monto: [0, [Validators.required, Validators.min(0.01)]],
@@ -387,9 +431,32 @@ export class CumplimientoPanel implements OnInit {
     });
   }
 
-  protected revisarDocumento(docId: string, aprobado: boolean, nota?: string): void {
+  /** Una licencia no se aprueba a ciegas: primero se capturan su número y su vigencia. */
+  protected aprobarDocumento(docId: string, requisito: string): void {
+    if (requisito === 'licencia_federal') this.licencia.set(docId);
+    else this.revisarDocumento(docId, true);
+  }
+
+  protected confirmarLicencia(): void {
+    const docId = this.licencia();
+    if (!docId || this.licenciaForm.invalid) return;
+    const datos = this.licenciaForm.getRawValue();
+    this.licencia.set(null);
+    this.licenciaForm.reset();
+    this.revisarDocumento(docId, true, undefined, {
+      numero: datos.numero.trim(),
+      vigente_hasta: datos.vigente_hasta,
+    });
+  }
+
+  protected revisarDocumento(
+    docId: string,
+    aprobado: boolean,
+    nota?: string,
+    licencia?: { numero: string; vigente_hasta: string },
+  ): void {
     this.run(
-      this.service.revisarDocumento(this.renta().id, docId, aprobado, nota),
+      this.service.revisarDocumento(this.renta().id, docId, aprobado, nota, licencia),
       'No se pudo revisar el documento.',
     );
   }
