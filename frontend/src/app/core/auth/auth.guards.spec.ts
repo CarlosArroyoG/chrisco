@@ -7,7 +7,7 @@ import {
   UrlTree,
 } from '@angular/router';
 import { authGuard, guestGuard, homeRedirectGuard, roleGuard } from './auth.guards';
-import { Role } from './auth.models';
+import { Role } from '../api/models';
 import { AuthService } from './auth.service';
 
 describe('guards', () => {

@@ -10,7 +10,7 @@
       - "5433:5432"
     volumes:
       - chrisco_pgdata:/var/lib/postgresql/data
-      - ./backend/docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+      - ./backend/docker/init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U chrisco -d chrisco"]
       interval: 5s

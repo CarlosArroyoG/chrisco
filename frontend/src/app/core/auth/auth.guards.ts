@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { HOME_BY_ROLE, Role } from './auth.models';
+import { Role } from '../api/models';
+import { HOME_BY_ROLE } from './auth.models';
 import { AuthService } from './auth.service';
 
 /** Exige sesión iniciada. */

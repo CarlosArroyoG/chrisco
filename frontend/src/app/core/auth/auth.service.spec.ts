@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { authInterceptor } from './auth.interceptor';
-import { User } from './auth.models';
+import { User } from '../api/models';
 import { API_URL, AuthService } from './auth.service';
 
 const USER: User = { id: '1', email: 'a@b.com', full_name: 'Ana', role: 'admin' };
@@ -101,5 +101,29 @@ describe('AuthService + interceptor', () => {
     http.expectOne(`${API_URL}/auth/refresh`).flush(null, { status: 401, statusText: 'x' });
     expect(auth.user()).toBeNull();
     expect(localStorage.getItem('chrisco.refresh_token')).toBeNull();
+  });
+  it('verifyEmail, resendVerification y forgotPassword llaman a su endpoint sin sesión', () => {
+    auth.verifyEmail('tok').subscribe();
+    const verify = http.expectOne(`${API_URL}/auth/verify-email`);
+    expect(verify.request.body).toEqual({ token: 'tok' });
+    verify.flush(null);
+
+    auth.resendVerification('a@b.com').subscribe();
+    http.expectOne(`${API_URL}/auth/resend-verification`).flush(null);
+
+    auth.forgotPassword('a@b.com').subscribe();
+    const forgot = http.expectOne(`${API_URL}/auth/forgot-password`);
+    expect(forgot.request.body).toEqual({ email: 'a@b.com' });
+    forgot.flush(null);
+  });
+
+  it('setPassword usa el endpoint según el tipo de enlace', () => {
+    auth.setPassword('invite', 'tok', 'clave-larga-123').subscribe();
+    const invite = http.expectOne(`${API_URL}/auth/accept-invite`);
+    expect(invite.request.body).toEqual({ token: 'tok', password: 'clave-larga-123' });
+    invite.flush(null);
+
+    auth.setPassword('reset', 'tok', 'clave-larga-123').subscribe();
+    http.expectOne(`${API_URL}/auth/reset-password`).flush(null);
   });
 });

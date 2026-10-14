@@ -11,6 +11,7 @@ docker compose up -d db
 # 2. Backend (puerto 8010)
 cd backend
 cp .env.example .env          # y rellena SECRET_KEY (ver el comentario del archivo)
+                              # MAIL_BACKEND=console imprime los correos (enlaces de confirmación) en el log
 uv sync
 uv run alembic upgrade head
 uv run python -m app.cli create-user --email tu@correo.com --name "Tu Nombre" --role admin
@@ -29,6 +30,11 @@ Documentación interactiva de la API: http://127.0.0.1:8010/docs
 ```bash
 cd backend  && uv run pytest && uv run ruff check . && uv run mypy app
 cd frontend && npx ng test --watch=false && npx ng lint && npx ng build
+
+# Extremo a extremo (navegador real; levanta su propia API, web y base de datos)
+cd e2e && npm ci && E2E_CHANNEL=msedge npx playwright test    # en CI: npx playwright install chromium
 ```
+
+Si cambias la API, regenera los tipos del frontend: `cd frontend && npm run api:gen`.
 
 El prototipo original (HTML estático) está en `legacy/` solo como referencia.

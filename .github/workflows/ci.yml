@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
 
+env:
+  # Mínimo que necesita el backend para importar la app (el API real usa su propio .env).
+  DATABASE_URL: postgresql+psycopg://chrisco:chrisco_dev@localhost:5433/chrisco_test
+  SECRET_KEY: clave-solo-para-ci-0123456789abcdef0123456789abcdef
+
 jobs:
   backend:
     runs-on: ubuntu-latest
@@ -29,9 +34,9 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy app
+      - run: uv run alembic upgrade head
+      - run: uv run alembic check
       - run: uv run pytest -q
-        env:
-          SECRET_KEY: clave-solo-para-ci-0123456789abcdef0123456789abcdef
 
   frontend:
     runs-on: ubuntu-latest
@@ -46,6 +51,69 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - run: npx prettier --check "src/**/*.{ts,html,css}"
       - run: npx ng lint
       - run: npx ng test --watch=false
       - run: npx ng build
+
+  # Los tipos del frontend se generan del OpenAPI del backend: si alguien cambia la API y no
+  # regenera (`npm run api:gen`), este trabajo falla.
+  api-types:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --frozen
+        working-directory: backend
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run api:gen
+        working-directory: frontend
+      - run: git diff --exit-code -- frontend/src/app/core/api/generated
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: chrisco
+          POSTGRES_PASSWORD: chrisco_dev
+          POSTGRES_DB: chrisco_e2e
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U chrisco" --health-interval 5s
+          --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --frozen
+        working-directory: backend
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            e2e/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm ci
+        working-directory: e2e
+      - run: npx playwright install --with-deps chromium
+        working-directory: e2e
+      - run: npm run typecheck
+        working-directory: e2e
+      - run: npx playwright test
+        working-directory: e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-traces
+          path: e2e/test-results/

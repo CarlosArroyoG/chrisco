@@ -1,6 +1,7 @@
+import json
 import logging
 import smtplib
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from email.message import EmailMessage
 from functools import lru_cache
 from typing import Protocol
@@ -28,6 +29,14 @@ class ConsoleMailer:
         logger.info("CORREO para %s | %s\n%s", mail.to, mail.subject, mail.body)
 
 
+class FileMailer:
+    """Desarrollo y pruebas E2E: agrega cada correo, como una línea JSON, a un archivo."""
+
+    def send(self, mail: Mail) -> None:
+        with get_settings().mail_outbox_file.open("a", encoding="utf-8") as outbox:
+            outbox.write(json.dumps(asdict(mail), ensure_ascii=False) + "\n")
+
+
 class SmtpMailer:
     def send(self, mail: Mail) -> None:
         s = get_settings()
@@ -47,4 +56,5 @@ class SmtpMailer:
 @lru_cache
 def get_mailer() -> Mailer:
     """Dependencia de FastAPI; las pruebas la sustituyen por un buzón en memoria."""
-    return SmtpMailer() if get_settings().mail_backend == "smtp" else ConsoleMailer()
+    backends: dict[str, Mailer] = {"smtp": SmtpMailer(), "file": FileMailer()}
+    return backends.get(get_settings().mail_backend, ConsoleMailer())

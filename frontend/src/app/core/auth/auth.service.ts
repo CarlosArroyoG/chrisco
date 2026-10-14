@@ -11,7 +11,7 @@ import {
   tap,
   throwError,
 } from 'rxjs';
-import { TokenPair, User } from './auth.models';
+import { TokenPair, User } from '../api/models';
 
 /** Base de la API. En desarrollo la reescribe proxy.conf.json; en producción, el proxy inverso. */
 export const API_URL = '/api';
@@ -79,6 +79,25 @@ export class AuthService {
     } catch {
       /* almacenamiento no disponible: no hay nada que borrar */
     }
+  }
+
+  // Flujos públicos por correo: no requieren sesión.
+  verifyEmail(token: string): Observable<void> {
+    return this.http.post<void>(`${API_URL}/auth/verify-email`, { token });
+  }
+
+  resendVerification(email: string): Observable<void> {
+    return this.http.post<void>(`${API_URL}/auth/resend-verification`, { email });
+  }
+
+  forgotPassword(email: string): Observable<void> {
+    return this.http.post<void>(`${API_URL}/auth/forgot-password`, { email });
+  }
+
+  /** Fija la contraseña con el enlace de una invitación o de una recuperación. */
+  setPassword(kind: 'invite' | 'reset', token: string, password: string): Observable<void> {
+    const path = kind === 'invite' ? 'accept-invite' : 'reset-password';
+    return this.http.post<void>(`${API_URL}/auth/${path}`, { token, password });
   }
 
   private loadUser(): Observable<User> {

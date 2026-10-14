@@ -26,8 +26,10 @@ class Settings(BaseSettings):
     uploads_dir: Path = Path("uploads")
     max_upload_mb: int = 5
 
-    # Correo: "console" escribe el mensaje en el log (desarrollo); "smtp" lo envía de verdad.
+    # Correo: "console" escribe el mensaje en el log y "file" lo agrega a `mail_outbox_file`
+    # (desarrollo y pruebas E2E); "smtp" lo envía de verdad.
     mail_backend: str = "console"
+    mail_outbox_file: Path = Path("outbox.jsonl")
     mail_from: str = "CHRISCO Go <no-responder@chrisco.example>"
     smtp_host: str = "localhost"
     smtp_port: int = 587
