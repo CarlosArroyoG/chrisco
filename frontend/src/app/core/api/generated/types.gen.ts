@@ -787,6 +787,11 @@ export type Ocupacion = {
 };
 
 /**
+ * OperadorModo
+ */
+export type OperadorModo = 'chrisco' | 'cliente';
+
+/**
  * Page[EquipoCatalogOut]
  */
 export type PageEquipoCatalogOut = {
@@ -815,6 +820,36 @@ export type PageEquipoOut = {
 };
 
 /**
+ * Page[RentaOut]
+ */
+export type PageRentaOut = {
+    /**
+     * Items
+     */
+    items: Array<RentaOut>;
+    /**
+     * Total
+     */
+    total: number;
+};
+
+/**
+ * PreviewOut
+ *
+ * Lo que verá el cliente antes de enviar: si está libre y qué se le va a pedir.
+ */
+export type PreviewOut = {
+    /**
+     * Disponible
+     */
+    disponible: boolean;
+    /**
+     * Requisitos
+     */
+    requisitos: Array<Requisito>;
+};
+
+/**
  * RefreshRequest
  */
 export type RefreshRequest = {
@@ -832,6 +867,110 @@ export type RejectRequest = {
      * Motivo
      */
     motivo: string;
+};
+
+/**
+ * RentaEstado
+ *
+ * Ciclo de vida de una renta. Las fases 5 y 6 recorren estos estados en orden.
+ */
+export type RentaEstado = 'solicitada' | 'cotizada' | 'apartada' | 'confirmada' | 'en_renta' | 'devuelta' | 'cerrada' | 'vencida' | 'cancelada' | 'rechazada';
+
+/**
+ * RentaOut
+ */
+export type RentaOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Folio
+     */
+    folio: string;
+    estado: RentaEstado;
+    /**
+     * Empresa Id
+     */
+    empresa_id: string;
+    /**
+     * Empresa Razon Social
+     */
+    empresa_razon_social: string;
+    /**
+     * Solicitante Nombre
+     */
+    solicitante_nombre: string;
+    /**
+     * Equipo Id
+     */
+    equipo_id: string;
+    /**
+     * Equipo Codigo
+     */
+    equipo_codigo: string;
+    /**
+     * Equipo Nombre
+     */
+    equipo_nombre: string;
+    /**
+     * Desde
+     */
+    desde: string;
+    /**
+     * Hasta
+     */
+    hasta: string;
+    /**
+     * Destino
+     */
+    destino: string;
+    operador_modo: OperadorModo;
+    transporte: Transporte;
+    /**
+     * Notas
+     */
+    notas: string | null;
+    /**
+     * Requisitos
+     */
+    requisitos: Array<Requisito>;
+    /**
+     * Vence En
+     */
+    vence_en: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * Requisito
+ *
+ * Algo que el cliente debe cumplir o saber antes de que se confirme la renta.
+ */
+export type Requisito = {
+    /**
+     * Codigo
+     */
+    codigo: string;
+    /**
+     * Titulo
+     */
+    titulo: string;
+    /**
+     * Detalle
+     */
+    detalle: string;
+    /**
+     * Tipo
+     */
+    tipo: 'documento' | 'condicion' | 'cargo';
+    /**
+     * Obligatorio
+     */
+    obligatorio?: boolean;
 };
 
 /**
@@ -867,6 +1006,106 @@ export type SetPasswordRequest = {
      * Password
      */
     password: string;
+};
+
+/**
+ * SolicitudCreada
+ */
+export type SolicitudCreada = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Folio
+     */
+    folio: string;
+    estado: RentaEstado;
+    /**
+     * Empresa Id
+     */
+    empresa_id: string;
+    /**
+     * Empresa Razon Social
+     */
+    empresa_razon_social: string;
+    /**
+     * Solicitante Nombre
+     */
+    solicitante_nombre: string;
+    /**
+     * Equipo Id
+     */
+    equipo_id: string;
+    /**
+     * Equipo Codigo
+     */
+    equipo_codigo: string;
+    /**
+     * Equipo Nombre
+     */
+    equipo_nombre: string;
+    /**
+     * Desde
+     */
+    desde: string;
+    /**
+     * Hasta
+     */
+    hasta: string;
+    /**
+     * Destino
+     */
+    destino: string;
+    operador_modo: OperadorModo;
+    transporte: Transporte;
+    /**
+     * Notas
+     */
+    notas: string | null;
+    /**
+     * Requisitos
+     */
+    requisitos: Array<Requisito>;
+    /**
+     * Vence En
+     */
+    vence_en: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    whatsapp: WhatsappOut;
+};
+
+/**
+ * SolicitudIn
+ *
+ * Lo que captura el cliente al pedir un equipo.
+ */
+export type SolicitudIn = {
+    /**
+     * Desde
+     */
+    desde: string;
+    /**
+     * Hasta
+     */
+    hasta: string;
+    /**
+     * Equipo Id
+     */
+    equipo_id: string;
+    /**
+     * Destino
+     */
+    destino: string;
+    operador_modo: OperadorModo;
+    transporte: Transporte;
+    /**
+     * Notas
+     */
+    notas?: string | null;
 };
 
 /**
@@ -952,6 +1191,11 @@ export type TokenRequest = {
 };
 
 /**
+ * Transporte
+ */
+export type Transporte = 'entrega' | 'recoge';
+
+/**
  * UserOut
  */
 export type UserOut = {
@@ -996,6 +1240,22 @@ export type ValidationError = {
     ctx?: {
         [key: string]: unknown;
     };
+};
+
+/**
+ * WhatsappOut
+ *
+ * Mensaje para el agente de ventas. `url` es None si aún no se configura su número.
+ */
+export type WhatsappOut = {
+    /**
+     * Mensaje
+     */
+    mensaje: string;
+    /**
+     * Url
+     */
+    url: string | null;
 };
 
 export type LoginAuthLoginPostData = {
@@ -2096,6 +2356,188 @@ export type GetDisponibilidadEquiposEquipoIdDisponibilidadGetResponses = {
 };
 
 export type GetDisponibilidadEquiposEquipoIdDisponibilidadGetResponse = GetDisponibilidadEquiposEquipoIdDisponibilidadGetResponses[keyof GetDisponibilidadEquiposEquipoIdDisponibilidadGetResponses];
+
+export type PreviewSolicitudRentasSolicitudesPreviewPostData = {
+    body: SolicitudIn;
+    path?: never;
+    query?: never;
+    url: '/rentas/solicitudes/preview';
+};
+
+export type PreviewSolicitudRentasSolicitudesPreviewPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PreviewSolicitudRentasSolicitudesPreviewPostError = PreviewSolicitudRentasSolicitudesPreviewPostErrors[keyof PreviewSolicitudRentasSolicitudesPreviewPostErrors];
+
+export type PreviewSolicitudRentasSolicitudesPreviewPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: PreviewOut;
+};
+
+export type PreviewSolicitudRentasSolicitudesPreviewPostResponse = PreviewSolicitudRentasSolicitudesPreviewPostResponses[keyof PreviewSolicitudRentasSolicitudesPreviewPostResponses];
+
+export type CreateSolicitudRentasSolicitudesPostData = {
+    body: SolicitudIn;
+    path?: never;
+    query?: never;
+    url: '/rentas/solicitudes';
+};
+
+export type CreateSolicitudRentasSolicitudesPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateSolicitudRentasSolicitudesPostError = CreateSolicitudRentasSolicitudesPostErrors[keyof CreateSolicitudRentasSolicitudesPostErrors];
+
+export type CreateSolicitudRentasSolicitudesPostResponses = {
+    /**
+     * Successful Response
+     */
+    201: SolicitudCreada;
+};
+
+export type CreateSolicitudRentasSolicitudesPostResponse = CreateSolicitudRentasSolicitudesPostResponses[keyof CreateSolicitudRentasSolicitudesPostResponses];
+
+export type ListRentasRentasGetData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Estado
+         */
+        estado?: RentaEstado | null;
+        /**
+         * Q
+         */
+        q?: string | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/rentas';
+};
+
+export type ListRentasRentasGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListRentasRentasGetError = ListRentasRentasGetErrors[keyof ListRentasRentasGetErrors];
+
+export type ListRentasRentasGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageRentaOut;
+};
+
+export type ListRentasRentasGetResponse = ListRentasRentasGetResponses[keyof ListRentasRentasGetResponses];
+
+export type GetRentaRentasRentaIdGetData = {
+    body?: never;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}';
+};
+
+export type GetRentaRentasRentaIdGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetRentaRentasRentaIdGetError = GetRentaRentasRentaIdGetErrors[keyof GetRentaRentasRentaIdGetErrors];
+
+export type GetRentaRentasRentaIdGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: RentaOut;
+};
+
+export type GetRentaRentasRentaIdGetResponse = GetRentaRentasRentaIdGetResponses[keyof GetRentaRentasRentaIdGetResponses];
+
+export type GetWhatsappRentasRentaIdWhatsappGetData = {
+    body?: never;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/whatsapp';
+};
+
+export type GetWhatsappRentasRentaIdWhatsappGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetWhatsappRentasRentaIdWhatsappGetError = GetWhatsappRentasRentaIdWhatsappGetErrors[keyof GetWhatsappRentasRentaIdWhatsappGetErrors];
+
+export type GetWhatsappRentasRentaIdWhatsappGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: WhatsappOut;
+};
+
+export type GetWhatsappRentasRentaIdWhatsappGetResponse = GetWhatsappRentasRentaIdWhatsappGetResponses[keyof GetWhatsappRentasRentaIdWhatsappGetResponses];
+
+export type CancelRentaRentasRentaIdCancelarPostData = {
+    body?: never;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/cancelar';
+};
+
+export type CancelRentaRentasRentaIdCancelarPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CancelRentaRentasRentaIdCancelarPostError = CancelRentaRentasRentaIdCancelarPostErrors[keyof CancelRentaRentasRentaIdCancelarPostErrors];
+
+export type CancelRentaRentasRentaIdCancelarPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: RentaOut;
+};
+
+export type CancelRentaRentasRentaIdCancelarPostResponse = CancelRentaRentasRentaIdCancelarPostResponses[keyof CancelRentaRentasRentaIdCancelarPostResponses];
 
 export type HealthHealthGetData = {
     body?: never;

@@ -4,11 +4,12 @@ import { RouterLink } from '@angular/router';
 import { apiErrorMessage } from '../../../core/api/errors';
 import { EquipoCatalogo, Ocupacion } from '../../../core/api/models';
 import { CatalogoService, fotoUrl } from '../../../core/catalogo/catalogo.service';
+import { SolicitarRenta } from './solicitar-renta';
 
 /** Ficha de un equipo del catálogo: fotos, especificaciones, tarifas y requisitos. */
 @Component({
   selector: 'app-catalogo-detalle',
-  imports: [CurrencyPipe, DatePipe, RouterLink],
+  imports: [CurrencyPipe, DatePipe, RouterLink, SolicitarRenta],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a routerLink="/cliente/catalogo" class="link text-xs">← Volver al catálogo</a>
@@ -114,6 +115,8 @@ import { CatalogoService, fotoUrl } from '../../../core/catalogo/catalogo.servic
           sin aviso.
         </p>
       </section>
+
+      <app-solicitar-renta [equipo]="e" [desdeInicial]="desde()" [hastaInicial]="hasta()" />
     }
   `,
 })
@@ -122,6 +125,9 @@ export class CatalogoDetalle implements OnInit {
 
   /** Id de la ruta `/cliente/catalogo/:id`. */
   readonly id = input.required<string>();
+  /** Periodo con el que se venía filtrando el catálogo (query params `desde` y `hasta`). */
+  readonly desde = input('');
+  readonly hasta = input('');
 
   protected readonly fotoUrl = fotoUrl;
   protected readonly equipo = signal<EquipoCatalogo | null>(null);

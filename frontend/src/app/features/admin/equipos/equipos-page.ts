@@ -11,9 +11,9 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { catchError, debounceTime, distinctUntilChanged, of, Subject, switchMap, tap } from 'rxjs';
-import { apiErrorMessage } from '../../../core/api/errors';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { Categoria, Equipo, EquipoStatus } from '../../../core/api/models';
+import { pagedList } from '../../../core/api/paged-list';
 import { AuthService } from '../../../core/auth/auth.service';
 import { CatalogoService, fotoUrl } from '../../../core/catalogo/catalogo.service';
 import { StatusBadge } from '../../../shared/status-badge/status-badge';
@@ -28,7 +28,7 @@ const PAGE_SIZE = 25;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <h1 class="text-lg font-black">Equipos ({{ total() }})</h1>
+      <h1 class="text-lg font-black">Equipos ({{ list.total() }})</h1>
       @if (isAdmin()) {
         <div class="flex gap-2">
           <a routerLink="/admin/equipos/importar" class="btn-secondary">Importar CSV</a>
@@ -59,8 +59,8 @@ const PAGE_SIZE = 25;
       </select>
     </div>
 
-    @if (error()) {
-      <p role="alert" class="alert-error mt-3">{{ error() }}</p>
+    @if (list.error()) {
+      <p role="alert" class="alert-error mt-3">{{ list.error() }}</p>
     }
 
     <div class="mt-3 overflow-x-auto rounded-xl border bg-white">
@@ -77,7 +77,7 @@ const PAGE_SIZE = 25;
           </tr>
         </thead>
         <tbody class="divide-y">
-          @for (e of items(); track e.id) {
+          @for (e of list.items(); track e.id) {
             <tr>
               <td class="p-2">
                 @if (e.fotos.length) {
@@ -120,7 +120,7 @@ const PAGE_SIZE = 25;
           } @empty {
             <tr>
               <td colspan="7" class="p-6 text-center text-slate-500">
-                {{ loaded() ? 'No hay equipos con esos filtros.' : 'Cargando…' }}
+                {{ list.loaded() ? 'No hay equipos con esos filtros.' : 'Cargando…' }}
               </td>
             </tr>
           }
@@ -128,22 +128,22 @@ const PAGE_SIZE = 25;
       </table>
     </div>
 
-    @if (pages() > 1) {
+    @if (list.pages() > 1) {
       <nav class="mt-3 flex items-center justify-between text-xs" aria-label="Paginación">
         <button
           type="button"
           class="btn-secondary"
-          [disabled]="page() === 0"
-          (click)="go(page() - 1)"
+          [disabled]="list.page() === 0"
+          (click)="list.go(list.page() - 1)"
         >
           Anterior
         </button>
-        <span>Página {{ page() + 1 }} de {{ pages() }}</span>
+        <span>Página {{ list.page() + 1 }} de {{ list.pages() }}</span>
         <button
           type="button"
           class="btn-secondary"
-          [disabled]="page() + 1 >= pages()"
-          (click)="go(page() + 1)"
+          [disabled]="list.page() + 1 >= list.pages()"
+          (click)="list.go(list.page() + 1)"
         >
           Siguiente
         </button>
@@ -163,63 +163,32 @@ export class EquiposPage implements OnInit {
   protected readonly status = new FormControl<'' | EquipoStatus>('', { nonNullable: true });
 
   protected readonly categorias = signal<Categoria[]>([]);
-  protected readonly items = signal<Equipo[]>([]);
-  protected readonly total = signal(0);
-  protected readonly page = signal(0);
-  protected readonly loaded = signal(false);
-  protected readonly error = signal<string | null>(null);
-  /** Cada consulta cancela a la anterior: una respuesta vieja no pisa a la nueva. */
-  private readonly load$ = new Subject<number>();
-  protected readonly pages = computed(() => Math.max(1, Math.ceil(this.total() / PAGE_SIZE)));
   protected readonly isAdmin = computed(() => this.auth.user()?.role === 'admin');
+  protected readonly list = pagedList<Equipo>({
+    pageSize: PAGE_SIZE,
+    fetch: (page) =>
+      this.service.list({
+        q: this.q.value.trim(),
+        categoria_id: this.categoria.value,
+        status_filter: this.status.value || undefined,
+        limit: PAGE_SIZE,
+        offset: page * PAGE_SIZE,
+      }),
+    errorMessage: 'No se pudo cargar la lista de equipos.',
+  });
 
   ngOnInit(): void {
-    this.load$
-      .pipe(
-        tap((page) => {
-          this.page.set(page);
-          this.loaded.set(false);
-          this.error.set(null);
-        }),
-        switchMap((page) =>
-          this.service
-            .list({
-              q: this.q.value.trim(),
-              categoria_id: this.categoria.value,
-              status_filter: this.status.value || undefined,
-              limit: PAGE_SIZE,
-              offset: page * PAGE_SIZE,
-            })
-            .pipe(
-              catchError((err: unknown) => {
-                this.error.set(apiErrorMessage(err, 'No se pudo cargar la lista de equipos.'));
-                return of(null);
-              }),
-            ),
-        ),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe((result) => {
-        if (result) {
-          this.items.set(result.items);
-          this.total.set(result.total);
-        }
-        this.loaded.set(true);
-      });
-
     this.catalogo.categorias().subscribe((categorias) => this.categorias.set(categorias));
     // Cualquier cambio de filtro regresa a la primera página.
     this.q.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.go(0));
+      .subscribe(() => this.list.go(0));
     this.categoria.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.go(0));
-    this.status.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.go(0));
-    this.go(0);
-  }
-
-  protected go(page: number): void {
-    this.load$.next(page);
+      .subscribe(() => this.list.go(0));
+    this.status.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.list.go(0));
+    this.list.go(0);
   }
 }

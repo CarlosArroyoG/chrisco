@@ -19,6 +19,7 @@ export const BACKEND_ENV = {
   UPLOADS_DIR: path.join(TMP_DIR, 'uploads'),
   RATE_LIMIT_ENABLED: 'false',
   FRONTEND_URL: WEB_URL,
+  SALES_WHATSAPP_NUMBER: '5217221234567',
   CORS_ORIGINS: JSON.stringify([WEB_URL]),
 };
 

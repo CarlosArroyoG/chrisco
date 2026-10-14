@@ -7,6 +7,7 @@ import { Logo } from '../shared/logo/logo';
 /** Secciones del personal (admin y ventas). `exact` evita que «Empresas» quede activa en todas. */
 const STAFF_NAV = [
   { path: '/admin', label: 'Empresas', exact: true },
+  { path: '/admin/rentas', label: 'Rentas', exact: false },
   { path: '/admin/equipos', label: 'Equipos', exact: false },
   { path: '/admin/categorias', label: 'Categorías', exact: false },
 ];

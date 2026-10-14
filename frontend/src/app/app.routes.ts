@@ -75,6 +75,15 @@ export const routes: Routes = [
               import('./features/admin/equipos/equipo-form').then((m) => m.EquipoForm),
           },
           {
+            path: 'rentas',
+            loadComponent: () => import('./features/rentas/rentas-page').then((m) => m.RentasPage),
+          },
+          {
+            path: 'rentas/:id',
+            loadComponent: () =>
+              import('./features/rentas/renta-detalle').then((m) => m.RentaDetalle),
+          },
+          {
             path: 'categorias',
             loadComponent: () =>
               import('./features/admin/categorias/categorias-page').then((m) => m.CategoriasPage),
@@ -100,6 +109,15 @@ export const routes: Routes = [
             path: 'catalogo',
             loadComponent: () =>
               import('./features/cliente/catalogo/catalogo-page').then((m) => m.CatalogoPage),
+          },
+          {
+            path: 'rentas',
+            loadComponent: () => import('./features/rentas/rentas-page').then((m) => m.RentasPage),
+          },
+          {
+            path: 'rentas/:id',
+            loadComponent: () =>
+              import('./features/rentas/renta-detalle').then((m) => m.RentaDetalle),
           },
           {
             path: 'catalogo/:id',

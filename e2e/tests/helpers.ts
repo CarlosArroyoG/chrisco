@@ -83,7 +83,7 @@ export async function adminHeaders(request: APIRequestContext): Promise<{ Author
 export async function seedEquipos(
   request: APIRequestContext,
   categoria: string,
-  equipos: { codigo: string; nombre: string }[],
+  equipos: ({ codigo: string; nombre: string } & Record<string, unknown>)[],
 ): Promise<string[]> {
   const headers = await adminHeaders(request);
   const cat = await request.post('/api/admin/categorias', {
@@ -110,4 +110,22 @@ export async function seedEquipos(
     ids.push((await res.json()).id);
   }
   return ids;
+}
+
+/** Encabezados de un usuario ya registrado y verificado, para actuar por la API en su nombre. */
+export async function userHeaders(
+  request: APIRequestContext,
+  email: string,
+  password: string,
+): Promise<{ Authorization: string }> {
+  const session = await request.post('/api/auth/login', { data: { email, password } });
+  expect(session.ok(), await session.text()).toBeTruthy();
+  return { Authorization: `Bearer ${(await session.json()).access_token}` };
+}
+
+/** Formato de un `<input type="datetime-local">` (hora local) a `horas` de distancia de ahora. */
+export function inHours(horas: number): string {
+  const d = new Date(Date.now() + horas * 3600_000);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }

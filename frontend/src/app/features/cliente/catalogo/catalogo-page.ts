@@ -2,7 +2,6 @@ import { CurrencyPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   DestroyRef,
   inject,
   OnInit,
@@ -11,19 +10,10 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import {
-  catchError,
-  debounceTime,
-  distinctUntilChanged,
-  merge,
-  of,
-  Subject,
-  switchMap,
-  tap,
-} from 'rxjs';
+import { debounceTime, distinctUntilChanged, merge } from 'rxjs';
 import { periodFromInputs } from '../../../core/api/dates';
-import { apiErrorMessage } from '../../../core/api/errors';
 import { Categoria, EquipoCatalogo } from '../../../core/api/models';
+import { pagedList } from '../../../core/api/paged-list';
 import { CatalogoFiltros, CatalogoService, fotoUrl } from '../../../core/catalogo/catalogo.service';
 
 const PAGE_SIZE = 12;
@@ -35,7 +25,7 @@ const PAGE_SIZE = 12;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a routerLink="/cliente" class="link text-xs">← Mi empresa</a>
-    <h1 class="mt-2 text-lg font-black">Catálogo de maquinaria ({{ total() }})</h1>
+    <h1 class="mt-2 text-lg font-black">Catálogo de maquinaria ({{ list.total() }})</h1>
 
     <div class="mt-3 grid gap-2 sm:grid-cols-3">
       <input
@@ -71,14 +61,15 @@ const PAGE_SIZE = 12;
       <p class="mt-1 text-xs text-amber-700">{{ rangeHint() }}</p>
     }
 
-    @if (error()) {
-      <p role="alert" class="alert-error mt-3">{{ error() }}</p>
+    @if (list.error()) {
+      <p role="alert" class="alert-error mt-3">{{ list.error() }}</p>
     }
 
     <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      @for (e of items(); track e.id) {
+      @for (e of list.items(); track e.id) {
         <a
           [routerLink]="['/cliente/catalogo', e.id]"
+          [queryParams]="carryOver()"
           class="card block overflow-hidden !p-0 transition hover:shadow-md"
         >
           @if (e.fotos.length) {
@@ -127,27 +118,27 @@ const PAGE_SIZE = 12;
         </a>
       } @empty {
         <p class="col-span-full text-sm text-slate-500">
-          {{ loaded() ? 'No encontramos equipos con esos filtros.' : 'Cargando…' }}
+          {{ list.loaded() ? 'No encontramos equipos con esos filtros.' : 'Cargando…' }}
         </p>
       }
     </div>
 
-    @if (pages() > 1) {
+    @if (list.pages() > 1) {
       <nav class="mt-4 flex items-center justify-between text-xs" aria-label="Paginación">
         <button
           type="button"
           class="btn-secondary"
-          [disabled]="page() === 0"
-          (click)="go(page() - 1)"
+          [disabled]="list.page() === 0"
+          (click)="go(list.page() - 1)"
         >
           Anterior
         </button>
-        <span>Página {{ page() + 1 }} de {{ pages() }}</span>
+        <span>Página {{ list.page() + 1 }} de {{ list.pages() }}</span>
         <button
           type="button"
           class="btn-secondary"
-          [disabled]="page() + 1 >= pages()"
-          (click)="go(page() + 1)"
+          [disabled]="list.page() + 1 >= list.pages()"
+          (click)="go(list.page() + 1)"
         >
           Siguiente
         </button>
@@ -167,42 +158,14 @@ export class CatalogoPage implements OnInit {
   protected readonly soloDisponibles = new FormControl(false, { nonNullable: true });
 
   protected readonly categorias = signal<Categoria[]>([]);
-  protected readonly items = signal<EquipoCatalogo[]>([]);
-  protected readonly total = signal(0);
-  protected readonly page = signal(0);
-  protected readonly loaded = signal(false);
-  protected readonly error = signal<string | null>(null);
   protected readonly rangeHint = signal<string | null>(null);
-  /** Cada consulta cancela a la anterior: una respuesta vieja no pisa a la nueva. */
-  private readonly load$ = new Subject<number>();
-  protected readonly pages = computed(() => Math.max(1, Math.ceil(this.total() / PAGE_SIZE)));
+  protected readonly list = pagedList<EquipoCatalogo>({
+    pageSize: PAGE_SIZE,
+    fetch: (page) => this.service.list(this.filters(page)),
+    errorMessage: 'No se pudo cargar el catálogo.',
+  });
 
   ngOnInit(): void {
-    this.load$
-      .pipe(
-        tap((page) => {
-          this.page.set(page);
-          this.loaded.set(false);
-          this.error.set(null);
-        }),
-        switchMap((page) =>
-          this.service.list(this.filters(page)).pipe(
-            catchError((err: unknown) => {
-              this.error.set(apiErrorMessage(err, 'No se pudo cargar el catálogo.'));
-              return of(null);
-            }),
-          ),
-        ),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe((result) => {
-        if (result) {
-          this.items.set(result.items);
-          this.total.set(result.total);
-        }
-        this.loaded.set(true);
-      });
-
     this.service.categorias().subscribe((categorias) => this.categorias.set(categorias));
     this.q.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
@@ -218,6 +181,14 @@ export class CatalogoPage implements OnInit {
     this.go(0);
   }
 
+  /** Periodo que el cliente trae en el catálogo, para llevarlo a la ficha del equipo. */
+  protected carryOver(): Record<string, string> {
+    const params: Record<string, string> = {};
+    if (this.desde.value) params['desde'] = this.desde.value;
+    if (this.hasta.value) params['hasta'] = this.hasta.value;
+    return params;
+  }
+
   protected go(page: number): void {
     const periodo = periodFromInputs(this.desde.value, this.hasta.value);
     // Con el periodo a medias o invertido no se pregunta disponibilidad, pero se avisa por qué.
@@ -227,7 +198,7 @@ export class CatalogoPage implements OnInit {
         ? 'Elige un inicio y un fin (posterior al inicio) para ver la disponibilidad.'
         : null,
     );
-    this.load$.next(page);
+    this.list.go(page);
   }
 
   private filters(page: number): CatalogoFiltros {

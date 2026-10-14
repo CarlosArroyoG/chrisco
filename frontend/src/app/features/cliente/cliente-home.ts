@@ -56,9 +56,10 @@ import { ResubmitForm } from './resubmit-form';
               <p class="mt-3 text-sm text-slate-600">
                 Tu empresa está aprobada. Ya puedes consultar el catálogo de maquinaria.
               </p>
-              <a routerLink="/cliente/catalogo" class="btn-primary mt-3 inline-block">
-                Ver catálogo de maquinaria
-              </a>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <a routerLink="/cliente/catalogo" class="btn-primary">Ver catálogo de maquinaria</a>
+                <a routerLink="/cliente/rentas" class="btn-secondary">Mis rentas</a>
+              </div>
             }
           }
         </section>

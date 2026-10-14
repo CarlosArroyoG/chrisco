@@ -1,7 +1,7 @@
 import { resetDatabase } from '../db';
 import { expect, test } from '@playwright/test';
 import { ADMIN, VENTAS } from '../env';
-import { createApprovedClient, logout, seedEquipos, signIn } from './helpers';
+import { createApprovedClient, inHours, logout, seedEquipos, signIn } from './helpers';
 
 const CLIENT = {
   email: 'cliente@disponibilidad-e2e.com',
@@ -10,13 +10,6 @@ const CLIENT = {
   razonSocial: 'Constructora Disponibilidad E2E SA de CV',
 };
 const MOTIVO = 'Cambio de aceite E2E';
-
-/** Formato de un `<input type="datetime-local">` (hora local) a `horas` de distancia de ahora. */
-function inHours(horas: number): string {
-  const d = new Date(Date.now() + horas * 3600_000);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
 
 // Cada archivo parte de un sistema limpio: no depende de lo que dejó otro.
 test.beforeAll(() => resetDatabase());
