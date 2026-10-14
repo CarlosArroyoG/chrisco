@@ -6,6 +6,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { apiErrorMessage } from '../../core/api/errors';
 import { EmpresaDetail } from '../../core/api/models';
 import { AuthService } from '../../core/auth/auth.service';
@@ -17,7 +18,7 @@ import { ResubmitForm } from './resubmit-form';
 /** Inicio del cliente: estado de la verificación de su empresa y su equipo de usuarios. */
 @Component({
   selector: 'app-cliente-home',
-  imports: [StatusBadge, CompanyTeam, ResubmitForm],
+  imports: [RouterLink, StatusBadge, CompanyTeam, ResubmitForm],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (error()) {
@@ -53,9 +54,11 @@ import { ResubmitForm } from './resubmit-form';
             }
             @case ('aprobada') {
               <p class="mt-3 text-sm text-slate-600">
-                Tu empresa está aprobada. El catálogo de maquinaria y las solicitudes de renta
-                llegan en la siguiente fase.
+                Tu empresa está aprobada. Ya puedes consultar el catálogo de maquinaria.
               </p>
+              <a routerLink="/cliente/catalogo" class="btn-primary mt-3 inline-block">
+                Ver catálogo de maquinaria
+              </a>
             }
           }
         </section>

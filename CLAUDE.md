@@ -34,7 +34,7 @@ Una fase solo está terminada si TODO esto se cumple:
 
 ## Entorno de esta máquina
 
-- Python 3.12 (`uv run ...`), Node 24, Docker. `python` a secas apunta a un acceso directo de la Store; usa `uv run` o `py -3.12`.
+- Python **3.12 fijado** en `backend/.python-version` (`uv run ...`), Node 24, Docker. `python` a secas apunta a un acceso directo de la Store; usa `uv run` o `py -3.12`.
 - PostgreSQL de desarrollo: `docker compose up -d db` (puerto host **5433**; el 5432 y el 8000 los usan otras apps del usuario, no las toques).
 - API local: puerto **8010** en `127.0.0.1`. Frontend: `ng serve` en 4200 con proxy `/api` → 8010. E2E: API 8011, web 4201, BD `chrisco_e2e`.
 - En PowerShell 5.1, `Set-Content -Encoding utf8` y `Get-Content` sin `-Encoding` corrompen tildes: edita archivos con las herramientas de edición, no con reemplazos de PowerShell.

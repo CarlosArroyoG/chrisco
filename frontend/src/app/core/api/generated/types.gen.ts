@@ -5,6 +5,30 @@ export type ClientOptions = {
 };
 
 /**
+ * Body_add_foto_admin_equipos__equipo_id__fotos_post
+ */
+export type BodyAddFotoAdminEquiposEquipoIdFotosPost = {
+    /**
+     * Foto
+     *
+     * JPG, PNG o WebP
+     */
+    foto: Blob | File;
+};
+
+/**
+ * Body_import_equipos_admin_equipos_importar_post
+ */
+export type BodyImportEquiposAdminEquiposImportarPost = {
+    /**
+     * Archivo
+     *
+     * CSV con un equipo por fila
+     */
+    archivo: Blob | File;
+};
+
+/**
  * Body_register_empresa_registro_post
  */
 export type BodyRegisterEmpresaRegistroPost = {
@@ -62,6 +86,60 @@ export type BodyResubmitCompanyEmpresaMePut = {
      * Rfc
      */
     rfc: string;
+};
+
+/**
+ * CategoriaAdminOut
+ */
+export type CategoriaAdminOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Nombre
+     */
+    nombre: string;
+    /**
+     * Spec Fields
+     */
+    spec_fields: Array<SpecField>;
+    /**
+     * Equipos Count
+     */
+    equipos_count: number;
+};
+
+/**
+ * CategoriaIn
+ */
+export type CategoriaIn = {
+    /**
+     * Nombre
+     */
+    nombre: string;
+    /**
+     * Spec Fields
+     */
+    spec_fields?: Array<SpecField>;
+};
+
+/**
+ * CategoriaOut
+ */
+export type CategoriaOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Nombre
+     */
+    nombre: string;
+    /**
+     * Spec Fields
+     */
+    spec_fields: Array<SpecField>;
 };
 
 /**
@@ -200,6 +278,325 @@ export type EmpresaListItem = {
 export type EmpresaStatus = 'pendiente' | 'aprobada' | 'rechazada';
 
 /**
+ * EquipoCatalogOut
+ *
+ * Vista para clientes: sin número de serie, horómetro ni notas internas.
+ */
+export type EquipoCatalogOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Codigo
+     */
+    codigo: string;
+    /**
+     * Nombre
+     */
+    nombre: string;
+    /**
+     * Marca
+     */
+    marca: string;
+    /**
+     * Modelo
+     */
+    modelo: string;
+    /**
+     * Anio
+     */
+    anio: number | null;
+    /**
+     * Categoria Id
+     */
+    categoria_id: string;
+    /**
+     * Categoria Nombre
+     */
+    categoria_nombre: string;
+    /**
+     * Patio
+     */
+    patio: string;
+    /**
+     * Tarifa Hora
+     */
+    tarifa_hora: number | null;
+    /**
+     * Tarifa Dia
+     */
+    tarifa_dia: number | null;
+    /**
+     * Requiere Lowboy
+     */
+    requiere_lowboy: boolean;
+    /**
+     * Requiere Operador Certificado
+     */
+    requiere_operador_certificado: boolean;
+    /**
+     * Specs
+     */
+    specs: Array<SpecValueOut>;
+    /**
+     * Fotos
+     */
+    fotos: Array<FotoOut>;
+};
+
+/**
+ * EquipoIn
+ *
+ * Datos editables de un equipo. Los comparten el alta, la edición y la importación CSV.
+ */
+export type EquipoIn = {
+    /**
+     * Codigo
+     */
+    codigo: string;
+    /**
+     * Categoria Id
+     */
+    categoria_id: string;
+    /**
+     * Nombre
+     */
+    nombre: string;
+    /**
+     * Marca
+     */
+    marca: string;
+    /**
+     * Modelo
+     */
+    modelo: string;
+    /**
+     * Numero Serie
+     */
+    numero_serie: string;
+    /**
+     * Anio
+     */
+    anio?: number | null;
+    /**
+     * Horometro
+     */
+    horometro?: number | string;
+    /**
+     * Patio
+     */
+    patio?: string;
+    /**
+     * Tarifa Hora
+     */
+    tarifa_hora?: number | string | null;
+    /**
+     * Tarifa Dia
+     */
+    tarifa_dia?: number | string | null;
+    /**
+     * Requiere Lowboy
+     */
+    requiere_lowboy?: boolean;
+    /**
+     * Requiere Operador Certificado
+     */
+    requiere_operador_certificado?: boolean;
+    /**
+     * Notas
+     */
+    notas?: string | null;
+    /**
+     * Specs
+     */
+    specs?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * EquipoOut
+ *
+ * Vista completa para el personal. Solo describe datos: no revalida las reglas de entrada.
+ */
+export type EquipoOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Codigo
+     */
+    codigo: string;
+    /**
+     * Categoria Id
+     */
+    categoria_id: string;
+    /**
+     * Categoria Nombre
+     */
+    categoria_nombre: string;
+    /**
+     * Nombre
+     */
+    nombre: string;
+    /**
+     * Marca
+     */
+    marca: string;
+    /**
+     * Modelo
+     */
+    modelo: string;
+    /**
+     * Numero Serie
+     */
+    numero_serie: string;
+    /**
+     * Anio
+     */
+    anio: number | null;
+    /**
+     * Horometro
+     */
+    horometro: number;
+    /**
+     * Patio
+     */
+    patio: string;
+    /**
+     * Tarifa Hora
+     */
+    tarifa_hora: number | null;
+    /**
+     * Tarifa Dia
+     */
+    tarifa_dia: number | null;
+    /**
+     * Requiere Lowboy
+     */
+    requiere_lowboy: boolean;
+    /**
+     * Requiere Operador Certificado
+     */
+    requiere_operador_certificado: boolean;
+    /**
+     * Notas
+     */
+    notas: string | null;
+    /**
+     * Specs
+     */
+    specs: {
+        [key: string]: unknown;
+    };
+    status: EquipoStatus;
+    /**
+     * Fotos
+     */
+    fotos: Array<FotoOut>;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * EquipoStatus
+ *
+ * Estado administrativo. Si está rentado o bloqueado se calcula aparte (fases 4 y 6).
+ */
+export type EquipoStatus = 'activo' | 'mantenimiento' | 'baja';
+
+/**
+ * EquipoUpdate
+ */
+export type EquipoUpdate = {
+    /**
+     * Codigo
+     */
+    codigo: string;
+    /**
+     * Categoria Id
+     */
+    categoria_id: string;
+    /**
+     * Nombre
+     */
+    nombre: string;
+    /**
+     * Marca
+     */
+    marca: string;
+    /**
+     * Modelo
+     */
+    modelo: string;
+    /**
+     * Numero Serie
+     */
+    numero_serie: string;
+    /**
+     * Anio
+     */
+    anio?: number | null;
+    /**
+     * Horometro
+     */
+    horometro?: number | string;
+    /**
+     * Patio
+     */
+    patio?: string;
+    /**
+     * Tarifa Hora
+     */
+    tarifa_hora?: number | string | null;
+    /**
+     * Tarifa Dia
+     */
+    tarifa_dia?: number | string | null;
+    /**
+     * Requiere Lowboy
+     */
+    requiere_lowboy?: boolean;
+    /**
+     * Requiere Operador Certificado
+     */
+    requiere_operador_certificado?: boolean;
+    /**
+     * Notas
+     */
+    notas?: string | null;
+    /**
+     * Specs
+     */
+    specs?: {
+        [key: string]: unknown;
+    };
+    status?: EquipoStatus;
+};
+
+/**
+ * FotoOut
+ */
+export type FotoOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Position
+     */
+    position: number;
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -207,6 +604,28 @@ export type HttpValidationError = {
      * Detail
      */
     detail?: Array<ValidationError>;
+};
+
+/**
+ * ImportResult
+ */
+export type ImportResult = {
+    /**
+     * Dry Run
+     */
+    dry_run: boolean;
+    /**
+     * Rows
+     */
+    rows: number;
+    /**
+     * Created
+     */
+    created: number;
+    /**
+     * Errors
+     */
+    errors: Array<RowError>;
 };
 
 /**
@@ -248,6 +667,34 @@ export type MessageOut = {
 };
 
 /**
+ * Page[EquipoCatalogOut]
+ */
+export type PageEquipoCatalogOut = {
+    /**
+     * Items
+     */
+    items: Array<EquipoCatalogOut>;
+    /**
+     * Total
+     */
+    total: number;
+};
+
+/**
+ * Page[EquipoOut]
+ */
+export type PageEquipoOut = {
+    /**
+     * Items
+     */
+    items: Array<EquipoOut>;
+    /**
+     * Total
+     */
+    total: number;
+};
+
+/**
  * RefreshRequest
  */
 export type RefreshRequest = {
@@ -273,6 +720,20 @@ export type RejectRequest = {
 export type Role = 'admin' | 'ventas' | 'operador' | 'cliente';
 
 /**
+ * RowError
+ */
+export type RowError = {
+    /**
+     * Row
+     */
+    row: number;
+    /**
+     * Message
+     */
+    message: string;
+};
+
+/**
  * SetPasswordRequest
  *
  * Token de invitación o de recuperación + la contraseña nueva.
@@ -286,6 +747,58 @@ export type SetPasswordRequest = {
      * Password
      */
     password: string;
+};
+
+/**
+ * SpecField
+ *
+ * Definición de una especificación que una categoría pide a sus equipos.
+ */
+export type SpecField = {
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Label
+     */
+    label: string;
+    type: SpecFieldType;
+    /**
+     * Unit
+     */
+    unit?: string | null;
+    /**
+     * Options
+     */
+    options?: Array<string>;
+    /**
+     * Required
+     */
+    required?: boolean;
+};
+
+/**
+ * SpecFieldType
+ */
+export type SpecFieldType = 'text' | 'number' | 'boolean' | 'select';
+
+/**
+ * SpecValueOut
+ */
+export type SpecValueOut = {
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Value
+     */
+    value: string;
+    /**
+     * Unit
+     */
+    unit: string | null;
 };
 
 /**
@@ -842,6 +1355,484 @@ export type RejectCompanyAdminEmpresasEmpresaIdRechazarPostResponses = {
 };
 
 export type RejectCompanyAdminEmpresasEmpresaIdRechazarPostResponse = RejectCompanyAdminEmpresasEmpresaIdRechazarPostResponses[keyof RejectCompanyAdminEmpresasEmpresaIdRechazarPostResponses];
+
+export type ListCategoriasCategoriasGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/categorias';
+};
+
+export type ListCategoriasCategoriasGetResponses = {
+    /**
+     * Response List Categorias Categorias Get
+     *
+     * Successful Response
+     */
+    200: Array<CategoriaOut>;
+};
+
+export type ListCategoriasCategoriasGetResponse = ListCategoriasCategoriasGetResponses[keyof ListCategoriasCategoriasGetResponses];
+
+export type ListCategoriasAdminAdminCategoriasGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/categorias';
+};
+
+export type ListCategoriasAdminAdminCategoriasGetResponses = {
+    /**
+     * Response List Categorias Admin Admin Categorias Get
+     *
+     * Successful Response
+     */
+    200: Array<CategoriaAdminOut>;
+};
+
+export type ListCategoriasAdminAdminCategoriasGetResponse = ListCategoriasAdminAdminCategoriasGetResponses[keyof ListCategoriasAdminAdminCategoriasGetResponses];
+
+export type CreateCategoriaAdminCategoriasPostData = {
+    body: CategoriaIn;
+    path?: never;
+    query?: never;
+    url: '/admin/categorias';
+};
+
+export type CreateCategoriaAdminCategoriasPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateCategoriaAdminCategoriasPostError = CreateCategoriaAdminCategoriasPostErrors[keyof CreateCategoriaAdminCategoriasPostErrors];
+
+export type CreateCategoriaAdminCategoriasPostResponses = {
+    /**
+     * Successful Response
+     */
+    201: CategoriaOut;
+};
+
+export type CreateCategoriaAdminCategoriasPostResponse = CreateCategoriaAdminCategoriasPostResponses[keyof CreateCategoriaAdminCategoriasPostResponses];
+
+export type DeleteCategoriaAdminCategoriasCategoriaIdDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Categoria Id
+         */
+        categoria_id: string;
+    };
+    query?: never;
+    url: '/admin/categorias/{categoria_id}';
+};
+
+export type DeleteCategoriaAdminCategoriasCategoriaIdDeleteErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteCategoriaAdminCategoriasCategoriaIdDeleteError = DeleteCategoriaAdminCategoriasCategoriaIdDeleteErrors[keyof DeleteCategoriaAdminCategoriasCategoriaIdDeleteErrors];
+
+export type DeleteCategoriaAdminCategoriasCategoriaIdDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteCategoriaAdminCategoriasCategoriaIdDeleteResponse = DeleteCategoriaAdminCategoriasCategoriaIdDeleteResponses[keyof DeleteCategoriaAdminCategoriasCategoriaIdDeleteResponses];
+
+export type UpdateCategoriaAdminCategoriasCategoriaIdPutData = {
+    body: CategoriaIn;
+    path: {
+        /**
+         * Categoria Id
+         */
+        categoria_id: string;
+    };
+    query?: never;
+    url: '/admin/categorias/{categoria_id}';
+};
+
+export type UpdateCategoriaAdminCategoriasCategoriaIdPutErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateCategoriaAdminCategoriasCategoriaIdPutError = UpdateCategoriaAdminCategoriasCategoriaIdPutErrors[keyof UpdateCategoriaAdminCategoriasCategoriaIdPutErrors];
+
+export type UpdateCategoriaAdminCategoriasCategoriaIdPutResponses = {
+    /**
+     * Successful Response
+     */
+    200: CategoriaOut;
+};
+
+export type UpdateCategoriaAdminCategoriasCategoriaIdPutResponse = UpdateCategoriaAdminCategoriasCategoriaIdPutResponses[keyof UpdateCategoriaAdminCategoriasCategoriaIdPutResponses];
+
+export type ListEquiposAdminEquiposGetData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Q
+         */
+        q?: string | null;
+        /**
+         * Categoria Id
+         */
+        categoria_id?: string | null;
+        /**
+         * Status Filter
+         */
+        status_filter?: EquipoStatus | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/admin/equipos';
+};
+
+export type ListEquiposAdminEquiposGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListEquiposAdminEquiposGetError = ListEquiposAdminEquiposGetErrors[keyof ListEquiposAdminEquiposGetErrors];
+
+export type ListEquiposAdminEquiposGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageEquipoOut;
+};
+
+export type ListEquiposAdminEquiposGetResponse = ListEquiposAdminEquiposGetResponses[keyof ListEquiposAdminEquiposGetResponses];
+
+export type CreateEquipoAdminEquiposPostData = {
+    body: EquipoIn;
+    path?: never;
+    query?: never;
+    url: '/admin/equipos';
+};
+
+export type CreateEquipoAdminEquiposPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateEquipoAdminEquiposPostError = CreateEquipoAdminEquiposPostErrors[keyof CreateEquipoAdminEquiposPostErrors];
+
+export type CreateEquipoAdminEquiposPostResponses = {
+    /**
+     * Successful Response
+     */
+    201: EquipoOut;
+};
+
+export type CreateEquipoAdminEquiposPostResponse = CreateEquipoAdminEquiposPostResponses[keyof CreateEquipoAdminEquiposPostResponses];
+
+export type ImportTemplateAdminEquiposImportarPlantillaGetData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Categoria Id
+         */
+        categoria_id?: string | null;
+    };
+    url: '/admin/equipos/importar/plantilla';
+};
+
+export type ImportTemplateAdminEquiposImportarPlantillaGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ImportTemplateAdminEquiposImportarPlantillaGetError = ImportTemplateAdminEquiposImportarPlantillaGetErrors[keyof ImportTemplateAdminEquiposImportarPlantillaGetErrors];
+
+export type ImportTemplateAdminEquiposImportarPlantillaGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type ImportEquiposAdminEquiposImportarPostData = {
+    body: BodyImportEquiposAdminEquiposImportarPost;
+    path?: never;
+    query?: {
+        /**
+         * Dry Run
+         */
+        dry_run?: boolean;
+    };
+    url: '/admin/equipos/importar';
+};
+
+export type ImportEquiposAdminEquiposImportarPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ImportEquiposAdminEquiposImportarPostError = ImportEquiposAdminEquiposImportarPostErrors[keyof ImportEquiposAdminEquiposImportarPostErrors];
+
+export type ImportEquiposAdminEquiposImportarPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: ImportResult;
+};
+
+export type ImportEquiposAdminEquiposImportarPostResponse = ImportEquiposAdminEquiposImportarPostResponses[keyof ImportEquiposAdminEquiposImportarPostResponses];
+
+export type GetEquipoAdminEquiposEquipoIdGetData = {
+    body?: never;
+    path: {
+        /**
+         * Equipo Id
+         */
+        equipo_id: string;
+    };
+    query?: never;
+    url: '/admin/equipos/{equipo_id}';
+};
+
+export type GetEquipoAdminEquiposEquipoIdGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetEquipoAdminEquiposEquipoIdGetError = GetEquipoAdminEquiposEquipoIdGetErrors[keyof GetEquipoAdminEquiposEquipoIdGetErrors];
+
+export type GetEquipoAdminEquiposEquipoIdGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: EquipoOut;
+};
+
+export type GetEquipoAdminEquiposEquipoIdGetResponse = GetEquipoAdminEquiposEquipoIdGetResponses[keyof GetEquipoAdminEquiposEquipoIdGetResponses];
+
+export type UpdateEquipoAdminEquiposEquipoIdPutData = {
+    body: EquipoUpdate;
+    path: {
+        /**
+         * Equipo Id
+         */
+        equipo_id: string;
+    };
+    query?: never;
+    url: '/admin/equipos/{equipo_id}';
+};
+
+export type UpdateEquipoAdminEquiposEquipoIdPutErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateEquipoAdminEquiposEquipoIdPutError = UpdateEquipoAdminEquiposEquipoIdPutErrors[keyof UpdateEquipoAdminEquiposEquipoIdPutErrors];
+
+export type UpdateEquipoAdminEquiposEquipoIdPutResponses = {
+    /**
+     * Successful Response
+     */
+    200: EquipoOut;
+};
+
+export type UpdateEquipoAdminEquiposEquipoIdPutResponse = UpdateEquipoAdminEquiposEquipoIdPutResponses[keyof UpdateEquipoAdminEquiposEquipoIdPutResponses];
+
+export type AddFotoAdminEquiposEquipoIdFotosPostData = {
+    body: BodyAddFotoAdminEquiposEquipoIdFotosPost;
+    path: {
+        /**
+         * Equipo Id
+         */
+        equipo_id: string;
+    };
+    query?: never;
+    url: '/admin/equipos/{equipo_id}/fotos';
+};
+
+export type AddFotoAdminEquiposEquipoIdFotosPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AddFotoAdminEquiposEquipoIdFotosPostError = AddFotoAdminEquiposEquipoIdFotosPostErrors[keyof AddFotoAdminEquiposEquipoIdFotosPostErrors];
+
+export type AddFotoAdminEquiposEquipoIdFotosPostResponses = {
+    /**
+     * Successful Response
+     */
+    201: FotoOut;
+};
+
+export type AddFotoAdminEquiposEquipoIdFotosPostResponse = AddFotoAdminEquiposEquipoIdFotosPostResponses[keyof AddFotoAdminEquiposEquipoIdFotosPostResponses];
+
+export type DeleteFotoAdminEquiposEquipoIdFotosFotoIdDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Equipo Id
+         */
+        equipo_id: string;
+        /**
+         * Foto Id
+         */
+        foto_id: string;
+    };
+    query?: never;
+    url: '/admin/equipos/{equipo_id}/fotos/{foto_id}';
+};
+
+export type DeleteFotoAdminEquiposEquipoIdFotosFotoIdDeleteErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteFotoAdminEquiposEquipoIdFotosFotoIdDeleteError = DeleteFotoAdminEquiposEquipoIdFotosFotoIdDeleteErrors[keyof DeleteFotoAdminEquiposEquipoIdFotosFotoIdDeleteErrors];
+
+export type DeleteFotoAdminEquiposEquipoIdFotosFotoIdDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteFotoAdminEquiposEquipoIdFotosFotoIdDeleteResponse = DeleteFotoAdminEquiposEquipoIdFotosFotoIdDeleteResponses[keyof DeleteFotoAdminEquiposEquipoIdFotosFotoIdDeleteResponses];
+
+export type GetFotoEquiposFotosFotoIdSizeGetData = {
+    body?: never;
+    path: {
+        /**
+         * Foto Id
+         */
+        foto_id: string;
+        /**
+         * Size
+         */
+        size: 'thumb' | 'full';
+    };
+    query?: never;
+    url: '/equipos/fotos/{foto_id}/{size}';
+};
+
+export type GetFotoEquiposFotosFotoIdSizeGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetFotoEquiposFotosFotoIdSizeGetError = GetFotoEquiposFotosFotoIdSizeGetErrors[keyof GetFotoEquiposFotosFotoIdSizeGetErrors];
+
+export type GetFotoEquiposFotosFotoIdSizeGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type ListCatalogoEquiposGetData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Q
+         */
+        q?: string | null;
+        /**
+         * Categoria Id
+         */
+        categoria_id?: string | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/equipos';
+};
+
+export type ListCatalogoEquiposGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListCatalogoEquiposGetError = ListCatalogoEquiposGetErrors[keyof ListCatalogoEquiposGetErrors];
+
+export type ListCatalogoEquiposGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageEquipoCatalogOut;
+};
+
+export type ListCatalogoEquiposGetResponse = ListCatalogoEquiposGetResponses[keyof ListCatalogoEquiposGetResponses];
+
+export type GetCatalogoEquiposEquipoIdGetData = {
+    body?: never;
+    path: {
+        /**
+         * Equipo Id
+         */
+        equipo_id: string;
+    };
+    query?: never;
+    url: '/equipos/{equipo_id}';
+};
+
+export type GetCatalogoEquiposEquipoIdGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetCatalogoEquiposEquipoIdGetError = GetCatalogoEquiposEquipoIdGetErrors[keyof GetCatalogoEquiposEquipoIdGetErrors];
+
+export type GetCatalogoEquiposEquipoIdGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: EquipoCatalogOut;
+};
+
+export type GetCatalogoEquiposEquipoIdGetResponse = GetCatalogoEquiposEquipoIdGetResponses[keyof GetCatalogoEquiposEquipoIdGetResponses];
 
 export type HealthHealthGetData = {
     body?: never;

@@ -1,23 +1,11 @@
-import { expect, Page, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { ADMIN, VENTAS } from '../env';
+import { login, logout, PDF } from './helpers';
 import { linkFromMail, mailsTo } from './mail';
 
 const OWNER = { email: 'titular@constructora-e2e.com', password: 'titular-clave-larga-1', name: 'Titular E2E' };
 const GUEST = { email: 'compa@constructora-e2e.com', password: 'invitado-clave-larga-1', name: 'Compañero E2E' };
 const THIRD = { email: 'tercero@constructora-e2e.com', name: 'Tercero E2E' };
-const PDF = { name: 'constancia.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n% e2e\n%%EOF') };
-
-async function login(page: Page, email: string, password: string): Promise<void> {
-  await page.goto('/login');
-  await page.getByLabel('Correo').fill(email);
-  await page.getByLabel('Contraseña').fill(password);
-  await page.getByRole('button', { name: 'Iniciar sesión' }).click();
-}
-
-async function logout(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Salir' }).click();
-  await expect(page).toHaveURL(/\/login$/);
-}
 
 // Una sola historia continua: cada paso depende del anterior.
 test.describe.serial('Registro, revisión y equipo de una empresa', () => {

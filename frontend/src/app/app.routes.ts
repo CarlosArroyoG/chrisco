@@ -53,6 +53,32 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./features/admin/empresa-review').then((m) => m.EmpresaReview),
           },
+          {
+            path: 'equipos',
+            loadComponent: () =>
+              import('./features/admin/equipos/equipos-page').then((m) => m.EquiposPage),
+          },
+          // Las rutas fijas van antes que `:id` para que no se lean como un id.
+          {
+            path: 'equipos/nuevo',
+            loadComponent: () =>
+              import('./features/admin/equipos/equipo-form').then((m) => m.EquipoForm),
+          },
+          {
+            path: 'equipos/importar',
+            loadComponent: () =>
+              import('./features/admin/equipos/equipos-import').then((m) => m.EquiposImport),
+          },
+          {
+            path: 'equipos/:id',
+            loadComponent: () =>
+              import('./features/admin/equipos/equipo-form').then((m) => m.EquipoForm),
+          },
+          {
+            path: 'categorias',
+            loadComponent: () =>
+              import('./features/admin/categorias/categorias-page').then((m) => m.CategoriasPage),
+          },
         ],
       },
       {
@@ -64,7 +90,23 @@ export const routes: Routes = [
       {
         path: 'cliente',
         canActivate: [roleGuard('cliente')],
-        loadComponent: () => import('./features/cliente/cliente-home').then((m) => m.ClienteHome),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/cliente/cliente-home').then((m) => m.ClienteHome),
+          },
+          {
+            path: 'catalogo',
+            loadComponent: () =>
+              import('./features/cliente/catalogo/catalogo-page').then((m) => m.CatalogoPage),
+          },
+          {
+            path: 'catalogo/:id',
+            loadComponent: () =>
+              import('./features/cliente/catalogo/catalogo-detalle').then((m) => m.CatalogoDetalle),
+          },
+        ],
       },
     ],
   },

@@ -1,12 +1,22 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { EmpresaStatus } from '../../core/api/models';
+import { EmpresaStatus, EquipoStatus } from '../../core/api/models';
 
-const STYLES: Record<EmpresaStatus, { label: string; classes: string }> = {
-  pendiente: { label: 'Pendiente de revisión', classes: 'bg-amber-100 text-amber-800' },
-  aprobada: { label: 'Aprobada', classes: 'bg-emerald-100 text-emerald-800' },
-  rechazada: { label: 'Rechazada', classes: 'bg-rose-100 text-rose-800' },
+type Status = EmpresaStatus | EquipoStatus;
+
+const AMBER = 'bg-amber-100 text-amber-800';
+const GREEN = 'bg-emerald-100 text-emerald-800';
+const RED = 'bg-rose-100 text-rose-800';
+
+const STYLES: Record<Status, { label: string; classes: string }> = {
+  pendiente: { label: 'Pendiente de revisión', classes: AMBER },
+  aprobada: { label: 'Aprobada', classes: GREEN },
+  rechazada: { label: 'Rechazada', classes: RED },
+  activo: { label: 'Activo', classes: GREEN },
+  mantenimiento: { label: 'En mantenimiento', classes: AMBER },
+  baja: { label: 'Baja', classes: 'bg-slate-200 text-slate-700' },
 };
 
+/** Etiqueta de color para el estado de una empresa o de un equipo. */
 @Component({
   selector: 'app-status-badge',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,6 +28,6 @@ const STYLES: Record<EmpresaStatus, { label: string; classes: string }> = {
   </span>`,
 })
 export class StatusBadge {
-  readonly status = input.required<EmpresaStatus>();
+  readonly status = input.required<Status>();
   protected readonly style = computed(() => STYLES[this.status()]);
 }
