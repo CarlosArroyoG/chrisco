@@ -10,6 +10,7 @@ from fastapi import Depends, Form
 from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, ValidationError
 
+from app.schemas.cumplimiento import PagoIn
 from app.schemas.empresa import CompanyData, RegistroEmpresaForm
 
 
@@ -48,3 +49,14 @@ def registro_form(
 
 
 RegistroForm = Annotated[RegistroEmpresaForm, Depends(registro_form)]
+
+
+def pago_form(
+    monto: Annotated[str, Form()],
+    fecha_pago: Annotated[str, Form()],
+    referencia: Annotated[str | None, Form()] = None,
+) -> PagoIn:
+    return _validate(PagoIn, monto=monto, fecha_pago=fecha_pago, referencia=referencia or None)
+
+
+PagoForm = Annotated[PagoIn, Depends(pago_form)]

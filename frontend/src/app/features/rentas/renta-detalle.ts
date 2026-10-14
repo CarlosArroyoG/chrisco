@@ -18,6 +18,7 @@ import { RentasService } from '../../core/rentas/rentas.service';
 import { Countdown } from '../../shared/countdown/countdown';
 import { StatusBadge } from '../../shared/status-badge/status-badge';
 import { CotizacionEditor } from './cotizacion-editor';
+import { CumplimientoPanel } from './cumplimiento-panel';
 import { CotizacionView } from './cotizacion-view';
 
 const SECTIONS: { tipo: Requisito['tipo']; titulo: string }[] = [
@@ -41,6 +42,7 @@ const TRANSPORTE = { entrega: 'Entrega CHRISCO en la obra', recoge: 'Lo recoge e
     Countdown,
     CotizacionView,
     CotizacionEditor,
+    CumplimientoPanel,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -185,6 +187,10 @@ const TRANSPORTE = { entrega: 'Entrega CHRISCO en la obra', recoge: 'Lo recoge e
         </p>
       }
 
+      @if (conCumplimiento()) {
+        <app-cumplimiento-panel [renta]="r" (changed)="reload()" />
+      }
+
       @if (canQuote()) {
         <section class="card mt-4">
           <div class="flex flex-wrap items-center justify-between gap-2">
@@ -306,6 +312,17 @@ export class RentaDetalle implements OnInit {
       this.renta()?.estado === 'cotizada' &&
       this.cotizacion()?.estado === 'vigente',
   );
+  /** Con cotización aceptada hay requisitos que cumplir y pagos que seguir. */
+  protected readonly conCumplimiento = computed(() => {
+    const estado = this.renta()?.estado;
+    return (
+      estado === 'apartada' ||
+      estado === 'confirmada' ||
+      estado === 'en_renta' ||
+      estado === 'devuelta' ||
+      estado === 'cerrada'
+    );
+  });
   protected readonly isClientWaiting = computed(
     () => !this.isStaff() && this.renta()?.estado === 'solicitada',
   );
@@ -319,7 +336,7 @@ export class RentaDetalle implements OnInit {
   }
 
   /** Vuelve a pedir la renta y su cotización (404 = todavía no hay). */
-  private reload(): void {
+  protected reload(): void {
     this.service.get(this.id()).subscribe({
       next: (renta) => {
         this.renta.set(renta);

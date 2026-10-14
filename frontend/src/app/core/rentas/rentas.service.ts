@@ -2,8 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
+  Cobranza,
   Cotizacion,
   CotizacionCalculo,
+  Cumplimiento,
+  Documento,
+  Pago,
   CotizacionInput,
   CotizacionSugerida,
   Page,
@@ -22,6 +26,10 @@ export interface RentasFiltros {
   q?: string;
   limit?: number;
   offset?: number;
+}
+
+export interface CobranzaFiltros extends RentasFiltros {
+  solo_con_saldo?: boolean;
 }
 
 /** Solicitudes de renta: el cliente ve las de su empresa; el personal, todas. */
@@ -85,5 +93,66 @@ export class RentasService {
 
   cancel(id: string): Observable<Renta> {
     return this.http.post<Renta>(`${this.base}/${id}/cancelar`, {});
+  }
+
+  // ------------------------------------------------------------ cumplimiento del apartado
+
+  cumplimiento(id: string): Observable<Cumplimiento> {
+    return this.http.get<Cumplimiento>(`${this.base}/${id}/cumplimiento`);
+  }
+
+  subirDocumento(id: string, requisito: string, archivo: File): Observable<Documento> {
+    const body = new FormData();
+    body.append('requisito', requisito);
+    body.append('archivo', archivo);
+    return this.http.post<Documento>(`${this.base}/${id}/documentos`, body);
+  }
+
+  reportarPago(
+    id: string,
+    campos: { monto: number; fecha_pago: string; referencia: string },
+    comprobante: File,
+  ): Observable<Pago> {
+    const body = new FormData();
+    body.append('monto', String(campos.monto));
+    body.append('fecha_pago', campos.fecha_pago);
+    if (campos.referencia) body.append('referencia', campos.referencia);
+    body.append('comprobante', comprobante);
+    return this.http.post<Pago>(`${this.base}/${id}/pagos`, body);
+  }
+
+  /** Los archivos son privados: se bajan con la sesión y se abren desde memoria. */
+  documento(id: string, docId: string): Observable<Blob> {
+    return this.http.get(`${this.base}/${id}/documentos/${docId}/archivo`, {
+      responseType: 'blob',
+    });
+  }
+
+  comprobante(id: string, pagoId: string): Observable<Blob> {
+    return this.http.get(`${this.base}/${id}/pagos/${pagoId}/comprobante`, {
+      responseType: 'blob',
+    });
+  }
+
+  revisarDocumento(id: string, docId: string, aprobado: boolean, nota?: string) {
+    return this.http.post<Cumplimiento>(`${this.base}/${id}/documentos/${docId}/revisar`, {
+      aprobado,
+      nota: nota ?? null,
+    });
+  }
+
+  revisarPago(id: string, pagoId: string, aprobado: boolean, nota?: string) {
+    return this.http.post<Cumplimiento>(`${this.base}/${id}/pagos/${pagoId}/revisar`, {
+      aprobado,
+      nota: nota ?? null,
+    });
+  }
+
+  marcarCondicion(id: string, codigo: string, cumplida: boolean): Observable<Cumplimiento> {
+    return this.http.post<Cumplimiento>(`${this.base}/${id}/condiciones/${codigo}`, { cumplida });
+  }
+
+  cobranza(filtros: CobranzaFiltros): Observable<Cobranza> {
+    return this.http.get<Cobranza>(`${API_URL}/admin/cobranza`, { params: toParams(filtros) });
   }
 }

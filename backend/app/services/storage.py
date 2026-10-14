@@ -7,6 +7,7 @@ from fastapi import UploadFile
 
 from app.core.config import get_settings
 from app.core.errors import InvalidInput
+from app.services import images
 
 _KEY_RE = re.compile(r"^[0-9a-f]{32}(-thumb)?\.(pdf|jpg)$")
 
@@ -67,3 +68,18 @@ def read_pdf_upload(file: UploadFile) -> bytes:
     if not data.startswith(b"%PDF-"):
         raise InvalidInput("El archivo debe ser un PDF")
     return data
+
+
+def read_document_upload(file: UploadFile) -> tuple[bytes, str]:
+    """Lee un documento o comprobante: PDF o foto. Devuelve (bytes, extensión de almacenamiento).
+
+    Las fotos se vuelven a codificar como JPEG (sin metadatos y de tamaño razonable).
+    """
+    data = read_limited(file)
+    if data.startswith(b"%PDF-"):
+        return data, "pdf"
+    try:
+        full, _ = images.process_photo(data)
+    except InvalidInput:
+        raise InvalidInput("Sube un PDF o una foto (JPG, PNG o WebP)") from None
+    return full, "jpg"

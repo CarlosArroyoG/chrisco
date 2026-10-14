@@ -9,30 +9,7 @@ from app.models.bloqueo import Bloqueo, BloqueoEstado, BloqueoTipo
 from app.models.cotizacion import CotizacionEstado
 from app.models.renta import Renta, RentaEstado
 from tests.conftest import equipo_payload
-from tests.rentas_helpers import pedir, vencer
-
-PARTIDAS = [
-    {
-        "concepto": "renta",
-        "descripcion": "Renta de Pavimentadora 1",
-        "cantidad": 8,
-        "unidad": "hora",
-        "precio_unitario": 3400,
-    },
-    {
-        "concepto": "flete",
-        "descripcion": "Flete en lowboy a la obra",
-        "cantidad": 1,
-        "unidad": "servicio",
-        "precio_unitario": 4500,
-    },
-]
-# 8 × 3400 + 4500 = 31,700 → IVA 5,072 → total 36,772 → anticipo 30 % = 11,031.60
-
-
-def cotizar(client, headers, renta_id, partidas=None, **extra):
-    body = {"partidas": PARTIDAS if partidas is None else partidas, **extra}
-    return client.post(f"/rentas/{renta_id}/cotizacion", json=body, headers=headers)
+from tests.rentas_helpers import PARTIDAS, cotizar, pedir, vencer
 
 
 @pytest.fixture

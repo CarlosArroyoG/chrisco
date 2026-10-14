@@ -11,6 +11,7 @@ import {
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { apiErrorMessage } from '../../core/api/errors';
+import { openBlob } from '../../core/api/download';
 import { EmpresaDetail } from '../../core/api/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { StatusBadge } from '../../shared/status-badge/status-badge';
@@ -133,11 +134,7 @@ export class EmpresaReview implements OnInit {
 
   protected openConstancia(): void {
     this.service.constancia(this.id()).subscribe({
-      next: (blob) => {
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank', 'noopener');
-        setTimeout(() => URL.revokeObjectURL(url), 60_000);
-      },
+      next: openBlob,
       error: (err: unknown) =>
         this.error.set(apiErrorMessage(err, 'No se pudo abrir la constancia.')),
     });

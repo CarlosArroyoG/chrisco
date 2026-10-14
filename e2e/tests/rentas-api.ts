@@ -48,3 +48,40 @@ export async function solicitarPorApi(
   expect(res.status(), await res.text()).toBe(201);
   return res.json();
 }
+
+/**
+ * Lleva una solicitud hasta `apartada`: ventas cotiza 10 h × $1,000 (total $11,600, anticipo
+ * $3,480) y el cliente acepta.
+ */
+export async function apartarPorApi(
+  request: APIRequestContext,
+  cliente: Headers,
+  ventas: Headers,
+  equipo: string,
+  extra: Record<string, unknown> = {},
+): Promise<{ id: string; folio: string }> {
+  const renta = await solicitarPorApi(request, cliente, equipo, {
+    transporte: 'recoge',
+    ...extra,
+  });
+  const cotizacion = await request.post(`/api/rentas/${renta.id}/cotizacion`, {
+    headers: ventas,
+    data: {
+      partidas: [
+        {
+          concepto: 'renta',
+          descripcion: 'Renta de equipo',
+          cantidad: 10,
+          unidad: 'hora',
+          precio_unitario: 1000,
+        },
+      ],
+    },
+  });
+  expect(cotizacion.status(), await cotizacion.text()).toBe(201);
+  const aceptada = await request.post(`/api/rentas/${renta.id}/cotizacion/aceptar`, {
+    headers: cliente,
+  });
+  expect(aceptada.status(), await aceptada.text()).toBe(200);
+  return renta;
+}

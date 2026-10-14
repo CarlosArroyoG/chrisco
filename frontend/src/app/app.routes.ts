@@ -84,6 +84,11 @@ export const routes: Routes = [
               import('./features/rentas/renta-detalle').then((m) => m.RentaDetalle),
           },
           {
+            path: 'cobranza',
+            loadComponent: () =>
+              import('./features/admin/cobranza/cobranza-page').then((m) => m.CobranzaPage),
+          },
+          {
             path: 'categorias',
             loadComponent: () =>
               import('./features/admin/categorias/categorias-page').then((m) => m.CategoriasPage),

@@ -122,3 +122,44 @@ def request_rejected_mail(user: User, renta: Renta) -> Mail:
             f"Puedes pedir otro equipo o fechas distintas: {_url('/cliente/catalogo')}"
         ),
     )
+
+
+def document_rejected_mail(user: User, renta: Renta, requisito: str, nota: str | None) -> Mail:
+    return Mail(
+        to=user.email,
+        subject=f"Revisa un documento de tu renta {renta.folio}",
+        body=(
+            f"Hola {user.full_name},\n\n"
+            f"No pudimos aprobar «{requisito}» de tu renta {renta.folio}.\n"
+            f"Motivo: {nota}\n\n"
+            f"Súbelo de nuevo mientras el equipo siga apartado: "
+            f"{_url(f'/cliente/rentas/{renta.id}')}"
+        ),
+    )
+
+
+def payment_reviewed_mail(user: User, renta: Renta, confirmado: bool, nota: str | None) -> Mail:
+    resultado = "confirmamos tu pago" if confirmado else "no pudimos confirmar tu pago"
+    motivo = "" if confirmado or not nota else f"\nMotivo: {nota}"
+    return Mail(
+        to=user.email,
+        subject=f"Pago de la renta {renta.folio}",
+        body=(
+            f"Hola {user.full_name},\n\n"
+            f"Ya {resultado} de la renta {renta.folio}.{motivo}\n\n"
+            f"{_url(f'/cliente/rentas/{renta.id}')}"
+        ),
+    )
+
+
+def rental_confirmed_mail(user: User, renta: Renta) -> Mail:
+    return Mail(
+        to=user.email,
+        subject=f"Tu renta {renta.folio} está confirmada",
+        body=(
+            f"Hola {user.full_name},\n\n"
+            f"Cumpliste los requisitos y recibimos tu anticipo: {renta.equipo.nombre} queda "
+            f"confirmado para tu obra ({renta.folio}).\n"
+            f"{_url(f'/cliente/rentas/{renta.id}')}"
+        ),
+    )

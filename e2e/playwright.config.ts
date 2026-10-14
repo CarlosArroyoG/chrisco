@@ -26,7 +26,9 @@ export default defineConfig({
       timeout: 60_000,
     },
     {
-      command: `npx ng serve --port ${WEB_PORT} --proxy-config ../e2e/proxy.e2e.json`,
+      // Sin HMR ni recarga en vivo: un cambio de archivo a mitad de una prueba reiniciaría el
+      // componente y borraría lo que la prueba acaba de escribir.
+      command: `npx ng serve --port ${WEB_PORT} --proxy-config ../e2e/proxy.e2e.json --no-hmr --no-live-reload`,
       cwd: '../frontend',
       url: WEB_URL,
       reuseExistingServer: false,

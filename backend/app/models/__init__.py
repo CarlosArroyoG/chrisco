@@ -9,6 +9,7 @@ from app.models.cotizacion import (
     PartidaConcepto,
     PartidaUnidad,
 )
+from app.models.cumplimiento import Pago, RentaDocumento, RevisionEstado
 from app.models.empresa import Empresa, EmpresaStatus
 from app.models.equipo import Equipo, EquipoFoto, EquipoStatus
 from app.models.renta import OperadorModo, Renta, RentaEstado, Transporte
@@ -28,10 +29,13 @@ __all__ = [
     "EquipoFoto",
     "EquipoStatus",
     "OperadorModo",
+    "Pago",
     "PartidaConcepto",
     "PartidaUnidad",
     "Renta",
+    "RentaDocumento",
     "RentaEstado",
+    "RevisionEstado",
     "Role",
     "Transporte",
     "User",

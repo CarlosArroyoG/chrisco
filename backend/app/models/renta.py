@@ -22,6 +22,7 @@ from app.db.base import Base, IdMixin, TimestampMixin
 if TYPE_CHECKING:
     from app.models.bloqueo import Bloqueo
     from app.models.cotizacion import Cotizacion
+    from app.models.cumplimiento import Pago, RentaDocumento
     from app.models.empresa import Empresa
     from app.models.equipo import Equipo
     from app.models.user import User
@@ -91,6 +92,10 @@ class Renta(IdMixin, TimestampMixin, Base):
     notas: Mapped[str | None] = mapped_column(Text)
     # Por qué terminó sin avanzar (rechazada por ventas o cancelada con motivo).
     motivo_cierre: Mapped[str | None] = mapped_column(Text)
+    # Condiciones (no documentos) que el personal ya verificó, por código de requisito.
+    condiciones_verificadas: Mapped[list[str]] = mapped_column(
+        JSONB, default=list, server_default=text("'[]'::jsonb")
+    )
     # Los requisitos se guardan tal como se mostraron: cambiar las reglas no reescribe la historia.
     requisitos: Mapped[list[dict[str, Any]]] = mapped_column(
         JSONB, default=list, server_default=text("'[]'::jsonb")
@@ -103,3 +108,7 @@ class Renta(IdMixin, TimestampMixin, Base):
     cotizaciones: Mapped[list["Cotizacion"]] = relationship(
         back_populates="renta", order_by="Cotizacion.version"
     )
+    documentos: Mapped[list["RentaDocumento"]] = relationship(
+        back_populates="renta", order_by="RentaDocumento.created_at"
+    )
+    pagos: Mapped[list["Pago"]] = relationship(back_populates="renta", order_by="Pago.created_at")

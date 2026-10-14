@@ -135,6 +135,30 @@ export type BodyRegisterEmpresaRegistroPost = {
 };
 
 /**
+ * Body_report_pago_rentas__renta_id__pagos_post
+ */
+export type BodyReportPagoRentasRentaIdPagosPost = {
+    /**
+     * Comprobante
+     *
+     * Comprobante de la transferencia
+     */
+    comprobante: Blob | File;
+    /**
+     * Monto
+     */
+    monto: string;
+    /**
+     * Fecha Pago
+     */
+    fecha_pago: string;
+    /**
+     * Referencia
+     */
+    referencia?: string | null;
+};
+
+/**
  * Body_resubmit_company_empresa_me_put
  */
 export type BodyResubmitCompanyEmpresaMePut = {
@@ -156,6 +180,22 @@ export type BodyResubmitCompanyEmpresaMePut = {
      * Rfc
      */
     rfc: string;
+};
+
+/**
+ * Body_upload_documento_rentas__renta_id__documentos_post
+ */
+export type BodyUploadDocumentoRentasRentaIdDocumentosPost = {
+    /**
+     * Requisito
+     */
+    requisito: string;
+    /**
+     * Archivo
+     *
+     * PDF o foto del documento
+     */
+    archivo: Blob | File;
 };
 
 /**
@@ -213,6 +253,110 @@ export type CategoriaOut = {
 };
 
 /**
+ * ChecklistItem
+ *
+ * Un requisito con su situación actual.
+ */
+export type ChecklistItem = {
+    /**
+     * Codigo
+     */
+    codigo: string;
+    /**
+     * Titulo
+     */
+    titulo: string;
+    /**
+     * Detalle
+     */
+    detalle: string;
+    /**
+     * Tipo
+     */
+    tipo: 'documento' | 'condicion' | 'cargo';
+    /**
+     * Obligatorio
+     */
+    obligatorio?: boolean;
+    /**
+     * Situacion
+     */
+    situacion: 'pendiente' | 'en_revision' | 'rechazado' | 'cumplido';
+};
+
+/**
+ * CobranzaItem
+ */
+export type CobranzaItem = {
+    /**
+     * Renta Id
+     */
+    renta_id: string;
+    /**
+     * Folio
+     */
+    folio: string;
+    /**
+     * Empresa
+     */
+    empresa: string;
+    /**
+     * Equipo
+     */
+    equipo: string;
+    estado: RentaEstado;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Pagado
+     */
+    pagado: number;
+    /**
+     * Saldo
+     */
+    saldo: number;
+};
+
+/**
+ * CobranzaOut
+ */
+export type CobranzaOut = {
+    /**
+     * Items
+     */
+    items: Array<CobranzaItem>;
+    /**
+     * Total
+     */
+    total: number;
+    resumen: CobranzaResumen;
+};
+
+/**
+ * CobranzaResumen
+ */
+export type CobranzaResumen = {
+    /**
+     * Total Cotizado
+     */
+    total_cotizado: number;
+    /**
+     * Total Pagado
+     */
+    total_pagado: number;
+    /**
+     * Saldo
+     */
+    saldo: number;
+    /**
+     * Pagos Por Confirmar
+     */
+    pagos_por_confirmar: number;
+};
+
+/**
  * CompanyUserOut
  */
 export type CompanyUserOut = {
@@ -240,6 +384,16 @@ export type CompanyUserOut = {
      * Email Verified At
      */
     email_verified_at: string | null;
+};
+
+/**
+ * CondicionIn
+ */
+export type CondicionIn = {
+    /**
+     * Cumplida
+     */
+    cumplida: boolean;
 };
 
 /**
@@ -377,6 +531,44 @@ export type CotizacionSugerida = {
 };
 
 /**
+ * CumplimientoOut
+ */
+export type CumplimientoOut = {
+    /**
+     * Checklist
+     */
+    checklist: Array<ChecklistItem>;
+    /**
+     * Documentos
+     */
+    documentos: Array<DocumentoOut>;
+    /**
+     * Pagos
+     */
+    pagos: Array<PagoOut>;
+    /**
+     * Total
+     */
+    total: number | null;
+    /**
+     * Anticipo Requerido
+     */
+    anticipo_requerido: number | null;
+    /**
+     * Pagado
+     */
+    pagado: number;
+    /**
+     * Saldo
+     */
+    saldo: number | null;
+    /**
+     * Confirmada
+     */
+    confirmada: boolean;
+};
+
+/**
  * DisponibilidadOut
  */
 export type DisponibilidadOut = {
@@ -396,6 +588,41 @@ export type DisponibilidadOut = {
      * Ocupado
      */
     ocupado: Array<Ocupacion>;
+};
+
+/**
+ * DocumentoOut
+ */
+export type DocumentoOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Requisito
+     */
+    requisito: string;
+    /**
+     * Filename
+     */
+    filename: string;
+    estado: RevisionEstado;
+    /**
+     * Nota Revision
+     */
+    nota_revision: string | null;
+    /**
+     * Subido Por Nombre
+     */
+    subido_por_nombre: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Revisado At
+     */
+    revisado_at: string | null;
 };
 
 /**
@@ -978,6 +1205,45 @@ export type PageRentaOut = {
 };
 
 /**
+ * PagoOut
+ */
+export type PagoOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Monto
+     */
+    monto: number;
+    /**
+     * Fecha Pago
+     */
+    fecha_pago: string;
+    /**
+     * Referencia
+     */
+    referencia: string | null;
+    estado: RevisionEstado;
+    /**
+     * Nota Revision
+     */
+    nota_revision: string | null;
+    /**
+     * Reportado Por Nombre
+     */
+    reportado_por_nombre: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Revisado At
+     */
+    revisado_at: string | null;
+};
+
+/**
  * PartidaConcepto
  */
 export type PartidaConcepto = 'renta' | 'flete' | 'trailer' | 'combustible' | 'operador' | 'seguro' | 'otro';
@@ -1197,6 +1463,29 @@ export type Requisito = {
      * Obligatorio
      */
     obligatorio?: boolean;
+};
+
+/**
+ * RevisionEstado
+ *
+ * Estado de algo que el cliente entrega y el personal revisa (documento o pago).
+ */
+export type RevisionEstado = 'pendiente' | 'aprobado' | 'rechazado';
+
+/**
+ * RevisionIn
+ *
+ * Decisión del personal sobre un documento (aprobar o rechazar) o un pago (confirmar o no).
+ */
+export type RevisionIn = {
+    /**
+     * Aprobado
+     */
+    aprobado: boolean;
+    /**
+     * Nota
+     */
+    nota?: string | null;
 };
 
 /**
@@ -2978,6 +3267,308 @@ export type RejectSolicitudRentasRentaIdRechazarPostResponses = {
 };
 
 export type RejectSolicitudRentasRentaIdRechazarPostResponse = RejectSolicitudRentasRentaIdRechazarPostResponses[keyof RejectSolicitudRentasRentaIdRechazarPostResponses];
+
+export type GetCumplimientoRentasRentaIdCumplimientoGetData = {
+    body?: never;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/cumplimiento';
+};
+
+export type GetCumplimientoRentasRentaIdCumplimientoGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetCumplimientoRentasRentaIdCumplimientoGetError = GetCumplimientoRentasRentaIdCumplimientoGetErrors[keyof GetCumplimientoRentasRentaIdCumplimientoGetErrors];
+
+export type GetCumplimientoRentasRentaIdCumplimientoGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: CumplimientoOut;
+};
+
+export type GetCumplimientoRentasRentaIdCumplimientoGetResponse = GetCumplimientoRentasRentaIdCumplimientoGetResponses[keyof GetCumplimientoRentasRentaIdCumplimientoGetResponses];
+
+export type UploadDocumentoRentasRentaIdDocumentosPostData = {
+    body: BodyUploadDocumentoRentasRentaIdDocumentosPost;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/documentos';
+};
+
+export type UploadDocumentoRentasRentaIdDocumentosPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UploadDocumentoRentasRentaIdDocumentosPostError = UploadDocumentoRentasRentaIdDocumentosPostErrors[keyof UploadDocumentoRentasRentaIdDocumentosPostErrors];
+
+export type UploadDocumentoRentasRentaIdDocumentosPostResponses = {
+    /**
+     * Successful Response
+     */
+    201: DocumentoOut;
+};
+
+export type UploadDocumentoRentasRentaIdDocumentosPostResponse = UploadDocumentoRentasRentaIdDocumentosPostResponses[keyof UploadDocumentoRentasRentaIdDocumentosPostResponses];
+
+export type DownloadDocumentoRentasRentaIdDocumentosDocIdArchivoGetData = {
+    body?: never;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+        /**
+         * Doc Id
+         */
+        doc_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/documentos/{doc_id}/archivo';
+};
+
+export type DownloadDocumentoRentasRentaIdDocumentosDocIdArchivoGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DownloadDocumentoRentasRentaIdDocumentosDocIdArchivoGetError = DownloadDocumentoRentasRentaIdDocumentosDocIdArchivoGetErrors[keyof DownloadDocumentoRentasRentaIdDocumentosDocIdArchivoGetErrors];
+
+export type DownloadDocumentoRentasRentaIdDocumentosDocIdArchivoGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type ReviewDocumentoRentasRentaIdDocumentosDocIdRevisarPostData = {
+    body: RevisionIn;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+        /**
+         * Doc Id
+         */
+        doc_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/documentos/{doc_id}/revisar';
+};
+
+export type ReviewDocumentoRentasRentaIdDocumentosDocIdRevisarPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ReviewDocumentoRentasRentaIdDocumentosDocIdRevisarPostError = ReviewDocumentoRentasRentaIdDocumentosDocIdRevisarPostErrors[keyof ReviewDocumentoRentasRentaIdDocumentosDocIdRevisarPostErrors];
+
+export type ReviewDocumentoRentasRentaIdDocumentosDocIdRevisarPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: CumplimientoOut;
+};
+
+export type ReviewDocumentoRentasRentaIdDocumentosDocIdRevisarPostResponse = ReviewDocumentoRentasRentaIdDocumentosDocIdRevisarPostResponses[keyof ReviewDocumentoRentasRentaIdDocumentosDocIdRevisarPostResponses];
+
+export type SetCondicionRentasRentaIdCondicionesCodigoPostData = {
+    body: CondicionIn;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+        /**
+         * Codigo
+         */
+        codigo: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/condiciones/{codigo}';
+};
+
+export type SetCondicionRentasRentaIdCondicionesCodigoPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type SetCondicionRentasRentaIdCondicionesCodigoPostError = SetCondicionRentasRentaIdCondicionesCodigoPostErrors[keyof SetCondicionRentasRentaIdCondicionesCodigoPostErrors];
+
+export type SetCondicionRentasRentaIdCondicionesCodigoPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: CumplimientoOut;
+};
+
+export type SetCondicionRentasRentaIdCondicionesCodigoPostResponse = SetCondicionRentasRentaIdCondicionesCodigoPostResponses[keyof SetCondicionRentasRentaIdCondicionesCodigoPostResponses];
+
+export type ReportPagoRentasRentaIdPagosPostData = {
+    body: BodyReportPagoRentasRentaIdPagosPost;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/pagos';
+};
+
+export type ReportPagoRentasRentaIdPagosPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ReportPagoRentasRentaIdPagosPostError = ReportPagoRentasRentaIdPagosPostErrors[keyof ReportPagoRentasRentaIdPagosPostErrors];
+
+export type ReportPagoRentasRentaIdPagosPostResponses = {
+    /**
+     * Successful Response
+     */
+    201: PagoOut;
+};
+
+export type ReportPagoRentasRentaIdPagosPostResponse = ReportPagoRentasRentaIdPagosPostResponses[keyof ReportPagoRentasRentaIdPagosPostResponses];
+
+export type DownloadComprobanteRentasRentaIdPagosPagoIdComprobanteGetData = {
+    body?: never;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+        /**
+         * Pago Id
+         */
+        pago_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/pagos/{pago_id}/comprobante';
+};
+
+export type DownloadComprobanteRentasRentaIdPagosPagoIdComprobanteGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DownloadComprobanteRentasRentaIdPagosPagoIdComprobanteGetError = DownloadComprobanteRentasRentaIdPagosPagoIdComprobanteGetErrors[keyof DownloadComprobanteRentasRentaIdPagosPagoIdComprobanteGetErrors];
+
+export type DownloadComprobanteRentasRentaIdPagosPagoIdComprobanteGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type ReviewPagoRentasRentaIdPagosPagoIdRevisarPostData = {
+    body: RevisionIn;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+        /**
+         * Pago Id
+         */
+        pago_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/pagos/{pago_id}/revisar';
+};
+
+export type ReviewPagoRentasRentaIdPagosPagoIdRevisarPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ReviewPagoRentasRentaIdPagosPagoIdRevisarPostError = ReviewPagoRentasRentaIdPagosPagoIdRevisarPostErrors[keyof ReviewPagoRentasRentaIdPagosPagoIdRevisarPostErrors];
+
+export type ReviewPagoRentasRentaIdPagosPagoIdRevisarPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: CumplimientoOut;
+};
+
+export type ReviewPagoRentasRentaIdPagosPagoIdRevisarPostResponse = ReviewPagoRentasRentaIdPagosPagoIdRevisarPostResponses[keyof ReviewPagoRentasRentaIdPagosPagoIdRevisarPostResponses];
+
+export type GetCobranzaAdminCobranzaGetData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Estado
+         */
+        estado?: RentaEstado | null;
+        /**
+         * Q
+         */
+        q?: string | null;
+        /**
+         * Solo Con Saldo
+         */
+        solo_con_saldo?: boolean;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/admin/cobranza';
+};
+
+export type GetCobranzaAdminCobranzaGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetCobranzaAdminCobranzaGetError = GetCobranzaAdminCobranzaGetErrors[keyof GetCobranzaAdminCobranzaGetErrors];
+
+export type GetCobranzaAdminCobranzaGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: CobranzaOut;
+};
+
+export type GetCobranzaAdminCobranzaGetResponse = GetCobranzaAdminCobranzaGetResponses[keyof GetCobranzaAdminCobranzaGetResponses];
 
 export type HealthHealthGetData = {
     body?: never;
