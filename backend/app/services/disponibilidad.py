@@ -199,9 +199,19 @@ def block(
 
 
 def place_hold(
-    db: Session, equipo: Equipo, desde: datetime, hasta: datetime, user: User
+    db: Session,
+    equipo: Equipo,
+    desde: datetime,
+    hasta: datetime,
+    user: User,
+    *,
+    commit: bool = True,
 ) -> Bloqueo:
-    """Reserva provisional mientras ventas cotiza. Vence sola a los 20 min."""
+    """Reserva provisional mientras ventas cotiza. Vence sola a los 20 min.
+
+    Con `commit=False` solo se aparta (flush) y quien llama decide cuándo confirmar: así la
+    reserva y la renta que la usa se guardan juntas o no se guarda nada.
+    """
     if equipo.status != EquipoStatus.ACTIVO:
         raise Conflict(_UNAVAILABLE)
     minutes = get_settings().hold_solicitud_minutes
@@ -214,7 +224,8 @@ def place_hold(
         vence_en=db_now(db) + timedelta(minutes=minutes),
         user=user,
     )
-    db.commit()
+    if commit:
+        db.commit()
     return bloqueo
 
 

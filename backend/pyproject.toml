@@ -14,6 +14,7 @@ dependencies = [
     "python-multipart>=0.0.32",
     "slowapi>=0.1.10",
     "sqlalchemy>=2",
+    "tzdata>=2026.5",
     "uvicorn[standard]>=0.54.0",
 ]
 
@@ -43,3 +44,6 @@ plugins = []
 
 [tool.ruff.lint.isort]
 known-third-party = ["alembic"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["E501"]  # literales de datos largos: partirlos no mejora la lectura

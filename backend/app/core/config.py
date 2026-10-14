@@ -44,6 +44,12 @@ class Settings(BaseSettings):
     # Máximo de usuarios activos por empresa cliente.
     max_users_per_company: int = 3
 
+    # Solicitudes de renta: cuántas puede tener abiertas una empresa a la vez (evita acaparar
+    # equipos con reservas provisionales) y a quién se le manda el mensaje de WhatsApp.
+    max_active_requests_per_company: int = 3
+    sales_whatsapp_number: str = ""  # solo dígitos con código de país, p. ej. 5217221234567
+    timezone: str = "America/Mexico_City"  # para mostrar fechas en los mensajes
+
 
 @lru_cache
 def get_settings() -> Settings:

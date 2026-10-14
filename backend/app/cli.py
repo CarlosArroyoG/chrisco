@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from app.core.security import MIN_PASSWORD_LENGTH, hash_password
 from app.db.session import SessionLocal
 from app.models.user import Role, User
-from app.services import accounts, disponibilidad
+from app.services import accounts, rentas
 
 # Los clientes no se crean aquí: se registran solos con su empresa.
 STAFF_ROLES = [Role.ADMIN, Role.VENTAS, Role.OPERADOR]
@@ -32,9 +32,9 @@ def create_user(email: str, full_name: str, role: Role, password: str) -> None:
 
 
 def expire_holds() -> None:
-    """Marca como vencidas las reservas provisionales que ya caducaron (apto para cron)."""
+    """Vence las reservas provisionales caducadas y las solicitudes que dependían de ellas."""
     with SessionLocal() as db:
-        count = disponibilidad.expire_holds(db)
+        count = rentas.expire_stale(db)
         db.commit()
     print(f"{count} reserva(s) vencida(s)")
 

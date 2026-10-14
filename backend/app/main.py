@@ -12,6 +12,7 @@ from app.api.routes import (
     catalogo,
     categorias,
     empresas,
+    rentas,
 )
 from app.core.config import get_settings
 from app.core.errors import DomainError, domain_error_handler
@@ -19,7 +20,7 @@ from app.core.limiter import limiter
 
 settings = get_settings()
 
-app = FastAPI(title="CHRISCO API", version="0.4.0")
+app = FastAPI(title="CHRISCO API", version="0.5.0")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 app.add_exception_handler(DomainError, domain_error_handler)
@@ -38,6 +39,7 @@ app.include_router(categorias.router)
 app.include_router(admin_equipos.router)
 app.include_router(admin_bloqueos.router)
 app.include_router(catalogo.router)
+app.include_router(rentas.router)
 
 
 @app.get("/health", tags=["health"])

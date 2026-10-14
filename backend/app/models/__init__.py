@@ -4,6 +4,7 @@ from app.models.bloqueo import Bloqueo, BloqueoEstado, BloqueoTipo
 from app.models.categoria import Categoria
 from app.models.empresa import Empresa, EmpresaStatus
 from app.models.equipo import Equipo, EquipoFoto, EquipoStatus
+from app.models.renta import OperadorModo, Renta, RentaEstado, Transporte
 from app.models.user import Role, User
 
 __all__ = [
@@ -16,6 +17,10 @@ __all__ = [
     "Equipo",
     "EquipoFoto",
     "EquipoStatus",
+    "OperadorModo",
+    "Renta",
+    "RentaEstado",
     "Role",
+    "Transporte",
     "User",
 ]

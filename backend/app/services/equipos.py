@@ -28,6 +28,14 @@ def get_equipo(db: Session, equipo_id: uuid.UUID) -> Equipo:
     return equipo
 
 
+def get_active_equipo(db: Session, equipo_id: uuid.UUID) -> Equipo:
+    """Equipo visible para clientes (activo); si no, «no existe»."""
+    equipo = get_equipo(db, equipo_id)
+    if equipo.status != EquipoStatus.ACTIVO:
+        raise NotFound("Equipo no encontrado")
+    return equipo
+
+
 def _check_unique(db: Session, codigo: str, serie: str, own_id: uuid.UUID | None = None) -> None:
     for column, value, label in (
         (Equipo.codigo, codigo, "código"),

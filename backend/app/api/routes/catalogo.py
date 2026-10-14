@@ -6,11 +6,10 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Query
 from fastapi.responses import FileResponse
 from pydantic import AwareDatetime
-from sqlalchemy.orm import Session
 
 from app.api.deps import CatalogUser, DbSession, StorageDep
-from app.core.errors import InvalidInput, NotFound
-from app.models.equipo import Equipo, EquipoStatus
+from app.core.errors import InvalidInput
+from app.models.equipo import EquipoStatus
 from app.schemas.common import Page
 from app.schemas.disponibilidad import DisponibilidadOut
 from app.schemas.equipo import EquipoCatalogOut
@@ -69,7 +68,7 @@ def list_catalogo(
 
 @router.get("/{equipo_id}", response_model=EquipoCatalogOut)
 def get_catalogo(_: CatalogUser, equipo_id: uuid.UUID, db: DbSession) -> EquipoCatalogOut:
-    return equipos.catalog_out(_active_equipo(db, equipo_id))
+    return equipos.catalog_out(equipos.get_active_equipo(db, equipo_id))
 
 
 @router.get("/{equipo_id}/disponibilidad", response_model=DisponibilidadOut)
@@ -83,13 +82,6 @@ def get_disponibilidad(
     """Si el equipo está libre en el periodo y, si no, qué periodos tiene ocupados."""
     window = disponibilidad.parse_window(desde, hasta)
     assert window is not None
-    equipo = _active_equipo(db, equipo_id)
+    equipo = equipos.get_active_equipo(db, equipo_id)
     ocupado = disponibilidad.occupations(db, equipo.id, *window)
     return DisponibilidadOut(disponible=not ocupado, desde=desde, hasta=hasta, ocupado=ocupado)
-
-
-def _active_equipo(db: Session, equipo_id: uuid.UUID) -> Equipo:
-    equipo = equipos.get_equipo(db, equipo_id)
-    if equipo.status != EquipoStatus.ACTIVO:
-        raise NotFound("Equipo no encontrado")
-    return equipo
