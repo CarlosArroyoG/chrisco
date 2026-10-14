@@ -70,7 +70,17 @@ def require_company_owner(user: ClientUser) -> User:
     return user
 
 
+def require_catalog_access(user: CurrentUser) -> User:
+    """Personal de CHRISCO o cliente de una empresa aprobada: quienes pueden ver el catálogo."""
+    if user.role in (Role.ADMIN, Role.VENTAS):
+        return user
+    if user.role == Role.CLIENTE and company_of(user).status == EmpresaStatus.APROBADA:
+        return user
+    raise HTTPException(status.HTTP_403_FORBIDDEN, "No tienes acceso al catálogo")
+
+
 ApprovedClientUser = Annotated[User, Depends(require_approved_company)]
+CatalogUser = Annotated[User, Depends(require_catalog_access)]
 CompanyOwner = Annotated[User, Depends(require_company_owner)]
 AdminUser = Annotated[User, Depends(require_roles(Role.ADMIN))]
 StaffUser = Annotated[User, Depends(require_roles(Role.ADMIN, Role.VENTAS))]

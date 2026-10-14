@@ -14,14 +14,18 @@ import re  # noqa: E402
 from collections.abc import Callable, Iterator  # noqa: E402
 from datetime import UTC, datetime  # noqa: E402
 from pathlib import Path  # noqa: E402
+from typing import Any  # noqa: E402
 
 import pytest  # noqa: E402
 from alembic import command  # noqa: E402
 from alembic.config import Config  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
+from pwdlib import PasswordHash  # noqa: E402
+from pwdlib.hashers.argon2 import Argon2Hasher  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
+from app.core import security  # noqa: E402
 from app.core.config import get_settings  # noqa: E402
 from app.core.security import hash_password  # noqa: E402
 from app.db.session import SessionLocal, engine  # noqa: E402
@@ -33,6 +37,13 @@ from app.services.mailer import Mail, get_mailer  # noqa: E402
 from tests.probes import probe_router  # noqa: E402
 
 app.include_router(probe_router)
+
+# Argon2 con costo mínimo solo en las pruebas: el real es lento a propósito y multiplicaría el
+# tiempo de la suite (cada usuario creado o autenticado lo paga). El resto del flujo no cambia.
+security._password_hash = PasswordHash(
+    (Argon2Hasher(time_cost=1, memory_cost=1024, parallelism=1),)
+)
+security._DUMMY_HASH = security._password_hash.hash("relleno")
 
 PASSWORD = "contraseña-segura-123"
 PDF = b"%PDF-1.4\n% constancia de prueba\n%%EOF"
@@ -67,9 +78,9 @@ def auth(tokens: dict[str, str]) -> dict[str, str]:
     return {"Authorization": f"Bearer {tokens['access_token']}"}
 
 
-def uploads_count() -> int:
+def uploads_count(extension: str = "pdf") -> int:
     path = Path(get_settings().uploads_dir)
-    return len(list(path.glob("*.pdf"))) if path.exists() else 0
+    return len(list(path.glob(f"*.{extension}"))) if path.exists() else 0
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -84,7 +95,7 @@ def _migrated_database() -> Iterator[None]:
 def _clean_state() -> Iterator[None]:
     yield
     with engine.begin() as conn:
-        conn.execute(text("TRUNCATE users, empresas CASCADE"))
+        conn.execute(text("TRUNCATE users, empresas, categorias, equipos, equipo_fotos CASCADE"))
     shutil.rmtree(get_settings().uploads_dir, ignore_errors=True)
 
 
@@ -187,3 +198,80 @@ def approved_owner(
     verify_email(COMPANY["email"])
     set_company_status(COMPANY["rfc"], EmpresaStatus.APROBADA)
     return {"email": COMPANY["email"], "password": PASSWORD}
+
+
+@pytest.fixture
+def admin_h(make_user: Callable[..., User], login: Callable[..., dict[str, str]]) -> dict[str, str]:
+    make_user()
+    return auth(login())
+
+
+@pytest.fixture
+def ventas_h(
+    make_user: Callable[..., User], login: Callable[..., dict[str, str]]
+) -> dict[str, str]:
+    make_user("ventas@chrisco-pruebas.com", Role.VENTAS)
+    return auth(login("ventas@chrisco-pruebas.com"))
+
+
+@pytest.fixture
+def client_h(
+    approved_owner: dict[str, str], login: Callable[..., dict[str, str]]
+) -> dict[str, str]:
+    """Encabezados de un cliente de empresa aprobada."""
+    return auth(login(**approved_owner))
+
+
+CATEGORIA = {
+    "nombre": "Pavimentadora",
+    "spec_fields": [
+        {"key": "peso_kg", "label": "Peso", "type": "number", "unit": "kg", "required": True},
+        {"key": "motor", "label": "Motor", "type": "text"},
+        {
+            "key": "combustible",
+            "label": "Combustible",
+            "type": "select",
+            "options": ["Diésel", "Gasolina"],
+        },
+        {"key": "oruga", "label": "Con orugas", "type": "boolean"},
+    ],
+}
+
+
+@pytest.fixture
+def categoria(client: TestClient, admin_h: dict[str, str]) -> dict[str, Any]:
+    res = client.post("/admin/categorias", json=CATEGORIA, headers=admin_h)
+    assert res.status_code == 201, res.text
+    return res.json()
+
+
+def equipo_payload(categoria_id: str, n: int = 1, **overrides: Any) -> dict[str, Any]:
+    return {
+        "codigo": f"EQ-{n:03d}",
+        "categoria_id": categoria_id,
+        "nombre": f"Pavimentadora {n}",
+        "marca": "Vögele",
+        "modelo": "MT 3000-2",
+        "numero_serie": f"SN-{n:04d}",
+        "anio": 2021,
+        "horometro": 2400.5,
+        "tarifa_hora": 3400,
+        "specs": {"peso_kg": 18000, "motor": "Cummins 6.7", "combustible": "Diésel", "oruga": True},
+        **overrides,
+    }
+
+
+@pytest.fixture
+def make_equipo(
+    client: TestClient, admin_h: dict[str, str], categoria: dict[str, Any]
+) -> Callable[..., dict[str, Any]]:
+    """Crea equipos por la API (códigos y series consecutivos). Devuelve el JSON del equipo."""
+    counter = iter(range(1, 1000))
+
+    def _make(**overrides: Any) -> dict[str, Any]:
+        body = equipo_payload(categoria["id"], next(counter), **overrides)
+        res = client.post("/admin/equipos", json=body, headers=admin_h)
+        assert res.status_code == 201, res.text
+        return res.json()
+
+    return _make

@@ -28,7 +28,7 @@ def main() -> None:
 
     target = url.render_as_string(hide_password=False).replace("+psycopg", "")
     with psycopg.connect(target, autocommit=True) as conn:
-        conn.execute("TRUNCATE users, empresas CASCADE")
+        conn.execute("TRUNCATE users, empresas, categorias, equipos, equipo_fotos CASCADE")
 
 
 if __name__ == "__main__":
