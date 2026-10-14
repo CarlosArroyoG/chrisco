@@ -5,7 +5,13 @@ import uuid
 from fastapi import APIRouter, BackgroundTasks, status
 
 from app.api.deps import ApprovedClientUser, CatalogUser, DbSession, MailerDep, StaffUser
-from app.schemas.cotizacion import CotizacionIn, CotizacionOut, CotizacionSugerida, MotivoIn
+from app.schemas.cotizacion import (
+    CotizacionCalculo,
+    CotizacionIn,
+    CotizacionOut,
+    CotizacionSugerida,
+    MotivoIn,
+)
 from app.schemas.renta import RentaOut
 from app.services import accounts, cotizaciones, notifications, rentas
 
@@ -15,6 +21,15 @@ router = APIRouter(prefix="/rentas/{renta_id}", tags=["cotizaciones"])
 @router.get("/cotizacion/sugerida", response_model=CotizacionSugerida)
 def get_sugerida(user: StaffUser, renta_id: uuid.UUID, db: DbSession) -> CotizacionSugerida:
     return cotizaciones.suggested(rentas.get_for_user(db, user, renta_id))
+
+
+@router.post("/cotizacion/calcular", response_model=CotizacionCalculo)
+def calcular_cotizacion(
+    user: StaffUser, renta_id: uuid.UUID, body: CotizacionIn, db: DbSession
+) -> CotizacionCalculo:
+    """Vista previa de totales con la misma aritmética que al guardar; no guarda nada."""
+    rentas.get_for_user(db, user, renta_id)
+    return cotizaciones.calculate(body)
 
 
 @router.post("/cotizacion", response_model=CotizacionOut, status_code=status.HTTP_201_CREATED)

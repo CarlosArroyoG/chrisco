@@ -55,6 +55,16 @@ class CotizacionOut(BaseModel):
     created_at: datetime
 
 
+class CotizacionCalculo(BaseModel):
+    """Lo que dará la cotización con estos renglones, sin guardar nada."""
+
+    importes: list[Money]
+    subtotal: Money
+    iva: Money
+    total: Money
+    anticipo_monto: Money
+
+
 class CotizacionSugerida(BaseModel):
     """Punto de partida para que ventas cotice: renglones sugeridos y las reglas vigentes."""
 

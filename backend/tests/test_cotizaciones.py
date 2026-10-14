@@ -545,3 +545,51 @@ def test_dos_empresas_aceptando_a_la_vez_solo_una_aparta_el_equipo(
         db.query(Bloqueo).filter_by(estado=BloqueoEstado.ACTIVO, tipo=BloqueoTipo.APARTADO).count()
         == 1
     )
+
+
+def test_calcular_da_lo_mismo_que_guardar_y_no_guarda_nada(
+    client, staff, client_h, solicitada, db
+) -> None:
+    rid = solicitada["id"]
+    cuerpo = {
+        "partidas": [{**PARTIDAS[0], "cantidad": 2.5, "precio_unitario": 3400.33}, PARTIDAS[1]],
+        "anticipo_monto": 5000,
+    }
+    calculo = client.post(
+        f"/rentas/{rid}/cotizacion/calcular", json=cuerpo, headers=staff["ventas"]
+    )
+    assert calculo.status_code == 200
+    assert db.execute(text("SELECT count(*) FROM cotizaciones")).scalar() == 0
+    assert client.get(f"/rentas/{rid}", headers=client_h).json()["estado"] == "solicitada"
+
+    guardada = client.post(f"/rentas/{rid}/cotizacion", json=cuerpo, headers=staff["ventas"]).json()
+    c = calculo.json()
+    assert c["importes"] == [p["importe"] for p in guardada["partidas"]]
+    assert (c["subtotal"], c["iva"], c["total"], c["anticipo_monto"]) == (
+        guardada["subtotal"],
+        guardada["iva"],
+        guardada["total"],
+        guardada["anticipo_monto"],
+    )
+
+
+def test_calcular_valida_igual_que_crear(client, staff, client_h, solicitada) -> None:
+    rid = solicitada["id"]
+    url = f"/rentas/{rid}/cotizacion/calcular"
+    assert client.post(url, json={"partidas": []}, headers=staff["ventas"]).status_code == 422
+    assert (
+        client.post(
+            url, json={"partidas": PARTIDAS, "anticipo_monto": 99999}, headers=staff["ventas"]
+        ).status_code
+        == 409
+    )
+    assert client.post(url, json={"partidas": PARTIDAS}, headers=client_h).status_code == 403
+    assert client.post(url, json={"partidas": PARTIDAS}).status_code == 401
+    assert (
+        client.post(
+            f"/rentas/{uuid.uuid4()}/cotizacion/calcular",
+            json={"partidas": PARTIDAS},
+            headers=staff["ventas"],
+        ).status_code
+        == 404
+    )

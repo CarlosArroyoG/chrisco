@@ -10,7 +10,13 @@ from app.models.bloqueo import BloqueoEstado, BloqueoTipo
 from app.models.cotizacion import Cotizacion, CotizacionEstado, CotizacionPartida
 from app.models.renta import Renta, RentaEstado
 from app.models.user import User
-from app.schemas.cotizacion import CotizacionIn, CotizacionOut, CotizacionSugerida, PartidaOut
+from app.schemas.cotizacion import (
+    CotizacionCalculo,
+    CotizacionIn,
+    CotizacionOut,
+    CotizacionSugerida,
+    PartidaOut,
+)
 from app.services import cotizador, disponibilidad
 
 _ALIVE = (CotizacionEstado.VIGENTE, CotizacionEstado.ACEPTADA)
@@ -38,12 +44,10 @@ def suggested(renta: Renta) -> CotizacionSugerida:
     )
 
 
-def create(db: Session, renta: Renta, staff: User, data: CotizacionIn) -> Cotizacion:
-    """Crea una versión nueva (la anterior queda como `reemplazada`) y deja la renta `cotizada`."""
-    if renta.estado not in (RentaEstado.SOLICITADA, RentaEstado.COTIZADA):
-        raise Conflict("Esta solicitud ya no se puede cotizar")
+def calculate(data: CotizacionIn) -> CotizacionCalculo:
+    """Importes, totales y anticipo de una cotización. Es la única aritmética de dinero: la usan
+    tanto la vista previa como el guardado, así nunca difieren."""
     settings = get_settings()
-
     amounts = [cotizador.importe(p.cantidad, p.precio_unitario) for p in data.partidas]
     totals = cotizador.totales(amounts, settings.iva_rate)
     anticipo = (
@@ -53,6 +57,21 @@ def create(db: Session, renta: Renta, staff: User, data: CotizacionIn) -> Cotiza
     )
     if anticipo > totals.total:
         raise Conflict("El anticipo no puede ser mayor que el total")
+    return CotizacionCalculo(
+        importes=amounts,
+        subtotal=totals.subtotal,
+        iva=totals.iva,
+        total=totals.total,
+        anticipo_monto=anticipo,
+    )
+
+
+def create(db: Session, renta: Renta, staff: User, data: CotizacionIn) -> Cotizacion:
+    """Crea una versión nueva (la anterior queda como `reemplazada`) y deja la renta `cotizada`."""
+    if renta.estado not in (RentaEstado.SOLICITADA, RentaEstado.COTIZADA):
+        raise Conflict("Esta solicitud ya no se puede cotizar")
+    settings = get_settings()
+    calculo = calculate(data)
 
     previous = current(renta)
     if previous is not None:
@@ -63,10 +82,10 @@ def create(db: Session, renta: Renta, staff: User, data: CotizacionIn) -> Cotiza
     cotizacion = Cotizacion(
         renta_id=renta.id,
         version=len(renta.cotizaciones) + 1,
-        subtotal=totals.subtotal,
-        iva=totals.iva,
-        total=totals.total,
-        anticipo_monto=anticipo,
+        subtotal=calculo.subtotal,
+        iva=calculo.iva,
+        total=calculo.total,
+        anticipo_monto=calculo.anticipo_monto,
         valida_hasta=disponibilidad.db_now(db) + timedelta(hours=hours),
         notas=data.notas,
         creada_por_id=staff.id,
@@ -80,7 +99,9 @@ def create(db: Session, renta: Renta, staff: User, data: CotizacionIn) -> Cotiza
                 precio_unitario=p.precio_unitario,
                 importe=amount,
             )
-            for i, (p, amount) in enumerate(zip(data.partidas, amounts, strict=True), start=1)
+            for i, (p, amount) in enumerate(
+                zip(data.partidas, calculo.importes, strict=True), start=1
+            )
         ],
     )
     db.add(cotizacion)

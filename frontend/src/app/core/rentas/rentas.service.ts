@@ -2,6 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
+  Cotizacion,
+  CotizacionCalculo,
+  CotizacionInput,
+  CotizacionSugerida,
   Page,
   Renta,
   RentaEstado,
@@ -46,6 +50,37 @@ export class RentasService {
 
   whatsapp(id: string): Observable<Whatsapp> {
     return this.http.get<Whatsapp>(`${this.base}/${id}/whatsapp`);
+  }
+
+  /** La cotización viva de la renta; 404 si aún no tiene. */
+  cotizacion(id: string): Observable<Cotizacion> {
+    return this.http.get<Cotizacion>(`${this.base}/${id}/cotizacion`);
+  }
+
+  sugerida(id: string): Observable<CotizacionSugerida> {
+    return this.http.get<CotizacionSugerida>(`${this.base}/${id}/cotizacion/sugerida`);
+  }
+
+  /** Totales con la misma aritmética que al guardar (el servidor es la única fuente). */
+  calcular(id: string, body: CotizacionInput): Observable<CotizacionCalculo> {
+    return this.http.post<CotizacionCalculo>(`${this.base}/${id}/cotizacion/calcular`, body);
+  }
+
+  cotizar(id: string, body: CotizacionInput): Observable<Cotizacion> {
+    return this.http.post<Cotizacion>(`${this.base}/${id}/cotizacion`, body);
+  }
+
+  aceptar(id: string): Observable<Renta> {
+    return this.http.post<Renta>(`${this.base}/${id}/cotizacion/aceptar`, {});
+  }
+
+  rechazarCotizacion(id: string): Observable<Renta> {
+    return this.http.post<Renta>(`${this.base}/${id}/cotizacion/rechazar`, {});
+  }
+
+  /** Ventas no puede atender la solicitud. */
+  rechazarSolicitud(id: string, motivo: string): Observable<Renta> {
+    return this.http.post<Renta>(`${this.base}/${id}/rechazar`, { motivo });
   }
 
   cancel(id: string): Observable<Renta> {

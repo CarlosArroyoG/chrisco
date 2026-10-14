@@ -243,6 +243,140 @@ export type CompanyUserOut = {
 };
 
 /**
+ * CotizacionCalculo
+ *
+ * Lo que dará la cotización con estos renglones, sin guardar nada.
+ */
+export type CotizacionCalculo = {
+    /**
+     * Importes
+     */
+    importes: Array<number>;
+    /**
+     * Subtotal
+     */
+    subtotal: number;
+    /**
+     * Iva
+     */
+    iva: number;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Anticipo Monto
+     */
+    anticipo_monto: number;
+};
+
+/**
+ * CotizacionEstado
+ */
+export type CotizacionEstado = 'vigente' | 'aceptada' | 'rechazada' | 'reemplazada' | 'vencida';
+
+/**
+ * CotizacionIn
+ */
+export type CotizacionIn = {
+    /**
+     * Partidas
+     */
+    partidas: Array<PartidaInInput>;
+    /**
+     * Anticipo Monto
+     */
+    anticipo_monto?: number | string | null;
+    /**
+     * Valida Horas
+     */
+    valida_horas?: number | null;
+    /**
+     * Notas
+     */
+    notas?: string | null;
+};
+
+/**
+ * CotizacionOut
+ */
+export type CotizacionOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Renta Id
+     */
+    renta_id: string;
+    /**
+     * Version
+     */
+    version: number;
+    estado: CotizacionEstado;
+    /**
+     * Partidas
+     */
+    partidas: Array<PartidaOut>;
+    /**
+     * Subtotal
+     */
+    subtotal: number;
+    /**
+     * Iva
+     */
+    iva: number;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Anticipo Monto
+     */
+    anticipo_monto: number;
+    /**
+     * Valida Hasta
+     */
+    valida_hasta: string;
+    /**
+     * Notas
+     */
+    notas: string | null;
+    /**
+     * Creada Por Nombre
+     */
+    creada_por_nombre: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * CotizacionSugerida
+ *
+ * Punto de partida para que ventas cotice: renglones sugeridos y las reglas vigentes.
+ */
+export type CotizacionSugerida = {
+    /**
+     * Partidas
+     */
+    partidas: Array<PartidaInOutput>;
+    /**
+     * Iva Rate
+     */
+    iva_rate: number;
+    /**
+     * Anticipo Default Percent
+     */
+    anticipo_default_percent: number;
+    /**
+     * Valida Horas
+     */
+    valida_horas: number;
+};
+
+/**
  * DisponibilidadOut
  */
 export type DisponibilidadOut = {
@@ -771,6 +905,16 @@ export type MessageOut = {
 };
 
 /**
+ * MotivoIn
+ */
+export type MotivoIn = {
+    /**
+     * Motivo
+     */
+    motivo: string;
+};
+
+/**
  * Ocupacion
  *
  * Un periodo ocupado, sin decir por qué (es lo único que ve un cliente).
@@ -832,6 +976,84 @@ export type PageRentaOut = {
      */
     total: number;
 };
+
+/**
+ * PartidaConcepto
+ */
+export type PartidaConcepto = 'renta' | 'flete' | 'trailer' | 'combustible' | 'operador' | 'seguro' | 'otro';
+
+/**
+ * PartidaIn
+ *
+ * Un renglón de la cotización: renta, flete, operador, combustible…
+ */
+export type PartidaInInput = {
+    concepto: PartidaConcepto;
+    /**
+     * Descripcion
+     */
+    descripcion: string;
+    /**
+     * Cantidad
+     */
+    cantidad: number | string;
+    unidad: PartidaUnidad;
+    /**
+     * Precio Unitario
+     */
+    precio_unitario: number | string;
+};
+
+/**
+ * PartidaIn
+ *
+ * Un renglón de la cotización: renta, flete, operador, combustible…
+ */
+export type PartidaInOutput = {
+    concepto: PartidaConcepto;
+    /**
+     * Descripcion
+     */
+    descripcion: string;
+    /**
+     * Cantidad
+     */
+    cantidad: number;
+    unidad: PartidaUnidad;
+    /**
+     * Precio Unitario
+     */
+    precio_unitario: number;
+};
+
+/**
+ * PartidaOut
+ */
+export type PartidaOut = {
+    concepto: PartidaConcepto;
+    /**
+     * Descripcion
+     */
+    descripcion: string;
+    /**
+     * Cantidad
+     */
+    cantidad: number;
+    unidad: PartidaUnidad;
+    /**
+     * Precio Unitario
+     */
+    precio_unitario: number;
+    /**
+     * Importe
+     */
+    importe: number;
+};
+
+/**
+ * PartidaUnidad
+ */
+export type PartidaUnidad = 'hora' | 'dia' | 'viaje' | 'litro' | 'servicio';
 
 /**
  * PreviewOut
@@ -939,6 +1161,10 @@ export type RentaOut = {
      * Vence En
      */
     vence_en: string | null;
+    /**
+     * Motivo Cierre
+     */
+    motivo_cierre: string | null;
     /**
      * Created At
      */
@@ -1071,6 +1297,10 @@ export type SolicitudCreada = {
      * Vence En
      */
     vence_en: string | null;
+    /**
+     * Motivo Cierre
+     */
+    motivo_cierre: string | null;
     /**
      * Created At
      */
@@ -2538,6 +2768,216 @@ export type CancelRentaRentasRentaIdCancelarPostResponses = {
 };
 
 export type CancelRentaRentasRentaIdCancelarPostResponse = CancelRentaRentasRentaIdCancelarPostResponses[keyof CancelRentaRentasRentaIdCancelarPostResponses];
+
+export type GetSugeridaRentasRentaIdCotizacionSugeridaGetData = {
+    body?: never;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/cotizacion/sugerida';
+};
+
+export type GetSugeridaRentasRentaIdCotizacionSugeridaGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetSugeridaRentasRentaIdCotizacionSugeridaGetError = GetSugeridaRentasRentaIdCotizacionSugeridaGetErrors[keyof GetSugeridaRentasRentaIdCotizacionSugeridaGetErrors];
+
+export type GetSugeridaRentasRentaIdCotizacionSugeridaGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: CotizacionSugerida;
+};
+
+export type GetSugeridaRentasRentaIdCotizacionSugeridaGetResponse = GetSugeridaRentasRentaIdCotizacionSugeridaGetResponses[keyof GetSugeridaRentasRentaIdCotizacionSugeridaGetResponses];
+
+export type CalcularCotizacionRentasRentaIdCotizacionCalcularPostData = {
+    body: CotizacionIn;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/cotizacion/calcular';
+};
+
+export type CalcularCotizacionRentasRentaIdCotizacionCalcularPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CalcularCotizacionRentasRentaIdCotizacionCalcularPostError = CalcularCotizacionRentasRentaIdCotizacionCalcularPostErrors[keyof CalcularCotizacionRentasRentaIdCotizacionCalcularPostErrors];
+
+export type CalcularCotizacionRentasRentaIdCotizacionCalcularPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: CotizacionCalculo;
+};
+
+export type CalcularCotizacionRentasRentaIdCotizacionCalcularPostResponse = CalcularCotizacionRentasRentaIdCotizacionCalcularPostResponses[keyof CalcularCotizacionRentasRentaIdCotizacionCalcularPostResponses];
+
+export type GetCotizacionRentasRentaIdCotizacionGetData = {
+    body?: never;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/cotizacion';
+};
+
+export type GetCotizacionRentasRentaIdCotizacionGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetCotizacionRentasRentaIdCotizacionGetError = GetCotizacionRentasRentaIdCotizacionGetErrors[keyof GetCotizacionRentasRentaIdCotizacionGetErrors];
+
+export type GetCotizacionRentasRentaIdCotizacionGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: CotizacionOut;
+};
+
+export type GetCotizacionRentasRentaIdCotizacionGetResponse = GetCotizacionRentasRentaIdCotizacionGetResponses[keyof GetCotizacionRentasRentaIdCotizacionGetResponses];
+
+export type CreateCotizacionRentasRentaIdCotizacionPostData = {
+    body: CotizacionIn;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/cotizacion';
+};
+
+export type CreateCotizacionRentasRentaIdCotizacionPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateCotizacionRentasRentaIdCotizacionPostError = CreateCotizacionRentasRentaIdCotizacionPostErrors[keyof CreateCotizacionRentasRentaIdCotizacionPostErrors];
+
+export type CreateCotizacionRentasRentaIdCotizacionPostResponses = {
+    /**
+     * Successful Response
+     */
+    201: CotizacionOut;
+};
+
+export type CreateCotizacionRentasRentaIdCotizacionPostResponse = CreateCotizacionRentasRentaIdCotizacionPostResponses[keyof CreateCotizacionRentasRentaIdCotizacionPostResponses];
+
+export type AcceptCotizacionRentasRentaIdCotizacionAceptarPostData = {
+    body?: never;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/cotizacion/aceptar';
+};
+
+export type AcceptCotizacionRentasRentaIdCotizacionAceptarPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AcceptCotizacionRentasRentaIdCotizacionAceptarPostError = AcceptCotizacionRentasRentaIdCotizacionAceptarPostErrors[keyof AcceptCotizacionRentasRentaIdCotizacionAceptarPostErrors];
+
+export type AcceptCotizacionRentasRentaIdCotizacionAceptarPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: RentaOut;
+};
+
+export type AcceptCotizacionRentasRentaIdCotizacionAceptarPostResponse = AcceptCotizacionRentasRentaIdCotizacionAceptarPostResponses[keyof AcceptCotizacionRentasRentaIdCotizacionAceptarPostResponses];
+
+export type DeclineCotizacionRentasRentaIdCotizacionRechazarPostData = {
+    body?: never;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/cotizacion/rechazar';
+};
+
+export type DeclineCotizacionRentasRentaIdCotizacionRechazarPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeclineCotizacionRentasRentaIdCotizacionRechazarPostError = DeclineCotizacionRentasRentaIdCotizacionRechazarPostErrors[keyof DeclineCotizacionRentasRentaIdCotizacionRechazarPostErrors];
+
+export type DeclineCotizacionRentasRentaIdCotizacionRechazarPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: RentaOut;
+};
+
+export type DeclineCotizacionRentasRentaIdCotizacionRechazarPostResponse = DeclineCotizacionRentasRentaIdCotizacionRechazarPostResponses[keyof DeclineCotizacionRentasRentaIdCotizacionRechazarPostResponses];
+
+export type RejectSolicitudRentasRentaIdRechazarPostData = {
+    body: MotivoIn;
+    path: {
+        /**
+         * Renta Id
+         */
+        renta_id: string;
+    };
+    query?: never;
+    url: '/rentas/{renta_id}/rechazar';
+};
+
+export type RejectSolicitudRentasRentaIdRechazarPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RejectSolicitudRentasRentaIdRechazarPostError = RejectSolicitudRentasRentaIdRechazarPostErrors[keyof RejectSolicitudRentasRentaIdRechazarPostErrors];
+
+export type RejectSolicitudRentasRentaIdRechazarPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: RentaOut;
+};
+
+export type RejectSolicitudRentasRentaIdRechazarPostResponse = RejectSolicitudRentasRentaIdRechazarPostResponses[keyof RejectSolicitudRentasRentaIdRechazarPostResponses];
 
 export type HealthHealthGetData = {
     body?: never;
