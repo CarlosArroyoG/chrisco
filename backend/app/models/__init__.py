@@ -12,6 +12,7 @@ from app.models.cotizacion import (
 from app.models.cumplimiento import Pago, RentaDocumento, RevisionEstado
 from app.models.empresa import Empresa, EmpresaStatus
 from app.models.equipo import Equipo, EquipoFoto, EquipoStatus
+from app.models.mantenimiento import MantenimientoPlan, MantenimientoRegistro
 from app.models.movimiento import MovimientoTipo, RentaMovimiento
 from app.models.renta import OperadorModo, Renta, RentaEstado, Transporte
 from app.models.user import Role, User
@@ -29,6 +30,8 @@ __all__ = [
     "Equipo",
     "EquipoFoto",
     "EquipoStatus",
+    "MantenimientoPlan",
+    "MantenimientoRegistro",
     "MovimientoTipo",
     "OperadorModo",
     "Pago",

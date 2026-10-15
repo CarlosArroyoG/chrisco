@@ -89,6 +89,13 @@ export const routes: Routes = [
               import('./features/admin/cobranza/cobranza-page').then((m) => m.CobranzaPage),
           },
           {
+            path: 'mantenimiento',
+            loadComponent: () =>
+              import('./features/admin/mantenimiento/mantenimiento-page').then(
+                (m) => m.MantenimientoPage,
+              ),
+          },
+          {
             path: 'categorias',
             loadComponent: () =>
               import('./features/admin/categorias/categorias-page').then((m) => m.CategoriasPage),

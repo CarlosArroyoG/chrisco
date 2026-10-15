@@ -8,6 +8,7 @@ from app.api.routes import (
     admin_bloqueos,
     admin_empresas,
     admin_equipos,
+    admin_mantenimiento,
     auth,
     catalogo,
     categorias,
@@ -48,6 +49,7 @@ app.include_router(cotizaciones.router)
 app.include_router(cumplimiento.router)
 app.include_router(cobranza.router)
 app.include_router(movimientos.router)
+app.include_router(admin_mantenimiento.router)
 
 
 @app.get("/health", tags=["health"])

@@ -28,6 +28,7 @@ import {
   specValues,
 } from '../../../shared/spec-fields/spec-fields';
 import { StatusBadge } from '../../../shared/status-badge/status-badge';
+import { EquipoMantenimiento } from '../mantenimiento/equipo-mantenimiento';
 import { EquipoBloqueos } from './equipo-bloqueos';
 import { EquiposService } from './equipos.service';
 
@@ -40,7 +41,14 @@ function atLeastOneRate(group: AbstractControl): ValidationErrors | null {
 /** Alta y edición de un equipo, con sus especificaciones y fotos. Solo lectura para ventas. */
 @Component({
   selector: 'app-equipo-form',
-  imports: [ReactiveFormsModule, RouterLink, SpecFields, StatusBadge, EquipoBloqueos],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    SpecFields,
+    StatusBadge,
+    EquipoBloqueos,
+    EquipoMantenimiento,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a routerLink="/admin/equipos" class="link text-xs">← Volver a equipos</a>
@@ -238,6 +246,7 @@ function atLeastOneRate(group: AbstractControl): ValidationErrors | null {
       </section>
 
       <app-equipo-bloqueos [equipoId]="e.id" [canEdit]="canEdit()" (changed)="refreshSituacion()" />
+      <app-equipo-mantenimiento [equipoId]="e.id" [canEdit]="canEdit()" />
     }
   `,
 })

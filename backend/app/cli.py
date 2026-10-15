@@ -8,7 +8,8 @@ from datetime import UTC, datetime
 from app.core.security import MIN_PASSWORD_LENGTH, hash_password
 from app.db.session import SessionLocal
 from app.models.user import Role, User
-from app.services import accounts, rentas
+from app.services import accounts, mantenimiento, rentas
+from app.services.mailer import get_mailer
 
 # Los clientes no se crean aquí: se registran solos con su empresa.
 STAFF_ROLES = [Role.ADMIN, Role.VENTAS, Role.OPERADOR]
@@ -39,6 +40,13 @@ def expire_holds() -> None:
     print(f"{count} reserva(s) vencida(s)")
 
 
+def send_maintenance_alerts() -> None:
+    """Avisa por correo a los administradores de los mantenimientos próximos o vencidos."""
+    with SessionLocal() as db:
+        count = mantenimiento.send_alerts(db, get_mailer())
+    print(f"{count} mantenimiento(s) avisado(s)")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="app.cli")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -50,10 +58,17 @@ def main() -> None:
     cu.add_argument("--role", required=True, choices=[r.value for r in STAFF_ROLES])
     cu.add_argument("--password", help="Si se omite, se pide por teclado")
     sub.add_parser("expire-holds", help="Marca como vencidas las reservas provisionales caducadas")
+    sub.add_parser(
+        "send-maintenance-alerts",
+        help="Envía por correo los mantenimientos próximos o vencidos (correr a diario)",
+    )
     args = parser.parse_args()
 
     if args.command == "expire-holds":
         expire_holds()
+        return
+    if args.command == "send-maintenance-alerts":
+        send_maintenance_alerts()
         return
 
     password = args.password or getpass.getpass("Contraseña: ")

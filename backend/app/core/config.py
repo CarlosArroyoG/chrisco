@@ -56,6 +56,10 @@ class Settings(BaseSettings):
     anticipo_default_percent: int = 30  # del total; ventas puede cambiarlo en cada cotización
     cotizacion_valida_horas: int = 24
 
+    # Mantenimiento: cuánto antes de que toque se avisa (por horas de uso y por días).
+    mantenimiento_aviso_horas: int = 50
+    mantenimiento_aviso_dias: int = 15
+
 
 @lru_cache
 def get_settings() -> Settings:

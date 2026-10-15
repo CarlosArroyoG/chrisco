@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.clock import today
 from app.core.config import get_settings
 from app.core.errors import Conflict, InvalidInput, NotFound
 from app.models.cotizacion import Cotizacion, CotizacionEstado
@@ -224,7 +225,7 @@ def report_payment(
     quote = accepted_quote(renta)
     if quote is None:
         raise Conflict("Esta renta no tiene una cotización aceptada")
-    if data.fecha_pago > datetime.now(ZoneInfo(get_settings().timezone)).date():
+    if data.fecha_pago > today():
         raise InvalidInput("La fecha del pago no puede ser futura")
     if len(renta.pagos) >= MAX_PAYMENTS:
         raise Conflict("Esta renta ya tiene demasiados pagos registrados")

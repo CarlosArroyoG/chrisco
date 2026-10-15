@@ -5,6 +5,7 @@ from app.core.security import create_token
 from app.models.empresa import Empresa
 from app.models.renta import Renta
 from app.models.user import User
+from app.schemas.mantenimiento import AtencionItem
 from app.services.mailer import Mail
 
 
@@ -161,5 +162,38 @@ def rental_confirmed_mail(user: User, renta: Renta) -> Mail:
             f"Cumpliste los requisitos y recibimos tu anticipo: {renta.equipo.nombre} queda "
             f"confirmado para tu obra ({renta.folio}).\n"
             f"{_url(f'/cliente/rentas/{renta.id}')}"
+        ),
+    )
+
+
+def _remaining(value: float, unit: str) -> str:
+    if value <= 0:
+        return f"se pasó por {abs(value):g} {unit}"
+    return f"faltan {value:g} {unit}"
+
+
+def maintenance_alert_mail(user: User, items: list[AtencionItem]) -> Mail:
+    vencidos = [i for i in items if i.estado == "vencido"]
+    lines = []
+    for item in items:
+        faltan = []
+        if item.faltan_horas is not None:
+            faltan.append(_remaining(float(item.faltan_horas), "h"))
+        if item.faltan_dias is not None:
+            faltan.append(_remaining(item.faltan_dias, "días"))
+        marca = "VENCIDO" if item.estado == "vencido" else "Próximo"
+        lines.append(
+            f"- [{marca}] {item.equipo_codigo} {item.equipo_nombre}: {item.nombre} "
+            f"({', '.join(faltan)}; horómetro {item.horometro_actual} h)"
+        )
+    resumen = f"{len(vencidos)} vencido(s)" if vencidos else f"{len(items)} próximo(s)"
+    return Mail(
+        to=user.email,
+        subject=f"Mantenimiento de equipos: {resumen}",
+        body=(
+            f"Hola {user.full_name},\n\n"
+            "Estos servicios de mantenimiento requieren atención:\n\n"
+            + "\n".join(lines)
+            + f"\n\nRegistra el servicio cuando se haga: {_url('/admin/mantenimiento')}"
         ),
     )

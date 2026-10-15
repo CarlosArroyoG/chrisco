@@ -5,6 +5,68 @@ export type ClientOptions = {
 };
 
 /**
+ * AtencionItem
+ */
+export type AtencionItem = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Equipo Id
+     */
+    equipo_id: string;
+    /**
+     * Nombre
+     */
+    nombre: string;
+    /**
+     * Cada Horas
+     */
+    cada_horas: number | null;
+    /**
+     * Cada Dias
+     */
+    cada_dias: number | null;
+    /**
+     * Ultimo Horometro
+     */
+    ultimo_horometro: number;
+    /**
+     * Ultima Fecha
+     */
+    ultima_fecha: string;
+    /**
+     * Activo
+     */
+    activo: boolean;
+    /**
+     * Estado
+     */
+    estado: 'ok' | 'proximo' | 'vencido';
+    /**
+     * Faltan Horas
+     */
+    faltan_horas: number | null;
+    /**
+     * Faltan Dias
+     */
+    faltan_dias: number | null;
+    /**
+     * Equipo Codigo
+     */
+    equipo_codigo: string;
+    /**
+     * Equipo Nombre
+     */
+    equipo_nombre: string;
+    /**
+     * Horometro Actual
+     */
+    horometro_actual: number;
+};
+
+/**
  * BloqueoEstado
  */
 export type BloqueoEstado = 'activo' | 'liberado' | 'expirado';
@@ -1400,6 +1462,80 @@ export type PartidaOut = {
 export type PartidaUnidad = 'hora' | 'dia' | 'viaje' | 'litro' | 'servicio';
 
 /**
+ * PlanIn
+ *
+ * Un servicio periódico: se indica cada cuántas horas, cada cuántos días, o ambos.
+ */
+export type PlanIn = {
+    /**
+     * Nombre
+     */
+    nombre: string;
+    /**
+     * Cada Horas
+     */
+    cada_horas?: number | string | null;
+    /**
+     * Cada Dias
+     */
+    cada_dias?: number | null;
+    /**
+     * Activo
+     */
+    activo?: boolean;
+};
+
+/**
+ * PlanOut
+ */
+export type PlanOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Equipo Id
+     */
+    equipo_id: string;
+    /**
+     * Nombre
+     */
+    nombre: string;
+    /**
+     * Cada Horas
+     */
+    cada_horas: number | null;
+    /**
+     * Cada Dias
+     */
+    cada_dias: number | null;
+    /**
+     * Ultimo Horometro
+     */
+    ultimo_horometro: number;
+    /**
+     * Ultima Fecha
+     */
+    ultima_fecha: string;
+    /**
+     * Activo
+     */
+    activo: boolean;
+    /**
+     * Estado
+     */
+    estado: 'ok' | 'proximo' | 'vencido';
+    /**
+     * Faltan Horas
+     */
+    faltan_horas: number | null;
+    /**
+     * Faltan Dias
+     */
+    faltan_dias: number | null;
+};
+
+/**
  * PreviewOut
  *
  * Lo que verá el cliente antes de enviar: si está libre y qué se le va a pedir.
@@ -1416,6 +1552,26 @@ export type PreviewOut = {
 };
 
 /**
+ * RealizadoIn
+ *
+ * El servicio se hizo; sin fecha ni horómetro se toman los de hoy y los del equipo.
+ */
+export type RealizadoIn = {
+    /**
+     * Fecha
+     */
+    fecha?: string | null;
+    /**
+     * Horometro
+     */
+    horometro?: number | string | null;
+    /**
+     * Notas
+     */
+    notas?: string | null;
+};
+
+/**
  * RefreshRequest
  */
 export type RefreshRequest = {
@@ -1423,6 +1579,36 @@ export type RefreshRequest = {
      * Refresh Token
      */
     refresh_token: string;
+};
+
+/**
+ * RegistroOut
+ */
+export type RegistroOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Fecha
+     */
+    fecha: string;
+    /**
+     * Horometro
+     */
+    horometro: number;
+    /**
+     * Notas
+     */
+    notas: string | null;
+    /**
+     * Registrado Por Nombre
+     */
+    registrado_por_nombre: string;
+    /**
+     * Created At
+     */
+    created_at: string;
 };
 
 /**
@@ -3747,6 +3933,222 @@ export type DownloadFotoRentasRentaIdMovimientosMovimientoIdFotoGetResponses = {
      */
     200: unknown;
 };
+
+export type AttentionAdminMantenimientoGetData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Solo Atencion
+         */
+        solo_atencion?: boolean;
+    };
+    url: '/admin/mantenimiento';
+};
+
+export type AttentionAdminMantenimientoGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AttentionAdminMantenimientoGetError = AttentionAdminMantenimientoGetErrors[keyof AttentionAdminMantenimientoGetErrors];
+
+export type AttentionAdminMantenimientoGetResponses = {
+    /**
+     * Response Attention Admin Mantenimiento Get
+     *
+     * Successful Response
+     */
+    200: Array<AtencionItem>;
+};
+
+export type AttentionAdminMantenimientoGetResponse = AttentionAdminMantenimientoGetResponses[keyof AttentionAdminMantenimientoGetResponses];
+
+export type ListPlanesAdminEquiposEquipoIdMantenimientoGetData = {
+    body?: never;
+    path: {
+        /**
+         * Equipo Id
+         */
+        equipo_id: string;
+    };
+    query?: never;
+    url: '/admin/equipos/{equipo_id}/mantenimiento';
+};
+
+export type ListPlanesAdminEquiposEquipoIdMantenimientoGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListPlanesAdminEquiposEquipoIdMantenimientoGetError = ListPlanesAdminEquiposEquipoIdMantenimientoGetErrors[keyof ListPlanesAdminEquiposEquipoIdMantenimientoGetErrors];
+
+export type ListPlanesAdminEquiposEquipoIdMantenimientoGetResponses = {
+    /**
+     * Response List Planes Admin Equipos  Equipo Id  Mantenimiento Get
+     *
+     * Successful Response
+     */
+    200: Array<PlanOut>;
+};
+
+export type ListPlanesAdminEquiposEquipoIdMantenimientoGetResponse = ListPlanesAdminEquiposEquipoIdMantenimientoGetResponses[keyof ListPlanesAdminEquiposEquipoIdMantenimientoGetResponses];
+
+export type CreatePlanAdminEquiposEquipoIdMantenimientoPostData = {
+    body: PlanIn;
+    path: {
+        /**
+         * Equipo Id
+         */
+        equipo_id: string;
+    };
+    query?: never;
+    url: '/admin/equipos/{equipo_id}/mantenimiento';
+};
+
+export type CreatePlanAdminEquiposEquipoIdMantenimientoPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreatePlanAdminEquiposEquipoIdMantenimientoPostError = CreatePlanAdminEquiposEquipoIdMantenimientoPostErrors[keyof CreatePlanAdminEquiposEquipoIdMantenimientoPostErrors];
+
+export type CreatePlanAdminEquiposEquipoIdMantenimientoPostResponses = {
+    /**
+     * Successful Response
+     */
+    201: PlanOut;
+};
+
+export type CreatePlanAdminEquiposEquipoIdMantenimientoPostResponse = CreatePlanAdminEquiposEquipoIdMantenimientoPostResponses[keyof CreatePlanAdminEquiposEquipoIdMantenimientoPostResponses];
+
+export type DeletePlanAdminMantenimientoPlanIdDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Plan Id
+         */
+        plan_id: string;
+    };
+    query?: never;
+    url: '/admin/mantenimiento/{plan_id}';
+};
+
+export type DeletePlanAdminMantenimientoPlanIdDeleteErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeletePlanAdminMantenimientoPlanIdDeleteError = DeletePlanAdminMantenimientoPlanIdDeleteErrors[keyof DeletePlanAdminMantenimientoPlanIdDeleteErrors];
+
+export type DeletePlanAdminMantenimientoPlanIdDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeletePlanAdminMantenimientoPlanIdDeleteResponse = DeletePlanAdminMantenimientoPlanIdDeleteResponses[keyof DeletePlanAdminMantenimientoPlanIdDeleteResponses];
+
+export type UpdatePlanAdminMantenimientoPlanIdPutData = {
+    body: PlanIn;
+    path: {
+        /**
+         * Plan Id
+         */
+        plan_id: string;
+    };
+    query?: never;
+    url: '/admin/mantenimiento/{plan_id}';
+};
+
+export type UpdatePlanAdminMantenimientoPlanIdPutErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdatePlanAdminMantenimientoPlanIdPutError = UpdatePlanAdminMantenimientoPlanIdPutErrors[keyof UpdatePlanAdminMantenimientoPlanIdPutErrors];
+
+export type UpdatePlanAdminMantenimientoPlanIdPutResponses = {
+    /**
+     * Successful Response
+     */
+    200: PlanOut;
+};
+
+export type UpdatePlanAdminMantenimientoPlanIdPutResponse = UpdatePlanAdminMantenimientoPlanIdPutResponses[keyof UpdatePlanAdminMantenimientoPlanIdPutResponses];
+
+export type RegisterDoneAdminMantenimientoPlanIdRealizadoPostData = {
+    body: RealizadoIn;
+    path: {
+        /**
+         * Plan Id
+         */
+        plan_id: string;
+    };
+    query?: never;
+    url: '/admin/mantenimiento/{plan_id}/realizado';
+};
+
+export type RegisterDoneAdminMantenimientoPlanIdRealizadoPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RegisterDoneAdminMantenimientoPlanIdRealizadoPostError = RegisterDoneAdminMantenimientoPlanIdRealizadoPostErrors[keyof RegisterDoneAdminMantenimientoPlanIdRealizadoPostErrors];
+
+export type RegisterDoneAdminMantenimientoPlanIdRealizadoPostResponses = {
+    /**
+     * Successful Response
+     */
+    201: RegistroOut;
+};
+
+export type RegisterDoneAdminMantenimientoPlanIdRealizadoPostResponse = RegisterDoneAdminMantenimientoPlanIdRealizadoPostResponses[keyof RegisterDoneAdminMantenimientoPlanIdRealizadoPostResponses];
+
+export type ListRegistrosAdminMantenimientoPlanIdRegistrosGetData = {
+    body?: never;
+    path: {
+        /**
+         * Plan Id
+         */
+        plan_id: string;
+    };
+    query?: never;
+    url: '/admin/mantenimiento/{plan_id}/registros';
+};
+
+export type ListRegistrosAdminMantenimientoPlanIdRegistrosGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListRegistrosAdminMantenimientoPlanIdRegistrosGetError = ListRegistrosAdminMantenimientoPlanIdRegistrosGetErrors[keyof ListRegistrosAdminMantenimientoPlanIdRegistrosGetErrors];
+
+export type ListRegistrosAdminMantenimientoPlanIdRegistrosGetResponses = {
+    /**
+     * Response List Registros Admin Mantenimiento  Plan Id  Registros Get
+     *
+     * Successful Response
+     */
+    200: Array<RegistroOut>;
+};
+
+export type ListRegistrosAdminMantenimientoPlanIdRegistrosGetResponse = ListRegistrosAdminMantenimientoPlanIdRegistrosGetResponses[keyof ListRegistrosAdminMantenimientoPlanIdRegistrosGetResponses];
 
 export type HealthHealthGetData = {
     body?: never;

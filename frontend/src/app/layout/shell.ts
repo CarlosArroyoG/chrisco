@@ -9,6 +9,7 @@ const STAFF_NAV = [
   { path: '/admin', label: 'Empresas', exact: true },
   { path: '/admin/rentas', label: 'Rentas', exact: false },
   { path: '/admin/cobranza', label: 'Cobranza', exact: false },
+  { path: '/admin/mantenimiento', label: 'Mantenimiento', exact: false },
   { path: '/admin/equipos', label: 'Equipos', exact: false },
   { path: '/admin/categorias', label: 'Categorías', exact: false },
 ];
