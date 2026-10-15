@@ -267,11 +267,10 @@ def test_cada_empresa_ve_solo_sus_solicitudes(
 
 def test_listar_exige_sesion_y_acceso(client, make_user, login, client_h) -> None:
     assert client.get("/rentas").status_code == 401
+    # El operador entra, pero solo ve lo que entrega y recibe: las solicitudes no le aparecen.
     make_user("operador@chrisco-pruebas.com", Role.OPERADOR)
-    assert (
-        client.get("/rentas", headers=auth(login("operador@chrisco-pruebas.com"))).status_code
-        == 403
-    )
+    res = client.get("/rentas", headers=auth(login("operador@chrisco-pruebas.com")))
+    assert res.status_code == 200 and res.json()["items"] == []
 
 
 def test_filtros_y_paginacion(client, client_h, admin_h, make_equipo) -> None:

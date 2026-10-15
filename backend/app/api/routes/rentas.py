@@ -5,7 +5,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query, status
 
-from app.api.deps import ApprovedClientUser, CatalogUser, DbSession, company_of
+from app.api.deps import ApprovedClientUser, CatalogUser, DbSession, RentalViewer, company_of
 from app.models.renta import RentaEstado
 from app.schemas.common import Page
 from app.schemas.renta import PreviewOut, RentaOut, SolicitudCreada, SolicitudIn, WhatsappOut
@@ -29,7 +29,7 @@ def create_solicitud(user: ApprovedClientUser, body: SolicitudIn, db: DbSession)
 
 @router.get("", response_model=Page[RentaOut])
 def list_rentas(
-    user: CatalogUser,
+    user: RentalViewer,
     db: DbSession,
     estado: RentaEstado | None = None,
     q: str | None = None,
@@ -41,7 +41,7 @@ def list_rentas(
 
 
 @router.get("/{renta_id}", response_model=RentaOut)
-def get_renta(user: CatalogUser, renta_id: uuid.UUID, db: DbSession) -> RentaOut:
+def get_renta(user: RentalViewer, renta_id: uuid.UUID, db: DbSession) -> RentaOut:
     return rentas.to_out(rentas.get_for_user(db, user, renta_id))
 
 

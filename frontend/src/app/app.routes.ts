@@ -96,6 +96,12 @@ export const routes: Routes = [
               ),
           },
           {
+            path: 'personal',
+            canActivate: [roleGuard('admin')],
+            loadComponent: () =>
+              import('./features/admin/personal/personal-page').then((m) => m.PersonalPage),
+          },
+          {
             path: 'categorias',
             loadComponent: () =>
               import('./features/admin/categorias/categorias-page').then((m) => m.CategoriasPage),
@@ -105,8 +111,18 @@ export const routes: Routes = [
       {
         path: 'operador',
         canActivate: [roleGuard('operador')],
-        loadComponent: () =>
-          import('./features/operador/operador-home').then((m) => m.OperadorHome),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/operador/operador-home').then((m) => m.OperadorHome),
+          },
+          {
+            path: ':id',
+            loadComponent: () =>
+              import('./features/rentas/renta-detalle').then((m) => m.RentaDetalle),
+          },
+        ],
       },
       {
         path: 'cliente',

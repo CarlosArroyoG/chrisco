@@ -69,7 +69,7 @@ const TRANSPORTE = { entrega: 'Entrega CHRISCO en la obra', recoge: 'Lo recoge e
         @if (r.estado === 'apartada' && r.vence_en) {
           <p role="status" class="alert-ok mt-2">
             Equipo apartado.
-            @if (!isStaff()) {
+            @if (isClient()) {
               Tienes
               <app-countdown [until]="r.vence_en" (expired)="expired.set(true)" /> para cumplir los
               requisitos y depositar el anticipo.
@@ -248,7 +248,7 @@ const TRANSPORTE = { entrega: 'Entrega CHRISCO en la obra', recoge: 'Lo recoge e
         }
       </section>
 
-      @if (!isStaff() && r.estado === 'solicitada' && whatsapp(); as w) {
+      @if (isClient() && r.estado === 'solicitada' && whatsapp(); as w) {
         <section class="card mt-4">
           <h2 class="text-sm font-black">Mensaje para ventas</h2>
           <textarea
@@ -297,10 +297,14 @@ export class RentaDetalle implements OnInit {
     motivo: ['', [Validators.required, Validators.minLength(5)]],
   });
 
-  protected readonly isStaff = computed(() => this.auth.user()?.role !== 'cliente');
-  protected readonly basePath = computed(() =>
-    this.isStaff() ? '/admin/rentas' : '/cliente/rentas',
-  );
+  protected readonly isClient = computed(() => this.auth.user()?.role === 'cliente');
+  /** El operador de CHRISCO solo entrega y recibe equipos: no ve dinero ni cotizaciones. */
+  protected readonly isOperador = computed(() => this.auth.user()?.role === 'operador');
+  protected readonly isStaff = computed(() => !this.isClient() && !this.isOperador());
+  protected readonly basePath = computed(() => {
+    if (this.isClient()) return '/cliente/rentas';
+    return this.isOperador() ? '/operador' : '/admin/rentas';
+  });
   protected readonly canCancel = computed(() => {
     const estado = this.renta()?.estado;
     return estado === 'solicitada' || estado === 'cotizada' || estado === 'apartada';
@@ -313,7 +317,7 @@ export class RentaDetalle implements OnInit {
   /** El cliente responde cuando hay una cotización vigente en una solicitud cotizada. */
   protected readonly canAnswer = computed(
     () =>
-      !this.isStaff() &&
+      this.isClient() &&
       this.renta()?.estado === 'cotizada' &&
       this.cotizacion()?.estado === 'vigente',
   );
@@ -321,11 +325,12 @@ export class RentaDetalle implements OnInit {
   protected readonly conCumplimiento = computed(() => {
     const estado = this.renta()?.estado;
     return (
-      estado === 'apartada' ||
-      estado === 'confirmada' ||
-      estado === 'en_renta' ||
-      estado === 'devuelta' ||
-      estado === 'cerrada'
+      !this.isOperador() &&
+      (estado === 'apartada' ||
+        estado === 'confirmada' ||
+        estado === 'en_renta' ||
+        estado === 'devuelta' ||
+        estado === 'cerrada')
     );
   });
   /** Desde que la renta se confirma hay entrega, devolución y cierre que seguir. */
@@ -339,7 +344,7 @@ export class RentaDetalle implements OnInit {
     );
   });
   protected readonly isClientWaiting = computed(
-    () => !this.isStaff() && this.renta()?.estado === 'solicitada',
+    () => this.isClient() && this.renta()?.estado === 'solicitada',
   );
 
   ngOnInit(): void {
@@ -356,7 +361,7 @@ export class RentaDetalle implements OnInit {
       next: (renta) => {
         this.renta.set(renta);
         this.expired.set(false);
-        if (!this.isStaff() && renta.estado === 'solicitada') {
+        if (this.isClient() && renta.estado === 'solicitada') {
           this.service.whatsapp(renta.id).subscribe((w) => this.whatsapp.set(w));
         } else {
           this.whatsapp.set(null);
@@ -364,6 +369,7 @@ export class RentaDetalle implements OnInit {
       },
       error: (err: unknown) => this.error.set(apiErrorMessage(err, 'No se pudo cargar la renta.')),
     });
+    if (this.isOperador()) return; // el operador no ve cotizaciones
     this.service
       .cotizacion(this.id())
       .pipe(catchError(() => of(null)))

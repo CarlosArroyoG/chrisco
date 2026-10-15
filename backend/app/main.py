@@ -9,6 +9,7 @@ from app.api.routes import (
     admin_empresas,
     admin_equipos,
     admin_mantenimiento,
+    admin_personal,
     auth,
     catalogo,
     categorias,
@@ -25,7 +26,14 @@ from app.core.limiter import limiter
 
 settings = get_settings()
 
-app = FastAPI(title="CHRISCO API", version="0.8.0")
+app = FastAPI(
+    title="CHRISCO API",
+    version="0.9.0",
+    # La documentación interactiva solo en desarrollo, no en producción.
+    docs_url=None if settings.environment == "production" else "/docs",
+    redoc_url=None,
+    openapi_url=None if settings.environment == "production" else "/openapi.json",
+)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 app.add_exception_handler(DomainError, domain_error_handler)
@@ -50,6 +58,7 @@ app.include_router(cumplimiento.router)
 app.include_router(cobranza.router)
 app.include_router(movimientos.router)
 app.include_router(admin_mantenimiento.router)
+app.include_router(admin_personal.router)
 
 
 @app.get("/health", tags=["health"])

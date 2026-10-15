@@ -37,4 +37,23 @@ cd e2e && npm ci && E2E_CHANNEL=msedge npx playwright test    # en CI: npx playw
 
 Si cambias la API, regenera los tipos del frontend: `cd frontend && npm run api:gen`.
 
+## Producción (un servidor con Docker)
+
+```bash
+cp .env.production.example .env.production      # llenar: DOMAIN, POSTGRES_PASSWORD, SECRET_KEY, SMTP...
+docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+docker compose -f docker-compose.prod.yml --env-file .env.production exec api \
+    python -m app.cli create-user --email tu@correo.com --name "Tu Nombre" --role admin
+```
+
+- Solo el contenedor `web` (Caddy) publica los puertos 80/443; obtiene y renueva el certificado
+  HTTPS solo. La API y la base de datos quedan en la red interna.
+- El API **no arranca** en producción con valores de desarrollo (correo que no sea SMTP, URL sin
+  https, CORS con http, límite de intentos apagado) y no publica `/docs`.
+- El contenedor `tareas` vence las reservas cada minuto y manda las alertas de mantenimiento por
+  correo cada día a las 8:00.
+- Respaldo (base de datos + archivos privados): `./scripts/respaldo.sh ./respaldos`, programado a
+  diario y copiado fuera del servidor.
+- Actualizar: `git pull` y repetir el `up -d --build`; el API aplica las migraciones al arrancar.
+
 El prototipo original (HTML estático) está en `legacy/` solo como referencia.

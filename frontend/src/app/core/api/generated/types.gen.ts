@@ -1462,6 +1462,74 @@ export type PartidaOut = {
 export type PartidaUnidad = 'hora' | 'dia' | 'viaje' | 'litro' | 'servicio';
 
 /**
+ * PersonalIn
+ */
+export type PersonalIn = {
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Full Name
+     */
+    full_name: string;
+    /**
+     * Role
+     */
+    role: 'admin' | 'ventas' | 'operador';
+};
+
+/**
+ * PersonalOut
+ */
+export type PersonalOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Full Name
+     */
+    full_name: string;
+    /**
+     * Role
+     */
+    role: 'admin' | 'ventas' | 'operador';
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Pendiente Invitacion
+     */
+    pendiente_invitacion: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * PersonalUpdate
+ *
+ * Cambia el rol y/o activa o desactiva a una persona del personal.
+ */
+export type PersonalUpdate = {
+    /**
+     * Role
+     */
+    role?: 'admin' | 'ventas' | 'operador' | null;
+    /**
+     * Is Active
+     */
+    is_active?: boolean | null;
+};
+
+/**
  * PlanIn
  *
  * Un servicio periódico: se indica cada cuántas horas, cada cuántos días, o ambos.
@@ -4149,6 +4217,109 @@ export type ListRegistrosAdminMantenimientoPlanIdRegistrosGetResponses = {
 };
 
 export type ListRegistrosAdminMantenimientoPlanIdRegistrosGetResponse = ListRegistrosAdminMantenimientoPlanIdRegistrosGetResponses[keyof ListRegistrosAdminMantenimientoPlanIdRegistrosGetResponses];
+
+export type ListPersonalAdminPersonalGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/personal';
+};
+
+export type ListPersonalAdminPersonalGetResponses = {
+    /**
+     * Response List Personal Admin Personal Get
+     *
+     * Successful Response
+     */
+    200: Array<PersonalOut>;
+};
+
+export type ListPersonalAdminPersonalGetResponse = ListPersonalAdminPersonalGetResponses[keyof ListPersonalAdminPersonalGetResponses];
+
+export type CreatePersonalAdminPersonalPostData = {
+    body: PersonalIn;
+    path?: never;
+    query?: never;
+    url: '/admin/personal';
+};
+
+export type CreatePersonalAdminPersonalPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreatePersonalAdminPersonalPostError = CreatePersonalAdminPersonalPostErrors[keyof CreatePersonalAdminPersonalPostErrors];
+
+export type CreatePersonalAdminPersonalPostResponses = {
+    /**
+     * Successful Response
+     */
+    201: PersonalOut;
+};
+
+export type CreatePersonalAdminPersonalPostResponse = CreatePersonalAdminPersonalPostResponses[keyof CreatePersonalAdminPersonalPostResponses];
+
+export type UpdatePersonalAdminPersonalUserIdPutData = {
+    body: PersonalUpdate;
+    path: {
+        /**
+         * User Id
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/admin/personal/{user_id}';
+};
+
+export type UpdatePersonalAdminPersonalUserIdPutErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdatePersonalAdminPersonalUserIdPutError = UpdatePersonalAdminPersonalUserIdPutErrors[keyof UpdatePersonalAdminPersonalUserIdPutErrors];
+
+export type UpdatePersonalAdminPersonalUserIdPutResponses = {
+    /**
+     * Successful Response
+     */
+    200: PersonalOut;
+};
+
+export type UpdatePersonalAdminPersonalUserIdPutResponse = UpdatePersonalAdminPersonalUserIdPutResponses[keyof UpdatePersonalAdminPersonalUserIdPutResponses];
+
+export type ResendInvitationAdminPersonalUserIdInvitacionPostData = {
+    body?: never;
+    path: {
+        /**
+         * User Id
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/admin/personal/{user_id}/invitacion';
+};
+
+export type ResendInvitationAdminPersonalUserIdInvitacionPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ResendInvitationAdminPersonalUserIdInvitacionPostError = ResendInvitationAdminPersonalUserIdInvitacionPostErrors[keyof ResendInvitationAdminPersonalUserIdInvitacionPostErrors];
+
+export type ResendInvitationAdminPersonalUserIdInvitacionPostResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type ResendInvitationAdminPersonalUserIdInvitacionPostResponse = ResendInvitationAdminPersonalUserIdInvitacionPostResponses[keyof ResendInvitationAdminPersonalUserIdInvitacionPostResponses];
 
 export type HealthHealthGetData = {
     body?: never;

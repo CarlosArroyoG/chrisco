@@ -5,13 +5,14 @@ import { AuthService } from '../core/auth/auth.service';
 import { Logo } from '../shared/logo/logo';
 
 /** Secciones del personal (admin y ventas). `exact` evita que «Empresas» quede activa en todas. */
-const STAFF_NAV = [
+const STAFF_NAV: { path: string; label: string; exact: boolean; adminOnly?: boolean }[] = [
   { path: '/admin', label: 'Empresas', exact: true },
   { path: '/admin/rentas', label: 'Rentas', exact: false },
   { path: '/admin/cobranza', label: 'Cobranza', exact: false },
   { path: '/admin/mantenimiento', label: 'Mantenimiento', exact: false },
   { path: '/admin/equipos', label: 'Equipos', exact: false },
   { path: '/admin/categorias', label: 'Categorías', exact: false },
+  { path: '/admin/personal', label: 'Personal', exact: false, adminOnly: true },
 ];
 
 /** Marco común de las pantallas autenticadas: barra superior, navegación y área de contenido. */
@@ -45,7 +46,7 @@ const STAFF_NAV = [
       @if (isStaff()) {
         <nav class="bg-chrisco-charcoal" aria-label="Secciones">
           <div class="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4">
-            @for (item of nav; track item.path) {
+            @for (item of nav(); track item.path) {
               <a
                 [routerLink]="item.path"
                 routerLinkActive="border-chrisco-orange text-white"
@@ -68,7 +69,9 @@ export class Shell {
   protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   protected readonly roleLabel = ROLE_LABEL;
-  protected readonly nav = STAFF_NAV;
+  protected readonly nav = computed(() =>
+    STAFF_NAV.filter((item) => !item.adminOnly || this.auth.user()?.role === 'admin'),
+  );
   protected readonly isStaff = computed(() => {
     const role = this.auth.user()?.role;
     return role === 'admin' || role === 'ventas';

@@ -1,0 +1,70 @@
+# Producción de CHRISCO Go en un solo servidor:
+#   cp .env.production.example .env.production   (y llenar los valores)
+#   docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+#
+# Solo `web` publica puertos (80/443). La base de datos y la API viven en la red interna.
+name: chrisco-go
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: chrisco
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?define POSTGRES_PASSWORD}
+      POSTGRES_DB: chrisco
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chrisco -d chrisco"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env.production
+    environment:
+      DATABASE_URL: postgresql+psycopg://chrisco:${POSTGRES_PASSWORD}@db:5432/chrisco
+    volumes:
+      - uploads:/data/uploads
+
+  # Tareas programadas: vence reservas cada minuto y manda las alertas de mantenimiento a diario.
+  tareas:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    env_file: .env.production
+    environment:
+      DATABASE_URL: postgresql+psycopg://chrisco:${POSTGRES_PASSWORD}@db:5432/chrisco
+    volumes:
+      - uploads:/data/uploads
+    healthcheck:
+      disable: true
+    command: ["sh", "/app/scripts/tareas.sh"]
+
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      DOMAIN: ${DOMAIN:?define DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  pgdata:
+  uploads:
+  caddy_data:
+  caddy_config:

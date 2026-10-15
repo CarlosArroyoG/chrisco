@@ -46,6 +46,21 @@ def invitation_mail(user: User, empresa: Empresa, invited_by: User) -> Mail:
     )
 
 
+def staff_invitation_mail(user: User, invited_by: User) -> Mail:
+    token = create_token(user.id, user.token_version, "invite")
+    return Mail(
+        to=user.email,
+        subject=f"{invited_by.full_name} te dio acceso al equipo de CHRISCO Go",
+        body=(
+            f"Hola {user.full_name},\n\n"
+            f"{invited_by.full_name} te dio acceso a CHRISCO Go como {user.role.value}.\n"
+            "Crea tu contraseña aquí:\n"
+            f"{_link('aceptar-invitacion', token)}\n\n"
+            f"El enlace vence en {get_settings().invite_days} días."
+        ),
+    )
+
+
 def password_reset_mail(user: User) -> Mail:
     token = create_token(user.id, user.token_version, "reset_password")
     return Mail(

@@ -2,3 +2,6 @@
 dist/
 .angular/
 .DS_Store
+
+.env.production
+respaldos/

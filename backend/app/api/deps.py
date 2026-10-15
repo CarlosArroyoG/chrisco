@@ -79,8 +79,20 @@ def require_catalog_access(user: CurrentUser) -> User:
     raise HTTPException(status.HTTP_403_FORBIDDEN, "No tienes acceso al catálogo")
 
 
+def require_rental_access(user: CurrentUser) -> User:
+    """Quien puede ver rentas: personal, operadores (solo las que entregan y reciben) y clientes."""
+    if user.role in (Role.ADMIN, Role.VENTAS, Role.OPERADOR):
+        return user
+    if user.role == Role.CLIENTE and company_of(user).status == EmpresaStatus.APROBADA:
+        return user
+    raise HTTPException(status.HTTP_403_FORBIDDEN, "No tienes acceso a las rentas")
+
+
 ApprovedClientUser = Annotated[User, Depends(require_approved_company)]
+RentalViewer = Annotated[User, Depends(require_rental_access)]
 CatalogUser = Annotated[User, Depends(require_catalog_access)]
 CompanyOwner = Annotated[User, Depends(require_company_owner)]
 AdminUser = Annotated[User, Depends(require_roles(Role.ADMIN))]
 StaffUser = Annotated[User, Depends(require_roles(Role.ADMIN, Role.VENTAS))]
+# Quienes entregan y reciben el equipo: el personal y los operadores de CHRISCO.
+FieldUser = Annotated[User, Depends(require_roles(Role.ADMIN, Role.VENTAS, Role.OPERADOR))]

@@ -2,7 +2,7 @@ from decimal import Decimal
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     reset_password_minutes: int = 60
     cors_origins: list[str] = ["http://localhost:4200"]
     rate_limit_enabled: bool = True
+    # Dónde cuenta slowapi los intentos: `memory://` sirve con una sola instancia de la API; con
+    # varias, `redis://host:6379`.
+    rate_limit_storage_uri: str = "memory://"
 
     # URL pública del frontend: se usa para armar los enlaces de los correos.
     frontend_url: str = "http://localhost:4200"
@@ -59,6 +62,24 @@ class Settings(BaseSettings):
     # Mantenimiento: cuánto antes de que toque se avisa (por horas de uso y por días).
     mantenimiento_aviso_horas: int = 50
     mantenimiento_aviso_dias: int = 15
+
+    @model_validator(mode="after")
+    def _production_is_safe(self) -> "Settings":
+        """En producción no se arranca con valores de desarrollo que dejarían la puerta abierta."""
+        if self.environment != "production":
+            return self
+        problems = []
+        if self.mail_backend != "smtp":
+            problems.append("MAIL_BACKEND debe ser smtp (si no, nadie recibe sus enlaces)")
+        if not self.frontend_url.startswith("https://"):
+            problems.append("FRONTEND_URL debe ser https")
+        if any(origin.startswith("http://") for origin in self.cors_origins):
+            problems.append("CORS_ORIGINS no debe incluir direcciones http")
+        if not self.rate_limit_enabled:
+            problems.append("RATE_LIMIT_ENABLED no puede estar apagado")
+        if problems:
+            raise ValueError("Configuración insegura para producción: " + "; ".join(problems))
+        return self
 
 
 @lru_cache

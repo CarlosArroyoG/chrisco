@@ -1,0 +1,33 @@
+# {$DOMAIN} es el dominio público (p. ej. go.chrisco.com.mx): Caddy obtiene y renueva el
+# certificado HTTPS solo. Para probar en local sin HTTPS: DOMAIN=http://localhost
+{$DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		# Angular compilado solo carga scripts propios; los estilos en línea los usa el framework.
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		-Server
+	}
+
+	# La API vive en la red interna de Docker: nunca se publica directamente.
+	handle /api/* {
+		uri strip_prefix /api
+		reverse_proxy api:8000
+	}
+
+	handle {
+		root * /srv
+		# Lo que lleva hash en el nombre no cambia nunca; el service worker y el índice sí.
+		@inmutable path *.js *.css *.woff2 /icons/*
+		header @inmutable Cache-Control "public, max-age=31536000, immutable"
+		@siempre path /index.html /ngsw.json /ngsw-worker.js /manifest.webmanifest
+		header @siempre Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+}

@@ -22,6 +22,8 @@ from app.services import disponibilidad, equipos, requisitos, whatsapp
 _PROVISIONAL = (RentaEstado.SOLICITADA, RentaEstado.APARTADA)
 _CANCELABLE = (RentaEstado.SOLICITADA, RentaEstado.COTIZADA, RentaEstado.APARTADA)
 _STAFF = (Role.ADMIN, Role.VENTAS)
+# Lo único de una renta que ve un operador: lo que entrega, lo que está en obra y lo que regresó.
+OPERADOR_STATES = (RentaEstado.CONFIRMADA, RentaEstado.EN_RENTA, RentaEstado.DEVUELTA)
 
 
 def expire_stale(db: Session) -> int:
@@ -114,7 +116,9 @@ def get_for_user(db: Session, user: User, renta_id: uuid.UUID) -> Renta:
     db.commit()
     renta = db.get(Renta, renta_id)
     visible = renta is not None and (
-        user.role in _STAFF or (user.role == Role.CLIENTE and renta.empresa_id == user.empresa_id)
+        user.role in _STAFF
+        or (user.role == Role.OPERADOR and renta.estado in OPERADOR_STATES)
+        or (user.role == Role.CLIENTE and renta.empresa_id == user.empresa_id)
     )
     if not visible:
         raise NotFound("Renta no encontrada")
@@ -140,6 +144,8 @@ def list_for(
     )
     if user.role == Role.CLIENTE:
         query = query.where(Renta.empresa_id == user.empresa_id)
+    if user.role == Role.OPERADOR:
+        query = query.where(Renta.estado.in_(OPERADOR_STATES))
     if estado:
         query = query.where(Renta.estado == estado)
     if q:

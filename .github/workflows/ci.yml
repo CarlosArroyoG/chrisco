@@ -76,6 +76,14 @@ jobs:
         working-directory: frontend
       - run: git diff --exit-code -- frontend/src/app/core/api/generated
 
+  # Las imágenes de producción deben poder construirse siempre.
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t chrisco-api backend
+      - run: docker build -t chrisco-web frontend
+
   e2e:
     runs-on: ubuntu-latest
     needs: [backend, frontend]
