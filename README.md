@@ -37,7 +37,21 @@ cd e2e && npm ci && E2E_CHANNEL=msedge npx playwright test    # en CI: npx playw
 
 Si cambias la API, regenera los tipos del frontend: `cd frontend && npm run api:gen`.
 
-## Producción (un servidor con Docker)
+## Producción en Coolify
+
+1. En Coolify: **New Resource → Docker Compose** y elige este repositorio. En *Docker Compose
+   Location* pon `/docker-compose.coolify.yml`.
+2. En el servicio **`web`** configura tu dominio (`https://go.tu-dominio.com`) con el puerto **80**.
+   Coolify pone el HTTPS; no se publica ningún puerto desde el compose.
+3. En *Environment Variables* llena las de `.env.coolify.example` (obligatorias: `POSTGRES_PASSWORD`,
+   `SECRET_KEY`, `FRONTEND_URL` —el mismo dominio—, `MAIL_FROM` y `SMTP_HOST`).
+4. **Deploy.** El API aplica las migraciones al arrancar. Crea el primer administrador desde la
+   terminal del servicio `api` en Coolify:
+   `python -m app.cli create-user --email tu@correo.com --name "Tu Nombre" --role admin`
+5. Respaldos: en Coolify programa un *Scheduled Backup* del volumen de `db` (o `pg_dump`) y del
+   volumen `uploads` (constancias, licencias, comprobantes y fotos: sin ellos se pierden).
+
+## Producción (un servidor propio con Docker, sin Coolify)
 
 ```bash
 cp .env.production.example .env.production      # llenar: DOMAIN, POSTGRES_PASSWORD, SECRET_KEY, SMTP...

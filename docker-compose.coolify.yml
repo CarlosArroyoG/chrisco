@@ -1,0 +1,82 @@
+# CHRISCO Go en Coolify (Docker Compose desde el repositorio de git).
+#
+# En Coolify: New Resource -> Docker Compose -> este repositorio -> "Docker Compose Location":
+#   /docker-compose.coolify.yml
+# Luego, en el servicio `web`, pon tu dominio (https://go.tu-dominio.com) con el puerto 80, y llena
+# las variables de entorno de la lista de abajo (ver .env.coolify.example).
+#
+# Coolify pone el HTTPS y el proxy: aquí NO se publica ningún puerto.
+name: chrisco-go
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: chrisco
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?define POSTGRES_PASSWORD}
+      POSTGRES_DB: chrisco
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chrisco -d chrisco"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment: &api-env
+      DATABASE_URL: postgresql+psycopg://chrisco:${POSTGRES_PASSWORD}@db:5432/chrisco
+      ENVIRONMENT: production
+      SECRET_KEY: ${SECRET_KEY:?define SECRET_KEY}
+      FRONTEND_URL: ${FRONTEND_URL:?define FRONTEND_URL}
+      CORS_ORIGINS: '["${FRONTEND_URL}"]'
+      TIMEZONE: ${TIMEZONE:-America/Mexico_City}
+      MAIL_BACKEND: smtp
+      MAIL_FROM: ${MAIL_FROM:?define MAIL_FROM}
+      SMTP_HOST: ${SMTP_HOST:?define SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
+      SALES_WHATSAPP_NUMBER: ${SALES_WHATSAPP_NUMBER:-}
+      IVA_RATE: ${IVA_RATE:-0.16}
+      ANTICIPO_DEFAULT_PERCENT: ${ANTICIPO_DEFAULT_PERCENT:-30}
+      COTIZACION_VALIDA_HORAS: ${COTIZACION_VALIDA_HORAS:-24}
+      MAX_ACTIVE_REQUESTS_PER_COMPANY: ${MAX_ACTIVE_REQUESTS_PER_COMPANY:-3}
+      MANTENIMIENTO_AVISO_HORAS: ${MANTENIMIENTO_AVISO_HORAS:-50}
+      MANTENIMIENTO_AVISO_DIAS: ${MANTENIMIENTO_AVISO_DIAS:-15}
+    volumes:
+      - uploads:/data/uploads
+
+  # Tareas programadas: vence reservas cada minuto y manda las alertas de mantenimiento a diario.
+  tareas:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment: *api-env
+    volumes:
+      - uploads:/data/uploads
+    healthcheck:
+      disable: true
+    command: ["sh", "/app/scripts/tareas.sh"]
+
+  # Sirve la web y reenvía /api al API. Su dominio se configura en Coolify (puerto 80).
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    expose:
+      - "80"
+
+volumes:
+  pgdata:
+  uploads:

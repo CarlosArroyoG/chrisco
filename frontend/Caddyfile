@@ -1,6 +1,17 @@
-# {$DOMAIN} es el dominio público (p. ej. go.chrisco.com.mx): Caddy obtiene y renueva el
-# certificado HTTPS solo. Para probar en local sin HTTPS: DOMAIN=http://localhost
-{$DOMAIN} {
+# SITE_ADDRESS decide cómo escucha Caddy:
+#   - Servidor propio (docker-compose.prod.yml): el dominio, p. ej. go.chrisco.com.mx. Caddy obtiene y
+#     renueva el certificado HTTPS solo.
+#   - Coolify (docker-compose.coolify.yml): no se define, escucha en :80 y el proxy de Coolify pone
+#     el HTTPS delante.
+{
+	servers {
+		# Detrás de otro proxy (Coolify/Traefik) la IP real del cliente viene en X-Forwarded-For;
+		# solo se confía en ella si el proxy está en la red privada de Docker.
+		trusted_proxies static private_ranges
+	}
+}
+
+{$SITE_ADDRESS::80} {
 	encode zstd gzip
 
 	header {

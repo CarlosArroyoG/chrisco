@@ -55,7 +55,7 @@ services:
     depends_on:
       - api
     environment:
-      DOMAIN: ${DOMAIN:?define DOMAIN}
+      SITE_ADDRESS: ${DOMAIN:?define DOMAIN}
     ports:
       - "80:80"
       - "443:443"
