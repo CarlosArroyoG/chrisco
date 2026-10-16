@@ -17,10 +17,12 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { catchError, concatMap, from, of, toArray } from 'rxjs';
 import { apiErrorMessage } from '../../../core/api/errors';
 import { Categoria, Equipo, EquipoInput } from '../../../core/api/models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { CatalogoService, fotoUrl } from '../../../core/catalogo/catalogo.service';
+import { FotoItem, FotosEquipo } from '../../../shared/fotos-equipo/fotos-equipo';
 import {
   buildSpecGroup,
   SpecFields,
@@ -48,6 +50,7 @@ function atLeastOneRate(group: AbstractControl): ValidationErrors | null {
     StatusBadge,
     EquipoBloqueos,
     EquipoMantenimiento,
+    FotosEquipo,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -200,6 +203,15 @@ function atLeastOneRate(group: AbstractControl): ValidationErrors | null {
           <textarea id="notas" formControlName="notas" rows="2" class="input"></textarea>
         </section>
 
+        @if (!id()) {
+          <app-fotos-equipo
+            [fotos]="fotosPendientes()"
+            [error]="photoError()"
+            (add)="elegirFotos($event)"
+            (remove)="quitarPendiente($event)"
+          />
+        }
+
         @if (error()) {
           <p role="alert" class="alert-error">{{ error() }}</p>
         }
@@ -219,46 +231,13 @@ function atLeastOneRate(group: AbstractControl): ValidationErrors | null {
     }
 
     @if (equipo(); as e) {
-      <section class="card mt-4">
-        <h2 class="text-sm font-black">Fotos ({{ e.fotos.length }}/10)</h2>
-        <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-          @for (foto of e.fotos; track foto.id) {
-            <figure class="relative overflow-hidden rounded-lg border">
-              <img
-                [src]="fotoUrl(foto.id, 'thumb')"
-                alt="Foto del equipo"
-                class="aspect-[4/3] w-full object-cover"
-              />
-              @if (canEdit()) {
-                <button
-                  type="button"
-                  (click)="removeFoto(foto.id)"
-                  class="absolute top-1 right-1 rounded bg-black/60 px-1.5 text-xs font-bold text-white"
-                  aria-label="Quitar foto"
-                >
-                  ✕
-                </button>
-              }
-            </figure>
-          } @empty {
-            <p class="col-span-full text-xs text-slate-500">Aún no hay fotos.</p>
-          }
-        </div>
-        @if (canEdit() && e.fotos.length < 10) {
-          <label for="fotos" class="label mt-3">Agregar fotos (JPG, PNG o WebP)</label>
-          <input
-            id="fotos"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            multiple
-            (change)="addFotos($event)"
-            class="w-full text-xs"
-          />
-        }
-        @if (photoError()) {
-          <p role="alert" class="alert-error mt-2">{{ photoError() }}</p>
-        }
-      </section>
+      <app-fotos-equipo
+        [fotos]="fotosGuardadas()"
+        [canEdit]="canEdit()"
+        [error]="photoError()"
+        (add)="addFotos($event)"
+        (remove)="removeFoto($event)"
+      />
 
       <app-equipo-bloqueos [equipoId]="e.id" [canEdit]="canEdit()" (changed)="refreshSituacion()" />
       <app-equipo-mantenimiento [equipoId]="e.id" [canEdit]="canEdit()" />
@@ -281,6 +260,18 @@ export class EquipoForm implements OnInit {
   protected readonly equipo = signal<Equipo | null>(null);
   protected readonly error = signal<string | null>(null);
   protected readonly photoError = signal<string | null>(null);
+  /** Fotos elegidas al crear un equipo: se suben cuando el equipo ya existe. */
+  private readonly pendientes = signal<{ file: File; url: string }[]>([]);
+  protected readonly fotosPendientes = computed<FotoItem[]>(() =>
+    this.pendientes().map((p) => ({ key: p.url, url: p.url, thumb: p.url })),
+  );
+  protected readonly fotosGuardadas = computed<FotoItem[]>(() =>
+    (this.equipo()?.fotos ?? []).map((f) => ({
+      key: f.id,
+      url: fotoUrl(f.id, 'full'),
+      thumb: fotoUrl(f.id, 'thumb'),
+    })),
+  );
   protected readonly saving = signal(false);
   protected readonly saved = signal(false);
   protected readonly canEdit = computed(() => this.auth.user()?.role === 'admin');
@@ -316,6 +307,8 @@ export class EquipoForm implements OnInit {
   protected readonly specGroup = signal<SpecGroup>(buildSpecGroup([]));
 
   ngOnInit(): void {
+    const aviso = history.state?.avisoFotos;
+    if (typeof aviso === 'string') this.photoError.set(`Algunas fotos no se subieron: ${aviso}`);
     this.catalogo.categorias().subscribe({
       next: (categorias) => {
         this.categorias.set(categorias);
@@ -390,8 +383,8 @@ export class EquipoForm implements OnInit {
           this.equipo.set(equipo);
           this.saved.set(true);
         } else {
-          // Tras crear, se abre el equipo para que se le agreguen las fotos.
-          void this.router.navigate(['/admin/equipos', equipo.id]);
+          // Tras crear, se suben las fotos elegidas y se abre el equipo.
+          this.subirPendientes(equipo.id);
         }
       },
       error: (err: unknown) => {
@@ -410,18 +403,13 @@ export class EquipoForm implements OnInit {
     });
   }
 
-  protected addFotos(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const files = Array.from(input.files ?? []);
+  protected addFotos(files: File[]): void {
     const equipo = this.equipo();
     if (!equipo || !files.length) return;
     this.photoError.set(null);
     // Se suben una por una para respetar el máximo de fotos y reportar el error de cada una.
     const next = (index: number): void => {
-      if (index >= files.length) {
-        input.value = '';
-        return;
-      }
+      if (index >= files.length) return;
       this.service.addFoto(equipo.id, files[index]).subscribe({
         next: (foto) => {
           this.equipo.update((e) => (e ? { ...e, fotos: [...e.fotos, foto] } : e));
@@ -432,6 +420,47 @@ export class EquipoForm implements OnInit {
       });
     };
     next(0);
+  }
+
+  /** Alta: las fotos se previsualizan ya, pero se suben cuando el equipo se guarda. */
+  protected elegirFotos(files: File[]): void {
+    const room = 10 - this.pendientes().length;
+    const chosen = files.slice(0, room).map((file) => ({ file, url: URL.createObjectURL(file) }));
+    this.pendientes.update((actuales) => [...actuales, ...chosen]);
+    this.photoError.set(
+      files.length > room
+        ? 'Cada equipo admite hasta 10 fotos: se agregaron solo las primeras.'
+        : null,
+    );
+  }
+
+  protected quitarPendiente(url: string): void {
+    URL.revokeObjectURL(url);
+    this.pendientes.update((actuales) => actuales.filter((p) => p.url !== url));
+  }
+
+  /** Sube las fotos elegidas al crear y abre el equipo; si alguna falla, avisa allá. */
+  private subirPendientes(equipoId: string): void {
+    const archivos = this.pendientes().map((p) => p.file);
+    const fallas: string[] = [];
+    from(archivos)
+      .pipe(
+        concatMap((file) =>
+          this.service.addFoto(equipoId, file).pipe(
+            catchError((err: unknown) => {
+              fallas.push(`${file.name}: ${apiErrorMessage(err, 'no se pudo subir')}`);
+              return of(null);
+            }),
+          ),
+        ),
+        toArray(),
+      )
+      .subscribe(() => {
+        this.pendientes().forEach((p) => URL.revokeObjectURL(p.url));
+        void this.router.navigate(['/admin/equipos', equipoId], {
+          state: fallas.length ? { avisoFotos: fallas.join(' · ') } : {},
+        });
+      });
   }
 
   protected removeFoto(fotoId: string): void {

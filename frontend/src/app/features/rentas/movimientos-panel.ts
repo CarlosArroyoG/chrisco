@@ -32,7 +32,7 @@ const TITULO: Record<MovimientoTipo, string> = {
   template: `
     @if (data(); as m) {
       <section class="card mt-4" aria-labelledby="mov-titulo">
-        <h2 id="mov-titulo" class="text-sm font-black">Entrega y devolución</h2>
+        <h2 id="mov-titulo" class="text-lg font-bold text-slate-900">Entrega y devolución</h2>
         @if (error()) {
           <p role="alert" class="alert-error mt-2">{{ error() }}</p>
         }

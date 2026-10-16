@@ -105,6 +105,9 @@ export class Carousel {
   readonly index = model(0);
 
   private readonly track = viewChild.required<ElementRef<HTMLElement>>('track');
+  /** Mientras el carrusel se desliza solo (flecha, punto, miniatura) no se escuchan sus pasos intermedios. */
+  private settling = false;
+  private settleTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
     // Cuando otro componente cambia `index` (p. ej. una miniatura), el carrusel se desliza ahí.
@@ -112,6 +115,9 @@ export class Carousel {
       const target = this.index();
       const el = this.track().nativeElement;
       if (el.clientWidth > 0 && Math.round(el.scrollLeft / el.clientWidth) !== target) {
+        this.settling = true;
+        clearTimeout(this.settleTimer);
+        this.settleTimer = setTimeout(() => (this.settling = false), 700);
         el.scrollTo({ left: target * el.clientWidth });
       }
     });
@@ -124,7 +130,7 @@ export class Carousel {
 
   protected onScroll(): void {
     const el = this.track().nativeElement;
-    if (el.clientWidth === 0) return;
+    if (this.settling || el.clientWidth === 0) return;
     const current = Math.round(el.scrollLeft / el.clientWidth);
     if (current !== this.index()) this.index.set(current);
   }

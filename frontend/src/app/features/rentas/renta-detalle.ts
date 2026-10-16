@@ -21,6 +21,9 @@ import { CotizacionEditor } from './cotizacion-editor';
 import { CumplimientoPanel } from './cumplimiento-panel';
 import { MovimientosPanel } from './movimientos-panel';
 import { RentaPasos } from '../../shared/renta-pasos/renta-pasos';
+import { Icon } from '../../shared/icon/icon';
+import { fotoUrl } from '../../core/catalogo/catalogo.service';
+import { ETAPAS } from '../../core/rentas/etapas';
 import { CotizacionView } from './cotizacion-view';
 
 const SECTIONS: { tipo: Requisito['tipo']; titulo: string }[] = [
@@ -47,6 +50,7 @@ const TRANSPORTE = { entrega: 'Entrega CHRISCO en la obra', recoge: 'Lo recoge e
     CumplimientoPanel,
     MovimientosPanel,
     RentaPasos,
+    Icon,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -55,102 +59,130 @@ const TRANSPORTE = { entrega: 'Entrega CHRISCO en la obra', recoge: 'Lo recoge e
       <p role="alert" class="alert-error mt-3">{{ error() }}</p>
     }
     @if (renta(); as r) {
-      <section class="card mt-3">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <h1 class="font-mono text-lg font-black">{{ r.folio }}</h1>
-          <app-status-badge [status]="r.estado" />
-        </div>
-        <div class="mt-4"><app-renta-pasos [estado]="r.estado" [etiquetas]="false" /></div>
-
-        @if (r.estado === 'solicitada' && r.vence_en && !expired()) {
-          <p class="mt-2 text-sm">
-            Equipo reservado
-            <app-countdown [until]="r.vence_en" (expired)="expired.set(true)" /> más mientras ventas
-            cotiza.
-          </p>
-        }
-        @if (r.estado === 'apartada' && r.vence_en) {
-          <p role="status" class="alert-ok mt-2">
-            Equipo apartado.
-            @if (isClient()) {
-              Tienes
-              <app-countdown [until]="r.vence_en" (expired)="expired.set(true)" /> para cumplir los
-              requisitos y depositar el anticipo.
+      <section class="card mt-3 overflow-hidden !p-0">
+        <div class="grid md:grid-cols-[17rem_1fr]">
+          <div class="relative min-h-44 bg-slate-100">
+            @if (r.equipo_foto_id) {
+              <img
+                [src]="foto(r.equipo_foto_id)"
+                [alt]="r.equipo_nombre"
+                class="absolute inset-0 size-full object-cover"
+              />
             } @else {
-              Faltan <app-countdown [until]="r.vence_en" (expired)="expired.set(true)" /> para que
-              venza el apartado si el cliente no cumple.
+              <div class="absolute inset-0 grid place-items-center text-slate-300">
+                <app-icon name="equipos" class="size-14" />
+              </div>
             }
-          </p>
-        }
-        @if (r.estado === 'vencida') {
-          <p class="alert-error mt-2">
-            La reserva venció y el equipo volvió a estar disponible. Puedes volver a solicitarlo.
-          </p>
-        }
-        @if (r.motivo_cierre && (r.estado === 'rechazada' || r.estado === 'cancelada')) {
-          <p class="alert-error mt-2">{{ r.motivo_cierre }}</p>
-        }
+          </div>
+          <div class="p-6">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h1 class="font-mono text-2xl font-black tracking-tight">{{ r.folio }}</h1>
+              <app-status-badge [status]="r.estado" />
+            </div>
+            <p class="mt-1 text-lg font-semibold text-slate-800">
+              {{ r.equipo_nombre }}
+              <span class="text-sm font-medium text-slate-400">({{ r.equipo_codigo }})</span>
+            </p>
+            <p class="text-sm text-slate-500">{{ r.empresa_razon_social }}</p>
+            <div class="mt-5"><app-renta-pasos [estado]="r.estado" [etiquetas]="false" /></div>
+            @if (isClient() && r.estado !== 'solicitada' && etapa(r.estado); as e) {
+              <p class="mt-3 text-sm font-medium text-slate-600">{{ e.pista }}</p>
+            }
 
-        <dl class="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
-          <div>
-            <dt class="label">Equipo</dt>
-            <dd>{{ r.equipo_nombre }} ({{ r.equipo_codigo }})</dd>
+            @if (r.estado === 'solicitada' && r.vence_en && !expired()) {
+              <p class="mt-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Equipo reservado
+                <app-countdown [until]="r.vence_en" (expired)="expired.set(true)" /> más mientras
+                ventas cotiza.
+              </p>
+            }
+            @if (r.estado === 'apartada' && r.vence_en) {
+              <p role="status" class="alert-ok mt-2">
+                Equipo apartado.
+                @if (isClient()) {
+                  Tienes
+                  <app-countdown [until]="r.vence_en" (expired)="expired.set(true)" /> para cumplir
+                  los requisitos y depositar el anticipo.
+                } @else {
+                  Faltan <app-countdown [until]="r.vence_en" (expired)="expired.set(true)" /> para
+                  que venza el apartado si el cliente no cumple.
+                }
+              </p>
+            }
+            @if (r.estado === 'vencida') {
+              <p class="alert-error mt-2">
+                La reserva venció y el equipo volvió a estar disponible. Puedes volver a
+                solicitarlo.
+              </p>
+            }
+            @if (r.motivo_cierre && (r.estado === 'rechazada' || r.estado === 'cancelada')) {
+              <p class="alert-error mt-2">{{ r.motivo_cierre }}</p>
+            }
           </div>
-          <div>
-            <dt class="label">Empresa</dt>
-            <dd>{{ r.empresa_razon_social }}</dd>
-          </div>
-          <div>
-            <dt class="label">Periodo</dt>
-            <dd>
-              {{ r.desde | date: 'dd/MM/yyyy HH:mm' }} → {{ r.hasta | date: 'dd/MM/yyyy HH:mm' }}
-            </dd>
-          </div>
-          <div>
-            <dt class="label">Solicitó</dt>
-            <dd>{{ r.solicitante_nombre }}</dd>
-          </div>
-          <div>
-            <dt class="label">Lugar</dt>
-            <dd>{{ r.destino }}</dd>
-          </div>
-          <div>
-            <dt class="label">Operador</dt>
-            <dd>{{ operador[r.operador_modo] }}</dd>
-          </div>
-          <div>
-            <dt class="label">Traslado</dt>
-            <dd>{{ transporte[r.transporte] }}</dd>
-          </div>
-          @if (r.notas) {
-            <div>
-              <dt class="label">Notas</dt>
-              <dd>{{ r.notas }}</dd>
+        </div>
+
+        <div class="border-t border-slate-100 p-6">
+          <dl class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="rounded-xl bg-slate-50 px-4 py-3">
+              <dt class="label !mb-0.5">Periodo</dt>
+              <dd class="text-sm font-semibold text-slate-800">
+                {{ r.desde | date: 'dd/MM/yyyy HH:mm' }} → {{ r.hasta | date: 'dd/MM/yyyy HH:mm' }}
+              </dd>
+            </div>
+            <div class="rounded-xl bg-slate-50 px-4 py-3">
+              <dt class="label !mb-0.5">Lugar</dt>
+              <dd class="text-sm font-semibold text-slate-800">{{ r.destino }}</dd>
+            </div>
+            <div class="rounded-xl bg-slate-50 px-4 py-3">
+              <dt class="label !mb-0.5">Solicitó</dt>
+              <dd class="text-sm font-semibold text-slate-800">{{ r.solicitante_nombre }}</dd>
+            </div>
+            <div class="rounded-xl bg-slate-50 px-4 py-3">
+              <dt class="label !mb-0.5">Operador</dt>
+              <dd class="text-sm font-semibold text-slate-800">{{ operador[r.operador_modo] }}</dd>
+            </div>
+            <div class="rounded-xl bg-slate-50 px-4 py-3">
+              <dt class="label !mb-0.5">Traslado</dt>
+              <dd class="text-sm font-semibold text-slate-800">{{ transporte[r.transporte] }}</dd>
+            </div>
+            @if (r.total !== null) {
+              <div class="rounded-xl bg-orange-50 px-4 py-3">
+                <dt class="label !mb-0.5">Total cotizado</dt>
+                <dd class="text-sm font-extrabold text-orange-700">
+                  {{ r.total | currency: 'MXN' : 'symbol-narrow' : '1.0-2' }}
+                </dd>
+              </div>
+            }
+            @if (r.notas) {
+              <div class="rounded-xl bg-slate-50 px-4 py-3 sm:col-span-2 lg:col-span-3">
+                <dt class="label !mb-0.5">Notas</dt>
+                <dd class="text-sm text-slate-800">{{ r.notas }}</dd>
+              </div>
+            }
+          </dl>
+
+          @if (canCancel()) {
+            <div class="mt-4 flex items-center gap-3 text-xs">
+              @if (confirmCancel()) {
+                <span>¿Cancelar esta solicitud?</span>
+                <button type="button" class="link text-rose-700" (click)="cancel()">
+                  Sí, cancelar
+                </button>
+                <button type="button" class="link" (click)="confirmCancel.set(false)">No</button>
+              } @else {
+                <button type="button" class="btn-secondary" (click)="confirmCancel.set(true)">
+                  Cancelar solicitud
+                </button>
+              }
             </div>
           }
-        </dl>
-
-        @if (canCancel()) {
-          <div class="mt-4 flex items-center gap-3 text-xs">
-            @if (confirmCancel()) {
-              <span>¿Cancelar esta solicitud?</span>
-              <button type="button" class="link text-rose-700" (click)="cancel()">
-                Sí, cancelar
-              </button>
-              <button type="button" class="link" (click)="confirmCancel.set(false)">No</button>
-            } @else {
-              <button type="button" class="btn-secondary" (click)="confirmCancel.set(true)">
-                Cancelar solicitud
-              </button>
-            }
-          </div>
-        }
+        </div>
       </section>
 
       @if (cotizacion(); as c) {
         <section class="card mt-4">
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <h2 class="text-sm font-black">Cotización</h2>
+            <h2 class="text-lg font-bold text-slate-900">Cotización</h2>
             @if (c.estado === 'aceptada') {
               <span
                 class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800"
@@ -202,7 +234,7 @@ const TRANSPORTE = { entrega: 'Entrega CHRISCO en la obra', recoge: 'Lo recoge e
       @if (canQuote()) {
         <section class="card mt-4">
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <h2 class="text-sm font-black">
+            <h2 class="text-lg font-bold text-slate-900">
               {{ cotizacion() ? 'Nueva versión de la cotización' : 'Cotizar' }}
             </h2>
             @if (cotizacion() && !editing()) {
@@ -235,14 +267,17 @@ const TRANSPORTE = { entrega: 'Entrega CHRISCO en la obra', recoge: 'Lo recoge e
       }
 
       <section class="card mt-4">
-        <h2 class="text-sm font-black">Requisitos</h2>
+        <h2 class="text-lg font-bold text-slate-900">Requisitos</h2>
         @for (section of sections; track section.tipo) {
           @if (itemsOf(r.requisitos, section.tipo).length) {
-            <h3 class="mt-3 text-xs font-black text-slate-500 uppercase">{{ section.titulo }}</h3>
-            <ul class="mt-1 space-y-2 text-sm">
+            <h3 class="eyebrow mt-5">{{ section.titulo }}</h3>
+            <ul class="mt-2 grid gap-3 text-sm sm:grid-cols-2">
               @for (item of itemsOf(r.requisitos, section.tipo); track item.codigo) {
-                <li>
-                  <p class="font-semibold">{{ item.titulo }}</p>
+                <li
+                  class="rounded-xl border-l-4 bg-slate-50 px-4 py-3"
+                  [class]="acento[section.tipo]"
+                >
+                  <p class="font-semibold text-slate-900">{{ item.titulo }}</p>
                   <p class="text-xs text-slate-500">{{ item.detalle }}</p>
                 </li>
               }
@@ -253,7 +288,7 @@ const TRANSPORTE = { entrega: 'Entrega CHRISCO en la obra', recoge: 'Lo recoge e
 
       @if (isClient() && r.estado === 'solicitada' && whatsapp(); as w) {
         <section class="card mt-4">
-          <h2 class="text-sm font-black">Mensaje para ventas</h2>
+          <h2 class="text-lg font-bold text-slate-900">Mensaje para ventas</h2>
           <textarea
             readonly
             rows="8"
@@ -284,6 +319,13 @@ export class RentaDetalle implements OnInit {
   readonly id = input.required<string>();
 
   protected readonly sections = SECTIONS;
+  protected readonly acento: Record<Requisito['tipo'], string> = {
+    documento: 'border-sky-400',
+    condicion: 'border-amber-400',
+    cargo: 'border-slate-300',
+  };
+  protected readonly foto = (id: string) => fotoUrl(id, 'full');
+  protected readonly etapa = (estado: Renta['estado']) => ETAPAS[estado];
   protected readonly operador = OPERADOR;
   protected readonly transporte = TRANSPORTE;
   protected readonly renta = signal<Renta | null>(null);

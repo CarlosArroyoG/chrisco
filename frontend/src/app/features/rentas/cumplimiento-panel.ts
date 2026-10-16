@@ -47,7 +47,7 @@ interface Rechazo {
   template: `
     @if (data(); as c) {
       <section class="card mt-4" aria-labelledby="cumpl-titulo">
-        <h2 id="cumpl-titulo" class="text-sm font-black">Cumplimiento y pagos</h2>
+        <h2 id="cumpl-titulo" class="text-lg font-bold text-slate-900">Cumplimiento y pagos</h2>
         @if (error()) {
           <p role="alert" class="alert-error mt-2">{{ error() }}</p>
         }
@@ -57,37 +57,70 @@ interface Rechazo {
           </p>
         }
 
-        <dl class="mt-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-          <div>
-            <dt class="label">Total</dt>
-            <dd>{{ c.total | currency: 'MXN' : 'symbol-narrow' : '1.2-2' }}</dd>
+        <dl class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div class="rounded-xl bg-slate-50 px-4 py-3">
+            <dt class="label !mb-0.5">Total</dt>
+            <dd class="font-bold text-slate-900">
+              {{ c.total | currency: 'MXN' : 'symbol-narrow' : '1.2-2' }}
+            </dd>
           </div>
-          <div>
-            <dt class="label">Anticipo</dt>
-            <dd>{{ c.anticipo_requerido | currency: 'MXN' : 'symbol-narrow' : '1.2-2' }}</dd>
+          <div class="rounded-xl bg-amber-50 px-4 py-3">
+            <dt class="label !mb-0.5">Anticipo</dt>
+            <dd class="font-bold text-amber-800">
+              {{ c.anticipo_requerido | currency: 'MXN' : 'symbol-narrow' : '1.2-2' }}
+            </dd>
           </div>
-          <div>
-            <dt class="label">Pagado</dt>
-            <dd data-testid="pagado">
+          <div class="rounded-xl bg-emerald-50 px-4 py-3">
+            <dt class="label !mb-0.5">Pagado</dt>
+            <dd class="font-bold text-emerald-800" data-testid="pagado">
               {{ c.pagado | currency: 'MXN' : 'symbol-narrow' : '1.2-2' }}
             </dd>
           </div>
-          <div>
-            <dt class="label">Saldo</dt>
-            <dd data-testid="saldo">{{ c.saldo | currency: 'MXN' : 'symbol-narrow' : '1.2-2' }}</dd>
+          <div class="rounded-xl bg-orange-50 px-4 py-3">
+            <dt class="label !mb-0.5">Saldo</dt>
+            <dd class="font-bold text-orange-800" data-testid="saldo">
+              {{ c.saldo | currency: 'MXN' : 'symbol-narrow' : '1.2-2' }}
+            </dd>
           </div>
         </dl>
+        @if (avance(c) !== null) {
+          <div class="mt-3">
+            <div class="h-2 overflow-hidden rounded-full bg-slate-100">
+              <div
+                class="h-full rounded-full bg-linear-to-r from-emerald-400 to-emerald-500 transition-all duration-700"
+                [style.width.%]="avance(c)"
+              ></div>
+            </div>
+            <p class="mt-1 text-xs text-slate-500">{{ avance(c) }}% de la renta pagada</p>
+          </div>
+        }
 
-        <ul class="mt-4 divide-y text-sm">
+        <ul class="mt-5 space-y-3 text-sm">
           @for (item of c.checklist; track item.codigo) {
-            <li class="py-3" [attr.data-requisito]="item.codigo">
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <p class="font-semibold">{{ item.titulo }}</p>
-                  <p class="text-xs text-slate-500">{{ item.detalle }}</p>
+            <li
+              class="rounded-2xl border p-4 transition"
+              [class]="
+                item.situacion === 'cumplido'
+                  ? 'border-emerald-200 bg-emerald-50/40'
+                  : 'border-slate-200 bg-white'
+              "
+              [attr.data-requisito]="item.codigo"
+            >
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div class="flex min-w-0 gap-3">
+                  <span
+                    class="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold"
+                    [class]="icono(item.situacion).classes"
+                    aria-hidden="true"
+                    >{{ icono(item.situacion).simbolo }}</span
+                  >
+                  <div class="min-w-0">
+                    <p class="font-semibold text-slate-900">{{ item.titulo }}</p>
+                    <p class="text-xs text-slate-500">{{ item.detalle }}</p>
+                  </div>
                 </div>
                 <span
-                  class="rounded-full px-2.5 py-0.5 text-[11px] font-bold"
+                  class="rounded-full px-2.5 py-1 text-[11px] font-bold"
                   [class]="situacion[item.situacion].classes"
                   >{{ situacion[item.situacion].label }}</span
                 >
@@ -340,6 +373,25 @@ export class CumplimientoPanel implements OnInit {
 
   ngOnInit(): void {
     this.reload();
+  }
+
+  protected icono(estado: ChecklistItem['situacion']): { simbolo: string; classes: string } {
+    switch (estado) {
+      case 'cumplido':
+        return { simbolo: '✓', classes: 'bg-emerald-500 text-white' };
+      case 'en_revision':
+        return { simbolo: '…', classes: 'bg-sky-100 text-sky-700' };
+      case 'rechazado':
+        return { simbolo: '✕', classes: 'bg-rose-100 text-rose-700' };
+      default:
+        return { simbolo: '!', classes: 'bg-amber-100 text-amber-700' };
+    }
+  }
+
+  /** Porcentaje de la renta ya pagado (confirmado), o null si aún no hay total. */
+  protected avance(c: Cumplimiento): number | null {
+    if (!c.total) return null;
+    return Math.min(100, Math.round((c.pagado / c.total) * 100));
   }
 
   protected docsOf(requisito: string) {
