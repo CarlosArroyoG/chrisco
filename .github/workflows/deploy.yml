@@ -1,0 +1,29 @@
+name: Deploy
+
+# Cada push a main le avisa a Coolify que despliegue. Alternativa al webhook de GitHub de Coolify:
+# solo hace falta el secreto COOLIFY_DEPLOY_URL (la dirección «Deploy Webhook» del recurso en
+# Coolify) y, si Coolify la pide, COOLIFY_TOKEN (un token de API de Coolify).
+on:
+  push:
+    branches: [main]
+
+jobs:
+  coolify:
+    runs-on: ubuntu-latest
+    env:
+      COOLIFY_DEPLOY_URL: ${{ secrets.COOLIFY_DEPLOY_URL }}
+      COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+    steps:
+      - name: Pedir el despliegue a Coolify
+        run: |
+          if [ -z "$COOLIFY_DEPLOY_URL" ]; then
+            echo "COOLIFY_DEPLOY_URL no está configurado: no se pide el despliegue."
+            exit 0
+          fi
+          if [ -n "$COOLIFY_TOKEN" ]; then
+            curl --fail --show-error --silent --max-time 60 \
+              -H "Authorization: Bearer $COOLIFY_TOKEN" "$COOLIFY_DEPLOY_URL"
+          else
+            curl --fail --show-error --silent --max-time 60 "$COOLIFY_DEPLOY_URL"
+          fi
+          echo "Despliegue solicitado."
