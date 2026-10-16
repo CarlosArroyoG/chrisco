@@ -473,6 +473,26 @@ export type CompanyUserOut = {
 };
 
 /**
+ * Comparativo
+ *
+ * Una cifra del mes contra la del mes anterior.
+ */
+export type Comparativo = {
+    /**
+     * Actual
+     */
+    actual: number;
+    /**
+     * Anterior
+     */
+    anterior: number;
+    /**
+     * Cambio Pct
+     */
+    cambio_pct: number | null;
+};
+
+/**
  * CondicionIn
  */
 export type CondicionIn = {
@@ -652,6 +672,58 @@ export type CumplimientoOut = {
      * Confirmada
      */
     confirmada: boolean;
+};
+
+/**
+ * DashboardOut
+ */
+export type DashboardOut = {
+    /**
+     * Mes
+     */
+    mes: string;
+    /**
+     * Mes Nombre
+     */
+    mes_nombre: string;
+    ingresos: Comparativo;
+    gastos: Comparativo;
+    ganancia: Comparativo;
+    vendido: Comparativo;
+    /**
+     * Por Cobrar
+     */
+    por_cobrar: number;
+    /**
+     * Pagos Por Confirmar
+     */
+    pagos_por_confirmar: number;
+    /**
+     * Empresas Pendientes
+     */
+    empresas_pendientes: number;
+    mantenimiento: Mantenimiento;
+    flota: Flota;
+    /**
+     * Serie Mensual
+     */
+    serie_mensual: Array<PuntoMensual>;
+    /**
+     * Rentas Por Estado
+     */
+    rentas_por_estado: Array<RentasEstadoTotal>;
+    /**
+     * Gastos Por Categoria
+     */
+    gastos_por_categoria: Array<GastoCategoriaTotal>;
+    /**
+     * Top Equipos
+     */
+    top_equipos: Array<EquipoIngreso>;
+    /**
+     * Proximas Salidas
+     */
+    proximas_salidas: Array<ProximaSalida>;
 };
 
 /**
@@ -967,6 +1039,28 @@ export type EquipoIn = {
 };
 
 /**
+ * EquipoIngreso
+ */
+export type EquipoIngreso = {
+    /**
+     * Equipo Id
+     */
+    equipo_id: string;
+    /**
+     * Codigo
+     */
+    codigo: string;
+    /**
+     * Nombre
+     */
+    nombre: string;
+    /**
+     * Ingresos
+     */
+    ingresos: number;
+};
+
+/**
  * EquipoOut
  *
  * Vista completa para el personal. Solo describe datos: no revalida las reglas de entrada.
@@ -1142,6 +1236,32 @@ export type EquipoUpdate = {
 export type EstadoActual = 'libre' | 'bloqueado' | 'rentado' | 'mantenimiento' | 'baja';
 
 /**
+ * Flota
+ */
+export type Flota = {
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Rentados
+     */
+    rentados: number;
+    /**
+     * Bloqueados
+     */
+    bloqueados: number;
+    /**
+     * Libres
+     */
+    libres: number;
+    /**
+     * Utilizacion Pct
+     */
+    utilizacion_pct: number;
+};
+
+/**
  * FotoOut
  */
 export type FotoOut = {
@@ -1153,6 +1273,102 @@ export type FotoOut = {
      * Position
      */
     position: number;
+};
+
+/**
+ * GastoCategoria
+ */
+export type GastoCategoria = 'mantenimiento' | 'refacciones' | 'combustible' | 'operador' | 'flete' | 'otro';
+
+/**
+ * GastoCategoriaTotal
+ */
+export type GastoCategoriaTotal = {
+    categoria: GastoCategoria;
+    /**
+     * Total
+     */
+    total: number;
+};
+
+/**
+ * GastoIn
+ */
+export type GastoIn = {
+    /**
+     * Fecha
+     */
+    fecha: string;
+    categoria: GastoCategoria;
+    /**
+     * Concepto
+     */
+    concepto: string;
+    /**
+     * Monto
+     */
+    monto: number | string;
+    /**
+     * Equipo Id
+     */
+    equipo_id?: string | null;
+};
+
+/**
+ * GastoOut
+ */
+export type GastoOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Fecha
+     */
+    fecha: string;
+    categoria: GastoCategoria;
+    /**
+     * Concepto
+     */
+    concepto: string;
+    /**
+     * Monto
+     */
+    monto: number;
+    /**
+     * Equipo Codigo
+     */
+    equipo_codigo: string | null;
+    /**
+     * Equipo Nombre
+     */
+    equipo_nombre: string | null;
+    /**
+     * Registrado Por Nombre
+     */
+    registrado_por_nombre: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * GastosOut
+ */
+export type GastosOut = {
+    /**
+     * Items
+     */
+    items: Array<GastoOut>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Suma
+     */
+    suma: number;
 };
 
 /**
@@ -1213,6 +1429,20 @@ export type LoginRequest = {
      * Password
      */
     password: string;
+};
+
+/**
+ * Mantenimiento
+ */
+export type Mantenimiento = {
+    /**
+     * Vencidos
+     */
+    vencidos: number;
+    /**
+     * Proximos
+     */
+    proximos: number;
 };
 
 /**
@@ -1620,6 +1850,58 @@ export type PreviewOut = {
 };
 
 /**
+ * ProximaSalida
+ */
+export type ProximaSalida = {
+    /**
+     * Renta Id
+     */
+    renta_id: string;
+    /**
+     * Folio
+     */
+    folio: string;
+    /**
+     * Equipo
+     */
+    equipo: string;
+    /**
+     * Empresa
+     */
+    empresa: string;
+    /**
+     * Desde
+     */
+    desde: string;
+};
+
+/**
+ * PuntoMensual
+ */
+export type PuntoMensual = {
+    /**
+     * Mes
+     */
+    mes: string;
+    /**
+     * Etiqueta
+     */
+    etiqueta: string;
+    /**
+     * Ingresos
+     */
+    ingresos: number;
+    /**
+     * Gastos
+     */
+    gastos: number;
+    /**
+     * Ganancia
+     */
+    ganancia: number;
+};
+
+/**
  * RealizadoIn
  *
  * El servicio se hizo; sin fecha ni horómetro se toman los de hoy y los del equipo.
@@ -1637,6 +1919,10 @@ export type RealizadoIn = {
      * Notas
      */
     notas?: string | null;
+    /**
+     * Costo
+     */
+    costo?: number | string | null;
 };
 
 /**
@@ -1767,6 +2053,17 @@ export type RentaOut = {
      * Created At
      */
     created_at: string;
+};
+
+/**
+ * RentasEstadoTotal
+ */
+export type RentasEstadoTotal = {
+    estado: RentaEstado;
+    /**
+     * Total
+     */
+    total: number;
 };
 
 /**
@@ -4320,6 +4617,119 @@ export type ResendInvitationAdminPersonalUserIdInvitacionPostResponses = {
 };
 
 export type ResendInvitationAdminPersonalUserIdInvitacionPostResponse = ResendInvitationAdminPersonalUserIdInvitacionPostResponses[keyof ResendInvitationAdminPersonalUserIdInvitacionPostResponses];
+
+export type GetDashboardAdminDashboardGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/dashboard';
+};
+
+export type GetDashboardAdminDashboardGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: DashboardOut;
+};
+
+export type GetDashboardAdminDashboardGetResponse = GetDashboardAdminDashboardGetResponses[keyof GetDashboardAdminDashboardGetResponses];
+
+export type ListGastosAdminGastosGetData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Mes
+         */
+        mes?: string | null;
+        /**
+         * Categoria
+         */
+        categoria?: GastoCategoria | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/admin/gastos';
+};
+
+export type ListGastosAdminGastosGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListGastosAdminGastosGetError = ListGastosAdminGastosGetErrors[keyof ListGastosAdminGastosGetErrors];
+
+export type ListGastosAdminGastosGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: GastosOut;
+};
+
+export type ListGastosAdminGastosGetResponse = ListGastosAdminGastosGetResponses[keyof ListGastosAdminGastosGetResponses];
+
+export type CreateGastoAdminGastosPostData = {
+    body: GastoIn;
+    path?: never;
+    query?: never;
+    url: '/admin/gastos';
+};
+
+export type CreateGastoAdminGastosPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateGastoAdminGastosPostError = CreateGastoAdminGastosPostErrors[keyof CreateGastoAdminGastosPostErrors];
+
+export type CreateGastoAdminGastosPostResponses = {
+    /**
+     * Successful Response
+     */
+    201: GastoOut;
+};
+
+export type CreateGastoAdminGastosPostResponse = CreateGastoAdminGastosPostResponses[keyof CreateGastoAdminGastosPostResponses];
+
+export type DeleteGastoAdminGastosGastoIdDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Gasto Id
+         */
+        gasto_id: string;
+    };
+    query?: never;
+    url: '/admin/gastos/{gasto_id}';
+};
+
+export type DeleteGastoAdminGastosGastoIdDeleteErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteGastoAdminGastosGastoIdDeleteError = DeleteGastoAdminGastosGastoIdDeleteErrors[keyof DeleteGastoAdminGastosGastoIdDeleteErrors];
+
+export type DeleteGastoAdminGastosGastoIdDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteGastoAdminGastosGastoIdDeleteResponse = DeleteGastoAdminGastosGastoIdDeleteResponses[keyof DeleteGastoAdminGastosGastoIdDeleteResponses];
 
 export type HealthHealthGetData = {
     body?: never;

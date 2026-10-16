@@ -9,6 +9,7 @@ import pytest
 from PIL import Image
 from sqlalchemy import text
 
+from app.core.clock import today
 from app.core.config import get_settings
 from app.core.errors import Conflict
 from app.db.session import SessionLocal
@@ -47,7 +48,7 @@ def subir(client, headers, renta_id, requisito="contrato", data=PDF, name="doc.p
 
 
 def pagar(client, headers, renta_id, monto=ANTICIPO, fecha=None, referencia="SPEI123", data=PDF):
-    fecha = fecha or datetime.now(UTC).date().isoformat()
+    fecha = fecha or today().isoformat()
     campos = {"monto": str(monto), "fecha_pago": fecha}
     if referencia:
         campos["referencia"] = referencia

@@ -106,7 +106,7 @@ test.describe.serial('Solicitud de renta', () => {
     page,
   }) => {
     await signIn(page, C1.email, C1.password);
-    await page.getByRole('link', { name: 'Mis rentas' }).click();
+    await page.getByRole('main').getByRole('link', { name: 'Mis rentas', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Mis rentas (1)' })).toBeVisible();
     const fila = page.getByRole('row').filter({ hasText: folio });
     await expect(fila).toContainText('Renta Alfa');

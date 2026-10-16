@@ -40,7 +40,7 @@ export class MantenimientoService {
   /** El servicio se hizo: sin fecha ni horómetro se toman los de hoy y los del equipo. */
   realizado(
     planId: string,
-    body: { horometro?: number; notas?: string },
+    body: { horometro?: number; notas?: string; costo?: number },
   ): Observable<RegistroMantenimiento> {
     return this.http.post<RegistroMantenimiento>(`${this.base}/${planId}/realizado`, body);
   }

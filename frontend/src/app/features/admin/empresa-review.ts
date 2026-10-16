@@ -23,7 +23,7 @@ import { AdminEmpresasService } from './admin-empresas.service';
   imports: [DatePipe, ReactiveFormsModule, RouterLink, StatusBadge],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <a routerLink="/admin" class="link text-xs">← Volver a empresas</a>
+    <a routerLink="/admin/empresas" class="link text-xs">← Volver a empresas</a>
     @if (error()) {
       <p role="alert" class="alert-error mt-3">{{ error() }}</p>
     }

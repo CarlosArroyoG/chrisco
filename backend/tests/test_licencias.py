@@ -1,9 +1,10 @@
 """Licencia federal del operador de la empresa cliente: revisión manual con número y vigencia."""
 
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 
 import pytest
 
+from app.core.clock import today
 from tests.rentas_helpers import apartar
 from tests.test_cumplimiento import (
     cumplimiento_de,
@@ -43,7 +44,7 @@ def aprobar(client, headers, renta_id, doc_id, **datos):
 
 
 def dia(delta: int) -> str:
-    return (datetime.now(UTC) + timedelta(days=delta)).date().isoformat()
+    return (today() + timedelta(days=delta)).isoformat()
 
 
 def test_la_licencia_es_un_requisito_cuando_opera_el_cliente(

@@ -79,7 +79,8 @@ test.describe.serial('Registro, revisión y equipo de una empresa', () => {
   test('ventas ve la empresa y su constancia pero no puede decidir', async ({ page, context }) => {
     await login(page, VENTAS.email, VENTAS.password);
     await expect(page).toHaveURL(/\/admin$/);
-    await page.getByRole('link', { name: 'Revisar' }).click();
+    await page.getByRole('link', { name: 'Empresas', exact: true }).click();
+    await page.getByRole('link', { name: 'Revisar', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Constructora E2E SA de CV' })).toBeVisible();
     await expect(page.getByText('Solo un administrador puede aprobar o rechazar.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Aprobar empresa' })).toHaveCount(0);
@@ -92,8 +93,9 @@ test.describe.serial('Registro, revisión y equipo de una empresa', () => {
 
   test('el admin rechaza la empresa con un motivo', async ({ page }) => {
     await login(page, ADMIN.email, ADMIN.password);
+    await page.getByRole('link', { name: 'Empresas', exact: true }).click();
     await expect(page.getByRole('cell', { name: 'Constructora E2E SA de CV' })).toBeVisible();
-    await page.getByRole('link', { name: 'Revisar' }).click();
+    await page.getByRole('link', { name: 'Revisar', exact: true }).click();
     await page.getByLabel(/Motivo del rechazo/).fill('La constancia no es legible');
     await page.getByRole('button', { name: 'Rechazar' }).click();
     await expect(page.getByText('Motivo del rechazo: La constancia no es legible')).toBeVisible();
@@ -117,7 +119,8 @@ test.describe.serial('Registro, revisión y equipo de una empresa', () => {
 
   test('el admin aprueba la empresa', async ({ page }) => {
     await login(page, ADMIN.email, ADMIN.password);
-    await page.getByRole('link', { name: 'Revisar' }).click();
+    await page.getByRole('link', { name: 'Empresas', exact: true }).click();
+    await page.getByRole('link', { name: 'Revisar', exact: true }).click();
     await page.getByRole('button', { name: 'Aprobar empresa' }).click();
     await expect(page.getByText('Aprobada', { exact: true })).toBeVisible();
     await logout(page);
@@ -186,6 +189,6 @@ test.describe.serial('Registro, revisión y equipo de una empresa', () => {
     await expect(page).toHaveURL(/\/admin$/);
     await page.reload();
     await expect(page).toHaveURL(/\/admin$/);
-    await expect(page.getByRole('heading', { name: 'Empresas clientes' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^Hola, / })).toBeVisible();
   });
 });

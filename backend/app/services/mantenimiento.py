@@ -13,8 +13,10 @@ from app.core.clock import today
 from app.core.config import get_settings
 from app.core.errors import Conflict, InvalidInput, NotFound
 from app.models.equipo import Equipo, EquipoStatus
+from app.models.gasto import GastoCategoria
 from app.models.mantenimiento import MantenimientoPlan, MantenimientoRegistro
 from app.models.user import Role, User
+from app.schemas.gasto import GastoIn
 from app.schemas.mantenimiento import (
     AtencionItem,
     Estado,
@@ -23,7 +25,7 @@ from app.schemas.mantenimiento import (
     RealizadoIn,
     RegistroOut,
 )
-from app.services import notifications
+from app.services import gastos, notifications
 from app.services.mailer import Mailer
 
 logger = logging.getLogger(__name__)
@@ -151,6 +153,19 @@ def register_done(
         fecha=fecha, horometro=horometro, notas=data.notas, registrado_por_id=staff.id
     )
     plan.registros.append(registro)
+    if data.costo is not None:
+        gastos.create(
+            db,
+            staff,
+            GastoIn(
+                fecha=fecha,
+                categoria=GastoCategoria.MANTENIMIENTO,
+                concepto=f"{plan.nombre} — {plan.equipo.codigo}",
+                monto=data.costo,
+                equipo_id=plan.equipo_id,
+            ),
+            commit=False,
+        )
     plan.ultima_fecha = fecha
     plan.ultimo_horometro = horometro
     plan.alerta_enviada = None

@@ -6,8 +6,10 @@ from slowapi.middleware import SlowAPIMiddleware
 
 from app.api.routes import (
     admin_bloqueos,
+    admin_dashboard,
     admin_empresas,
     admin_equipos,
+    admin_gastos,
     admin_mantenimiento,
     admin_personal,
     auth,
@@ -59,6 +61,8 @@ app.include_router(cobranza.router)
 app.include_router(movimientos.router)
 app.include_router(admin_mantenimiento.router)
 app.include_router(admin_personal.router)
+app.include_router(admin_dashboard.router)
+app.include_router(admin_gastos.router)
 
 
 @app.get("/health", tags=["health"])

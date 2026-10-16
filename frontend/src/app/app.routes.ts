@@ -46,7 +46,8 @@ export const routes: Routes = [
         children: [
           {
             path: '',
-            loadComponent: () => import('./features/admin/admin-home').then((m) => m.AdminHome),
+            loadComponent: () =>
+              import('./features/admin/dashboard/dashboard-page').then((m) => m.DashboardPage),
           },
           {
             path: 'empresas/:id',
@@ -87,6 +88,15 @@ export const routes: Routes = [
             path: 'cobranza',
             loadComponent: () =>
               import('./features/admin/cobranza/cobranza-page').then((m) => m.CobranzaPage),
+          },
+          {
+            path: 'empresas',
+            loadComponent: () => import('./features/admin/admin-home').then((m) => m.AdminHome),
+          },
+          {
+            path: 'gastos',
+            loadComponent: () =>
+              import('./features/admin/gastos/gastos-page').then((m) => m.GastosPage),
           },
           {
             path: 'mantenimiento',

@@ -60,6 +60,17 @@ import { MantenimientoService } from './mantenimiento.service';
                         maxlength="300"
                       />
                     </div>
+                    <div>
+                      <label [for]="'hecho-costo-' + p.id" class="label">Costo (opcional)</label>
+                      <input
+                        [id]="'hecho-costo-' + p.id"
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        formControlName="costo"
+                        class="input w-32"
+                      />
+                    </div>
                     <button type="submit" class="btn-primary" [disabled]="busy()">
                       Registrar servicio
                     </button>
@@ -158,7 +169,7 @@ export class EquipoMantenimiento implements OnInit {
     cada_horas: [null as number | null],
     cada_dias: [null as number | null],
   });
-  protected readonly hechoForm = this.fb.group({ notas: [''] });
+  protected readonly hechoForm = this.fb.group({ notas: [''], costo: [null as number | null] });
 
   ngOnInit(): void {
     this.load();
@@ -185,13 +196,16 @@ export class EquipoMantenimiento implements OnInit {
   }
 
   protected registrarHecho(plan: PlanMantenimiento): void {
-    const notas = this.hechoForm.getRawValue().notas.trim();
+    const { notas, costo } = this.hechoForm.getRawValue();
     this.run(
-      this.service.realizado(plan.id, notas ? { notas } : {}),
+      this.service.realizado(plan.id, {
+        ...(notas.trim() ? { notas: notas.trim() } : {}),
+        ...(costo ? { costo } : {}),
+      }),
       'No se pudo registrar el servicio.',
       () => {
         this.hecho.set(null);
-        this.hechoForm.reset({ notas: '' });
+        this.hechoForm.reset({ notas: '', costo: null });
       },
     );
   }

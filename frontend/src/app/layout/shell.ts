@@ -16,9 +16,11 @@ interface NavItem {
 
 /** Secciones del personal (admin y ventas). */
 const STAFF_NAV: NavItem[] = [
-  { path: '/admin', label: 'Empresas', icon: 'empresas', exact: true },
+  { path: '/admin', label: 'Panel', icon: 'panel', exact: true },
+  { path: '/admin/empresas', label: 'Empresas', icon: 'empresas', exact: false },
   { path: '/admin/rentas', label: 'Rentas', icon: 'rentas', exact: false },
   { path: '/admin/cobranza', label: 'Cobranza', icon: 'cobranza', exact: false },
+  { path: '/admin/gastos', label: 'Gastos', icon: 'gastos', exact: false },
   { path: '/admin/mantenimiento', label: 'Mantenimiento', icon: 'mantenimiento', exact: false },
   { path: '/admin/equipos', label: 'Equipos', icon: 'equipos', exact: false },
   { path: '/admin/categorias', label: 'Categorías', icon: 'categorias', exact: false },

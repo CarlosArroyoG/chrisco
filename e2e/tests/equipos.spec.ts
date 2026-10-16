@@ -64,7 +64,7 @@ test.describe.serial('Registro de equipos y catálogo', () => {
 
   test('crea un equipo: las especificaciones salen de su categoría', async ({ page }) => {
     await signIn(page, ADMIN.email, ADMIN.password);
-    await page.getByRole('link', { name: 'Equipos' }).click();
+    await page.getByRole('link', { name: 'Equipos', exact: true }).click();
     await page.getByRole('link', { name: 'Nuevo equipo' }).click();
 
     await expect(page.getByLabel(/Peso máximo/)).toHaveCount(0); // aún no hay categoría elegida
@@ -179,7 +179,7 @@ test.describe.serial('Registro de equipos y catálogo', () => {
 
   test('ventas consulta pero no modifica', async ({ page }) => {
     await signIn(page, VENTAS.email, VENTAS.password);
-    await page.getByRole('link', { name: 'Equipos' }).click();
+    await page.getByRole('link', { name: 'Equipos', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Equipos (2)' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Nuevo equipo' })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Importar CSV' })).toHaveCount(0);

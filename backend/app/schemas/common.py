@@ -23,5 +23,7 @@ Money = Annotated[Decimal, Field(ge=0, max_digits=12, decimal_places=2), _as_num
 Quantity = Annotated[Decimal, Field(gt=0, max_digits=12, decimal_places=2), _as_number]
 Hours = Annotated[Decimal, Field(ge=0, max_digits=10, decimal_places=1), _as_number]
 # Intervalos de mantenimiento (siempre positivos) y horas que faltan (negativas si ya se pasó).
+# Importes que pueden ser negativos (la ganancia de un mes con pérdida).
+SignedMoney = Annotated[Decimal, Field(max_digits=14, decimal_places=2), _as_number]
 PositiveHours = Annotated[Decimal, Field(gt=0, max_digits=10, decimal_places=1), _as_number]
 SignedHours = Annotated[Decimal, Field(max_digits=10, decimal_places=1), _as_number]

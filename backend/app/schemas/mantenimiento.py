@@ -4,7 +4,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
-from app.schemas.common import Hours, PositiveHours, SignedHours
+from app.schemas.common import Hours, PositiveHours, Quantity, SignedHours
 
 Estado = Literal["ok", "proximo", "vencido"]
 
@@ -34,6 +34,8 @@ class RealizadoIn(BaseModel):
     fecha: date | None = None
     horometro: Hours | None = None
     notas: Annotated[str, StringConstraints(max_length=300)] | None = None
+    # Lo que costó el servicio: si se indica, se registra también como gasto de mantenimiento.
+    costo: Quantity | None = None
 
 
 class PlanOut(BaseModel):

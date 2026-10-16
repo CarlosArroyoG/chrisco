@@ -48,7 +48,7 @@ test.describe.serial('Personal y operador', () => {
 
   test('solo el administrador ve y usa la sección de personal', async ({ page }) => {
     await signIn(page, VENTAS.email, VENTAS.password);
-    await expect(page.getByRole('link', { name: 'Personal' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Personal', exact: true })).toHaveCount(0);
     await page.goto('/admin/personal');
     await expect(page).not.toHaveURL(/\/admin\/personal/);
     await logout(page);
@@ -56,7 +56,7 @@ test.describe.serial('Personal y operador', () => {
 
   test('el admin da de alta a un operador y este crea su contraseña', async ({ page, browser }) => {
     await signIn(page, ADMIN.email, ADMIN.password);
-    await page.getByRole('link', { name: 'Personal' }).click();
+    await page.getByRole('link', { name: 'Personal', exact: true }).click();
     await page.getByLabel('Nombre completo').fill(OPERADOR.name);
     await page.getByLabel('Correo').fill(OPERADOR.email);
     await page.getByLabel('Rol', { exact: true }).selectOption('operador');
