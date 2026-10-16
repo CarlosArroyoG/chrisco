@@ -13,7 +13,7 @@ import { EquiposService } from './equipos.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a routerLink="/admin/equipos" class="link text-xs">← Volver a equipos</a>
-    <h1 class="mt-2 text-lg font-black">Importar equipos desde CSV</h1>
+    <h1 class="page-title">Importar equipos desde CSV</h1>
 
     <section class="card mt-3 space-y-3">
       <h2 class="text-sm font-black">1. Descarga la plantilla</h2>
@@ -84,7 +84,7 @@ import { EquiposService } from './equipos.service';
                 <th class="py-1">Problema</th>
               </tr>
             </thead>
-            <tbody class="divide-y">
+            <tbody class="table-body">
               @for (e of result.errors; track $index) {
                 <tr>
                   <td class="py-1.5 font-mono">{{ e.row }}</td>

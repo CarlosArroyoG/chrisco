@@ -40,9 +40,7 @@ const ESTADOS: { value: RentaEstado; label: string }[] = [
     @if (!isStaff()) {
       <a routerLink="/cliente" class="link text-xs">← Mi empresa</a>
     }
-    <h1 class="mt-2 text-lg font-black">
-      {{ isStaff() ? 'Rentas' : 'Mis rentas' }} ({{ list.total() }})
-    </h1>
+    <h1 class="page-title">{{ isStaff() ? 'Rentas' : 'Mis rentas' }} ({{ list.total() }})</h1>
 
     <div class="mt-3 grid gap-2 sm:grid-cols-3">
       <input
@@ -66,37 +64,37 @@ const ESTADOS: { value: RentaEstado; label: string }[] = [
       <p role="alert" class="alert-error mt-3">{{ list.error() }}</p>
     }
 
-    <div class="mt-3 overflow-x-auto rounded-xl border bg-white">
-      <table class="w-full text-left text-xs">
-        <thead class="bg-chrisco-charcoal text-[10px] font-bold text-white uppercase">
+    <div class="table-card mt-4">
+      <table class="w-full text-left text-sm">
+        <thead class="table-head">
           <tr>
-            <th class="p-3">Folio</th>
+            <th class="px-4 py-3.5">Folio</th>
             @if (isStaff()) {
-              <th class="p-3">Empresa</th>
+              <th class="px-4 py-3.5">Empresa</th>
             }
-            <th class="p-3">Equipo</th>
-            <th class="p-3">Periodo</th>
-            <th class="p-3">Estado</th>
-            <th class="p-3"></th>
+            <th class="px-4 py-3.5">Equipo</th>
+            <th class="px-4 py-3.5">Periodo</th>
+            <th class="px-4 py-3.5">Estado</th>
+            <th class="px-4 py-3.5"></th>
           </tr>
         </thead>
-        <tbody class="divide-y">
+        <tbody class="table-body">
           @for (r of list.items(); track r.id) {
             <tr>
-              <td class="p-3 font-mono font-bold">{{ r.folio }}</td>
+              <td class="px-4 py-3.5 font-mono font-bold">{{ r.folio }}</td>
               @if (isStaff()) {
-                <td class="p-3">{{ r.empresa_razon_social }}</td>
+                <td class="px-4 py-3.5">{{ r.empresa_razon_social }}</td>
               }
-              <td class="p-3">
+              <td class="px-4 py-3.5">
                 <span class="font-semibold">{{ r.equipo_nombre }}</span
                 ><br />
                 <span class="text-slate-500">{{ r.equipo_codigo }}</span>
               </td>
-              <td class="p-3">
+              <td class="px-4 py-3.5">
                 {{ r.desde | date: 'dd/MM/yy HH:mm' }} → {{ r.hasta | date: 'dd/MM/yy HH:mm' }}
               </td>
-              <td class="p-3"><app-status-badge [status]="r.estado" /></td>
-              <td class="p-3">
+              <td class="px-4 py-3.5"><app-status-badge [status]="r.estado" /></td>
+              <td class="px-4 py-3.5">
                 <a [routerLink]="[basePath(), r.id]" class="link">Ver</a>
               </td>
             </tr>

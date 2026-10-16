@@ -13,7 +13,7 @@ import { MantenimientoService } from './mantenimiento.service';
   imports: [DecimalPipe, ReactiveFormsModule, RouterLink, MantenimientoEstado],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="text-lg font-black">Mantenimiento</h1>
+    <h1 class="page-title">Mantenimiento</h1>
     <p class="text-xs text-slate-500">
       Los administradores reciben un correo cuando un servicio se acerca y cuando vence. Los planes
       se dan de alta en la ficha de cada equipo.
@@ -28,28 +28,28 @@ import { MantenimientoService } from './mantenimiento.service';
       <p role="alert" class="alert-error mt-3">{{ error() }}</p>
     }
 
-    <div class="mt-3 overflow-x-auto rounded-xl border bg-white">
-      <table class="w-full text-left text-xs">
-        <thead class="bg-chrisco-charcoal text-[10px] font-bold text-white uppercase">
+    <div class="table-card mt-4">
+      <table class="w-full text-left text-sm">
+        <thead class="table-head">
           <tr>
-            <th class="p-3">Equipo</th>
-            <th class="p-3">Servicio</th>
-            <th class="p-3 text-right">Horómetro</th>
-            <th class="p-3">Estado</th>
-            <th class="p-3"></th>
+            <th class="px-4 py-3.5">Equipo</th>
+            <th class="px-4 py-3.5">Servicio</th>
+            <th class="px-4 py-3.5 text-right">Horómetro</th>
+            <th class="px-4 py-3.5">Estado</th>
+            <th class="px-4 py-3.5"></th>
           </tr>
         </thead>
-        <tbody class="divide-y">
+        <tbody class="table-body">
           @for (i of items(); track i.id) {
             <tr [attr.data-plan]="i.nombre">
-              <td class="p-3">
+              <td class="px-4 py-3.5">
                 <span class="font-semibold">{{ i.equipo_nombre }}</span
                 ><br /><span class="text-slate-500">{{ i.equipo_codigo }}</span>
               </td>
-              <td class="p-3">{{ i.nombre }}</td>
-              <td class="p-3 text-right">{{ i.horometro_actual | number: '1.0-1' }} h</td>
-              <td class="p-3"><app-mantenimiento-estado [plan]="i" /></td>
-              <td class="p-3">
+              <td class="px-4 py-3.5">{{ i.nombre }}</td>
+              <td class="px-4 py-3.5 text-right">{{ i.horometro_actual | number: '1.0-1' }} h</td>
+              <td class="px-4 py-3.5"><app-mantenimiento-estado [plan]="i" /></td>
+              <td class="px-4 py-3.5">
                 <a [routerLink]="['/admin/equipos', i.equipo_id]" class="link">Ver equipo</a>
               </td>
             </tr>

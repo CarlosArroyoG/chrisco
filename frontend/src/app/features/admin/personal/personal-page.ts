@@ -20,7 +20,7 @@ const ROLES: { value: StaffRole; label: string }[] = [
   imports: [ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="text-lg font-black">Personal</h1>
+    <h1 class="page-title">Personal</h1>
     <p class="text-xs text-slate-500">
       Administrador: todo. Ventas: ve y cotiza. Operador: entrega y recibe equipos.
     </p>
@@ -32,24 +32,24 @@ const ROLES: { value: StaffRole; label: string }[] = [
       <p role="status" class="alert-ok mt-3">{{ aviso() }}</p>
     }
 
-    <div class="mt-3 overflow-x-auto rounded-xl border bg-white">
-      <table class="w-full text-left text-xs">
-        <thead class="bg-chrisco-charcoal text-[10px] font-bold text-white uppercase">
+    <div class="table-card mt-4">
+      <table class="w-full text-left text-sm">
+        <thead class="table-head">
           <tr>
-            <th class="p-3">Nombre</th>
-            <th class="p-3">Rol</th>
-            <th class="p-3">Estado</th>
-            <th class="p-3"></th>
+            <th class="px-4 py-3.5">Nombre</th>
+            <th class="px-4 py-3.5">Rol</th>
+            <th class="px-4 py-3.5">Estado</th>
+            <th class="px-4 py-3.5"></th>
           </tr>
         </thead>
-        <tbody class="divide-y">
+        <tbody class="table-body">
           @for (p of people(); track p.id) {
             <tr [attr.data-persona]="p.email">
-              <td class="p-3">
+              <td class="px-4 py-3.5">
                 <span class="font-semibold">{{ p.full_name }}</span
                 ><br /><span class="text-slate-500">{{ p.email }}</span>
               </td>
-              <td class="p-3">
+              <td class="px-4 py-3.5">
                 <select
                   class="input"
                   [attr.aria-label]="'Rol de ' + p.email"
@@ -62,7 +62,7 @@ const ROLES: { value: StaffRole; label: string }[] = [
                   }
                 </select>
               </td>
-              <td class="p-3">
+              <td class="px-4 py-3.5">
                 @if (!p.is_active) {
                   <span class="font-bold text-slate-500">De baja</span>
                 } @else if (p.pendiente_invitacion) {
@@ -71,7 +71,7 @@ const ROLES: { value: StaffRole; label: string }[] = [
                   <span class="font-bold text-emerald-700">Activo</span>
                 }
               </td>
-              <td class="p-3">
+              <td class="px-4 py-3.5">
                 <div class="flex flex-wrap gap-3">
                   @if (p.is_active && p.pendiente_invitacion) {
                     <button type="button" class="link" (click)="reenviar(p)">

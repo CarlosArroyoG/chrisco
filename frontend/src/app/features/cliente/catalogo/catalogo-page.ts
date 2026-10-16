@@ -24,10 +24,22 @@ const PAGE_SIZE = 12;
   imports: [CurrencyPipe, ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <a routerLink="/cliente" class="link text-xs">← Mi empresa</a>
-    <h1 class="mt-2 text-lg font-black">Catálogo de maquinaria ({{ list.total() }})</h1>
+    <section
+      class="from-chrisco-dark relative overflow-hidden rounded-3xl bg-linear-to-br to-[#2b3a42] px-6 pt-8 pb-14 text-white sm:px-10 sm:pt-10 sm:pb-16"
+    >
+      <div
+        class="bg-chrisco-orange/30 pointer-events-none absolute -top-24 -right-16 size-72 rounded-full blur-3xl"
+      ></div>
+      <p class="text-chrisco-orange text-xs font-bold tracking-wider uppercase">Catálogo</p>
+      <h1 class="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">
+        Catálogo de maquinaria ({{ list.total() }})
+      </h1>
+      <p class="mt-2 max-w-xl text-sm text-slate-300">
+        Elige el equipo, dinos las fechas y la obra, y lo apartamos mientras te cotizamos.
+      </p>
+    </section>
 
-    <div class="mt-3 grid gap-2 sm:grid-cols-3">
+    <div class="card -mt-6 relative mx-3 grid gap-3 sm:mx-6 sm:grid-cols-3">
       <input
         type="search"
         [formControl]="q"
@@ -41,78 +53,101 @@ const PAGE_SIZE = 12;
           <option [value]="c.id">{{ c.nombre }}</option>
         }
       </select>
-    </div>
 
-    <div class="mt-2 grid gap-2 sm:grid-cols-4">
-      <div>
-        <label for="cat-desde" class="label">Lo necesito desde</label>
-        <input id="cat-desde" type="datetime-local" [formControl]="desde" class="input" />
+      <div class="grid gap-3 sm:col-span-3 sm:grid-cols-4">
+        <div>
+          <label for="cat-desde" class="label">Lo necesito desde</label>
+          <input id="cat-desde" type="datetime-local" [formControl]="desde" class="input" />
+        </div>
+        <div>
+          <label for="cat-hasta" class="label">Hasta</label>
+          <input id="cat-hasta" type="datetime-local" [formControl]="hasta" class="input" />
+        </div>
+        <label class="flex items-end gap-2 pb-2.5 text-sm font-semibold text-slate-700">
+          <input
+            type="checkbox"
+            [formControl]="soloDisponibles"
+            class="accent-chrisco-orange size-4"
+          />
+          Solo disponibles
+        </label>
+        @if (rangeHint()) {
+          <p class="text-xs text-amber-700 sm:col-span-4">{{ rangeHint() }}</p>
+        }
       </div>
-      <div>
-        <label for="cat-hasta" class="label">Hasta</label>
-        <input id="cat-hasta" type="datetime-local" [formControl]="hasta" class="input" />
-      </div>
-      <label class="flex items-end gap-2 pb-2.5 text-sm font-semibold">
-        <input type="checkbox" [formControl]="soloDisponibles" class="size-4" />
-        Solo disponibles
-      </label>
     </div>
-    @if (rangeHint()) {
-      <p class="mt-1 text-xs text-amber-700">{{ rangeHint() }}</p>
-    }
 
     @if (list.error()) {
       <p role="alert" class="alert-error mt-3">{{ list.error() }}</p>
     }
 
-    <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       @for (e of list.items(); track e.id) {
         <a
           [routerLink]="['/cliente/catalogo', e.id]"
           [queryParams]="carryOver()"
-          class="card block overflow-hidden !p-0 transition hover:shadow-md"
+          class="card shadow-card hover:shadow-lift group block overflow-hidden !p-0 transition duration-200 hover:-translate-y-1"
         >
-          @if (e.fotos.length) {
-            <img
-              [src]="fotoUrl(e.fotos[0].id, 'thumb')"
-              [alt]="e.nombre"
-              class="aspect-[4/3] w-full object-cover"
-              loading="lazy"
-            />
-          } @else {
-            <div
-              class="flex aspect-[4/3] items-center justify-center bg-slate-100 text-xs text-slate-400"
+          <div class="relative overflow-hidden">
+            @if (e.fotos.length) {
+              <img
+                [src]="fotoUrl(e.fotos[0].id, 'thumb')"
+                [alt]="e.nombre"
+                class="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-105"
+                loading="lazy"
+              />
+            } @else {
+              <div
+                class="flex aspect-[4/3] items-center justify-center bg-slate-100 text-xs text-slate-400"
+              >
+                Sin foto
+              </div>
+            }
+            <span
+              class="absolute top-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-slate-700 shadow-sm backdrop-blur"
+              >{{ e.categoria_nombre }}</span
             >
-              Sin foto
-            </div>
-          }
-          <div class="space-y-1 p-4">
-            <p class="text-[10px] font-bold text-slate-500 uppercase">{{ e.categoria_nombre }}</p>
-            <h2 class="font-black">{{ e.nombre }}</h2>
-            <p class="text-xs text-slate-500">
+            @if (e.disponible === true) {
+              <span
+                class="absolute top-3 right-3 rounded-full bg-emerald-500 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm"
+                >Disponible en esas fechas</span
+              >
+            } @else if (e.disponible === false) {
+              <span
+                class="absolute top-3 right-3 rounded-full bg-rose-500 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm"
+                >Ocupado en esas fechas</span
+              >
+            }
+          </div>
+          <div class="p-5">
+            <h2 class="text-lg font-bold tracking-tight text-slate-900">{{ e.nombre }}</h2>
+            <p class="text-sm text-slate-500">
               {{ e.marca }} {{ e.modelo }}
               @if (e.anio) {
                 · {{ e.anio }}
               }
             </p>
-            <p class="pt-1 text-sm font-black">
-              @if (e.tarifa_hora) {
-                {{ e.tarifa_hora | currency: 'MXN' : 'symbol-narrow' : '1.0-2' }}/h
-              }
-              @if (e.tarifa_hora && e.tarifa_dia) {
-                ·
-              }
-              @if (e.tarifa_dia) {
-                {{ e.tarifa_dia | currency: 'MXN' : 'symbol-narrow' : '1.0-2' }}/día
-              }
-            </p>
+            <div class="mt-4 flex items-end justify-between gap-3 border-t border-slate-100 pt-4">
+              <p class="text-lg font-extrabold text-slate-900">
+                @if (e.tarifa_hora) {
+                  {{ e.tarifa_hora | currency: 'MXN' : 'symbol-narrow' : '1.0-2' }}/h
+                }
+                @if (e.tarifa_hora && e.tarifa_dia) {
+                  <span class="text-slate-300">·</span>
+                }
+                @if (e.tarifa_dia) {
+                  <span class="text-sm font-semibold text-slate-500"
+                    >{{ e.tarifa_dia | currency: 'MXN' : 'symbol-narrow' : '1.0-2' }}/día</span
+                  >
+                }
+              </p>
+              <span
+                class="text-chrisco-orange-dark text-sm font-semibold transition group-hover:translate-x-0.5"
+                >Ver →</span
+              >
+            </div>
             @if (e.requiere_lowboy) {
-              <p class="text-[11px] font-semibold text-amber-700">Se entrega en lowboy</p>
-            }
-            @if (e.disponible === true) {
-              <p class="text-[11px] font-bold text-emerald-700">Disponible en esas fechas</p>
-            } @else if (e.disponible === false) {
-              <p class="text-[11px] font-bold text-rose-700">Ocupado en esas fechas</p>
+              <p class="mt-3 text-[11px] font-semibold text-amber-700">Se entrega en lowboy</p>
             }
           </div>
         </a>

@@ -27,7 +27,7 @@ export const UNIDAD_LABEL: Record<PartidaUnidad, string> = {
               <th class="py-1 text-right">Importe</th>
             </tr>
           </thead>
-          <tbody class="divide-y">
+          <tbody class="table-body">
             @for (p of c.partidas; track $index) {
               <tr>
                 <td class="py-1.5">{{ p.descripcion }}</td>

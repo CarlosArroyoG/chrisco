@@ -28,7 +28,7 @@ const PAGE_SIZE = 25;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <h1 class="text-lg font-black">Equipos ({{ list.total() }})</h1>
+      <h1 class="page-title">Equipos ({{ list.total() }})</h1>
       @if (isAdmin()) {
         <div class="flex gap-2">
           <a routerLink="/admin/equipos/importar" class="btn-secondary">Importar CSV</a>
@@ -63,20 +63,20 @@ const PAGE_SIZE = 25;
       <p role="alert" class="alert-error mt-3">{{ list.error() }}</p>
     }
 
-    <div class="mt-3 overflow-x-auto rounded-xl border bg-white">
-      <table class="w-full text-left text-xs">
-        <thead class="bg-chrisco-charcoal text-[10px] font-bold text-white uppercase">
+    <div class="table-card mt-4">
+      <table class="w-full text-left text-sm">
+        <thead class="table-head">
           <tr>
-            <th class="p-3"></th>
-            <th class="p-3">Código</th>
-            <th class="p-3">Equipo</th>
-            <th class="p-3">Categoría</th>
-            <th class="p-3">Tarifa</th>
-            <th class="p-3">Situación</th>
-            <th class="p-3"></th>
+            <th class="px-4 py-3.5"></th>
+            <th class="px-4 py-3.5">Código</th>
+            <th class="px-4 py-3.5">Equipo</th>
+            <th class="px-4 py-3.5">Categoría</th>
+            <th class="px-4 py-3.5">Tarifa</th>
+            <th class="px-4 py-3.5">Situación</th>
+            <th class="px-4 py-3.5"></th>
           </tr>
         </thead>
-        <tbody class="divide-y">
+        <tbody class="table-body">
           @for (e of list.items(); track e.id) {
             <tr>
               <td class="p-2">
@@ -90,16 +90,16 @@ const PAGE_SIZE = 25;
                   <div class="size-12 rounded bg-slate-100"></div>
                 }
               </td>
-              <td class="p-3 font-mono font-bold">{{ e.codigo }}</td>
-              <td class="p-3">
+              <td class="px-4 py-3.5 font-mono font-bold">{{ e.codigo }}</td>
+              <td class="px-4 py-3.5">
                 <span class="font-semibold">{{ e.nombre }}</span
                 ><br />
                 <span class="text-slate-500"
                   >{{ e.marca }} {{ e.modelo }} · {{ e.numero_serie }}</span
                 >
               </td>
-              <td class="p-3">{{ e.categoria_nombre }}</td>
-              <td class="p-3">
+              <td class="px-4 py-3.5">{{ e.categoria_nombre }}</td>
+              <td class="px-4 py-3.5">
                 @if (e.tarifa_hora) {
                   {{ e.tarifa_hora | currency: 'MXN' : 'symbol-narrow' : '1.0-2' }}/h
                 }
@@ -110,8 +110,8 @@ const PAGE_SIZE = 25;
                   {{ e.tarifa_dia | currency: 'MXN' : 'symbol-narrow' : '1.0-2' }}/día
                 }
               </td>
-              <td class="p-3"><app-status-badge [status]="e.estado_actual" /></td>
-              <td class="p-3">
+              <td class="px-4 py-3.5"><app-status-badge [status]="e.estado_actual" /></td>
+              <td class="px-4 py-3.5">
                 <a [routerLink]="['/admin/equipos', e.id]" class="link">{{
                   isAdmin() ? 'Editar' : 'Ver'
                 }}</a>

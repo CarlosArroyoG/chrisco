@@ -28,7 +28,7 @@ const FILTERS: { value: EmpresaStatus | undefined; label: string }[] = [
   imports: [DatePipe, RouterLink, StatusBadge],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="text-lg font-black">Empresas clientes</h1>
+    <h1 class="page-title">Empresas clientes</h1>
     <div class="mt-3 flex flex-wrap gap-2" role="tablist">
       @for (f of filters; track f.label) {
         <button
@@ -52,29 +52,29 @@ const FILTERS: { value: EmpresaStatus | undefined; label: string }[] = [
       <p role="alert" class="alert-error mt-3">{{ error() }}</p>
     }
 
-    <div class="mt-3 overflow-x-auto rounded-xl border bg-white">
-      <table class="w-full text-left text-xs">
-        <thead class="bg-chrisco-charcoal text-[10px] font-bold text-white uppercase">
+    <div class="table-card mt-4">
+      <table class="w-full text-left text-sm">
+        <thead class="table-head">
           <tr>
-            <th class="p-3">Empresa</th>
-            <th class="p-3">RFC</th>
-            <th class="p-3">Titular</th>
-            <th class="p-3">Registro</th>
-            <th class="p-3">Estado</th>
-            <th class="p-3"></th>
+            <th class="px-4 py-3.5">Empresa</th>
+            <th class="px-4 py-3.5">RFC</th>
+            <th class="px-4 py-3.5">Titular</th>
+            <th class="px-4 py-3.5">Registro</th>
+            <th class="px-4 py-3.5">Estado</th>
+            <th class="px-4 py-3.5"></th>
           </tr>
         </thead>
-        <tbody class="divide-y">
+        <tbody class="table-body">
           @for (e of empresas(); track e.id) {
             <tr>
-              <td class="p-3 font-semibold">{{ e.razon_social }}</td>
-              <td class="p-3 font-mono">{{ e.rfc }}</td>
-              <td class="p-3">
+              <td class="px-4 py-3.5 font-semibold">{{ e.razon_social }}</td>
+              <td class="px-4 py-3.5 font-mono">{{ e.rfc }}</td>
+              <td class="px-4 py-3.5">
                 {{ e.owner_name }}<br /><span class="text-slate-500">{{ e.owner_email }}</span>
               </td>
-              <td class="p-3">{{ e.created_at | date: 'dd/MM/yyyy' }}</td>
-              <td class="p-3"><app-status-badge [status]="e.status" /></td>
-              <td class="p-3">
+              <td class="px-4 py-3.5">{{ e.created_at | date: 'dd/MM/yyyy' }}</td>
+              <td class="px-4 py-3.5"><app-status-badge [status]="e.status" /></td>
+              <td class="px-4 py-3.5">
                 <a [routerLink]="['/admin/empresas', e.id]" class="link">Revisar</a>
               </td>
             </tr>

@@ -37,7 +37,7 @@ export function slugify(label: string): string {
   imports: [ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="text-lg font-black">Categorías de maquinaria</h1>
+    <h1 class="page-title">Categorías de maquinaria</h1>
     <p class="text-xs text-slate-500">
       Cada categoría define qué especificaciones se capturan en sus equipos (peso, motor,
       capacidad…). Cambiarlas no modifica los equipos ya guardados.

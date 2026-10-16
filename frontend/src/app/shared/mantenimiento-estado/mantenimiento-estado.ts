@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { PlanMantenimiento } from '../../core/api/models';
 
 const ESTILO: Record<PlanMantenimiento['estado'], { label: string; classes: string }> = {
-  ok: { label: 'Al día', classes: 'bg-emerald-100 text-emerald-800' },
-  proximo: { label: 'Próximo', classes: 'bg-amber-100 text-amber-800' },
-  vencido: { label: 'Vencido', classes: 'bg-rose-100 text-rose-800' },
+  ok: { label: 'Al día', classes: 'bg-emerald-50 text-emerald-700' },
+  proximo: { label: 'Próximo', classes: 'bg-amber-50 text-amber-700' },
+  vencido: { label: 'Vencido', classes: 'bg-rose-50 text-rose-700' },
 };
 
 /** «faltan 40 h» o «se pasó por 10 h». */

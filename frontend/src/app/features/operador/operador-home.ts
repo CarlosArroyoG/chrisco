@@ -12,7 +12,7 @@ import { RentasService } from '../../core/rentas/rentas.service';
   imports: [DatePipe, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="text-lg font-black">Entregas y devoluciones</h1>
+    <h1 class="page-title">Entregas y devoluciones</h1>
     @if (error()) {
       <p role="alert" class="alert-error mt-3">{{ error() }}</p>
     }

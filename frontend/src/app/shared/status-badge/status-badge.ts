@@ -3,11 +3,11 @@ import { EmpresaStatus, EquipoStatus, EstadoActual, RentaEstado } from '../../co
 
 type Status = EmpresaStatus | EquipoStatus | EstadoActual | RentaEstado;
 
-const AMBER = 'bg-amber-100 text-amber-800';
-const GREEN = 'bg-emerald-100 text-emerald-800';
-const RED = 'bg-rose-100 text-rose-800';
-const SKY = 'bg-sky-100 text-sky-800';
-const GRAY = 'bg-slate-200 text-slate-700';
+const AMBER = 'bg-amber-50 text-amber-700';
+const GREEN = 'bg-emerald-50 text-emerald-700';
+const RED = 'bg-rose-50 text-rose-700';
+const SKY = 'bg-sky-50 text-sky-700';
+const GRAY = 'bg-slate-100 text-slate-600';
 
 const STYLES: Record<Status, { label: string; classes: string }> = {
   // Empresas
@@ -38,9 +38,10 @@ const STYLES: Record<Status, { label: string; classes: string }> = {
   selector: 'app-status-badge',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<span
-    class="rounded-full px-2.5 py-0.5 text-[11px] font-bold"
+    class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ring-black/5"
     [class]="style().classes"
   >
+    <span class="size-1.5 rounded-full bg-current opacity-70"></span>
     {{ style().label }}
   </span>`,
 })

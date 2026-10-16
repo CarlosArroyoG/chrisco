@@ -26,10 +26,10 @@ import { ResubmitForm } from './resubmit-form';
     }
     @if (empresa(); as e) {
       <div class="space-y-4">
-        <section class="card">
+        <section class="card border-l-chrisco-orange border-l-4">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h1 class="text-lg font-black">{{ e.razon_social }}</h1>
+              <h1 class="page-title">{{ e.razon_social }}</h1>
               <p class="text-xs text-slate-500">RFC {{ e.rfc }} · {{ e.sitio_web }}</p>
             </div>
             <app-status-badge [status]="e.status" />

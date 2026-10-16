@@ -24,7 +24,7 @@ const PAGE_SIZE = 25;
   imports: [CurrencyPipe, ReactiveFormsModule, RouterLink, StatusBadge],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="text-lg font-black">Cobranza</h1>
+    <h1 class="page-title">Cobranza</h1>
 
     @if (resumen(); as s) {
       <dl class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Resumen de cobranza">
@@ -71,37 +71,37 @@ const PAGE_SIZE = 25;
       <p role="alert" class="alert-error mt-3">{{ list.error() }}</p>
     }
 
-    <div class="mt-3 overflow-x-auto rounded-xl border bg-white">
-      <table class="w-full text-left text-xs">
-        <thead class="bg-chrisco-charcoal text-[10px] font-bold text-white uppercase">
+    <div class="table-card mt-4">
+      <table class="w-full text-left text-sm">
+        <thead class="table-head">
           <tr>
-            <th class="p-3">Folio</th>
-            <th class="p-3">Empresa</th>
-            <th class="p-3">Equipo</th>
-            <th class="p-3">Estado</th>
-            <th class="p-3 text-right">Total</th>
-            <th class="p-3 text-right">Pagado</th>
-            <th class="p-3 text-right">Saldo</th>
-            <th class="p-3"></th>
+            <th class="px-4 py-3.5">Folio</th>
+            <th class="px-4 py-3.5">Empresa</th>
+            <th class="px-4 py-3.5">Equipo</th>
+            <th class="px-4 py-3.5">Estado</th>
+            <th class="px-4 py-3.5 text-right">Total</th>
+            <th class="px-4 py-3.5 text-right">Pagado</th>
+            <th class="px-4 py-3.5 text-right">Saldo</th>
+            <th class="px-4 py-3.5"></th>
           </tr>
         </thead>
-        <tbody class="divide-y">
+        <tbody class="table-body">
           @for (r of list.items(); track r.renta_id) {
             <tr>
-              <td class="p-3 font-mono font-bold">{{ r.folio }}</td>
-              <td class="p-3">{{ r.empresa }}</td>
-              <td class="p-3">{{ r.equipo }}</td>
-              <td class="p-3"><app-status-badge [status]="r.estado" /></td>
-              <td class="p-3 text-right">
+              <td class="px-4 py-3.5 font-mono font-bold">{{ r.folio }}</td>
+              <td class="px-4 py-3.5">{{ r.empresa }}</td>
+              <td class="px-4 py-3.5">{{ r.equipo }}</td>
+              <td class="px-4 py-3.5"><app-status-badge [status]="r.estado" /></td>
+              <td class="px-4 py-3.5 text-right">
                 {{ r.total | currency: 'MXN' : 'symbol-narrow' : '1.2-2' }}
               </td>
-              <td class="p-3 text-right">
+              <td class="px-4 py-3.5 text-right">
                 {{ r.pagado | currency: 'MXN' : 'symbol-narrow' : '1.2-2' }}
               </td>
-              <td class="p-3 text-right font-bold">
+              <td class="px-4 py-3.5 text-right font-bold">
                 {{ r.saldo | currency: 'MXN' : 'symbol-narrow' : '1.2-2' }}
               </td>
-              <td class="p-3">
+              <td class="px-4 py-3.5">
                 <a [routerLink]="['/admin/rentas', r.renta_id]" class="link">Ver</a>
               </td>
             </tr>
