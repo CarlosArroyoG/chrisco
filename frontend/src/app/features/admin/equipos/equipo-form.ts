@@ -181,6 +181,21 @@ function atLeastOneRate(group: AbstractControl): ValidationErrors | null {
         }
 
         <section class="card">
+          <label for="descripcion" class="label">Descripción para el cliente</label>
+          <textarea
+            id="descripcion"
+            formControlName="descripcion"
+            rows="4"
+            maxlength="2000"
+            placeholder="Para qué sirve, qué incluye, condiciones de uso…"
+            class="input"
+          ></textarea>
+          <p class="mt-1 text-xs text-slate-500">
+            Se muestra en el catálogo junto a las fotos y las especificaciones.
+          </p>
+        </section>
+
+        <section class="card">
           <label for="notas" class="label">Notas internas (el cliente no las ve)</label>
           <textarea id="notas" formControlName="notas" rows="2" class="input"></textarea>
         </section>
@@ -288,6 +303,7 @@ export class EquipoForm implements OnInit {
       requiere_lowboy: [false],
       requiere_operador_certificado: [false],
       status: ['activo' as 'activo' | 'mantenimiento' | 'baja'],
+      descripcion: [''],
       notas: [''],
     },
     { validators: atLeastOneRate },
@@ -327,7 +343,10 @@ export class EquipoForm implements OnInit {
     this.service.get(id).subscribe({
       next: (equipo) => {
         this.equipo.set(equipo);
-        this.form.patchValue({ ...equipo, notas: equipo.notas ?? '' }, { emitEvent: false });
+        this.form.patchValue(
+          { ...equipo, notas: equipo.notas ?? '', descripcion: equipo.descripcion ?? '' },
+          { emitEvent: false },
+        );
         this.onCategoria(equipo.categoria_id, equipo.specs);
         if (!this.canEdit()) this.form.disable();
       },
@@ -344,6 +363,7 @@ export class EquipoForm implements OnInit {
       horometro: v.horometro ?? 0,
       tarifa_hora: v.tarifa_hora || null,
       tarifa_dia: v.tarifa_dia || null,
+      descripcion: v.descripcion.trim() || null,
       notas: v.notas.trim() || null,
       specs: specValues(this.fields(), this.specGroup()),
     };

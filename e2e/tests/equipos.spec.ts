@@ -28,7 +28,7 @@ test.beforeAll(() => resetDatabase());
 test.describe.serial('Registro de equipos y catálogo', () => {
   test('el admin crea una categoría con especificaciones propias', async ({ page }) => {
     await signIn(page, ADMIN.email, ADMIN.password);
-    await page.getByRole('link', { name: 'Categorías' }).click();
+    await page.getByRole('link', { name: 'Categorías', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Categorías de maquinaria' })).toBeVisible();
 
     await page.getByLabel('Nombre *').fill(CATEGORIA);
@@ -190,7 +190,7 @@ test.describe.serial('Registro de equipos y catálogo', () => {
     await expect(page.getByRole('button', { name: 'Guardar cambios' })).toHaveCount(0);
     await expect(page.getByLabel(/Agregar fotos/)).toHaveCount(0);
 
-    await page.getByRole('link', { name: 'Categorías' }).click();
+    await page.getByRole('link', { name: 'Categorías', exact: true }).click();
     await expect(page.getByRole('heading', { name: CATEGORIA })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Crear categoría' })).toHaveCount(0);
   });
@@ -210,7 +210,7 @@ test.describe.serial('Registro de equipos y catálogo', () => {
     await page.getByRole('link', { name: 'Ver catálogo de maquinaria' }).click();
 
     await expect(page.getByRole('heading', { name: 'Catálogo de maquinaria (2)' })).toBeVisible();
-    const tarjeta = page.getByRole('link', { name: new RegExp(EQUIPO) });
+    const tarjeta = page.locator(`[data-equipo="${EQUIPO}"]`);
     await expect(tarjeta).toContainText('$3,400/h');
     await expect(tarjeta).toContainText('Se entrega en lowboy');
     await expect(tarjeta.getByRole('img')).toBeVisible();
@@ -221,8 +221,11 @@ test.describe.serial('Registro de equipos y catálogo', () => {
     await page.getByLabel('Buscar').fill('importada');
     await expect(page.getByRole('heading', { name: 'Catálogo de maquinaria (1)' })).toBeVisible();
     await page.getByLabel('Buscar').fill('');
+    // Espera a que la lista se recargue antes de entrar a la ficha (si no, el clic cae en una tarjeta que se redibuja).
+    await expect(page.getByRole('heading', { name: 'Catálogo de maquinaria (2)' })).toBeVisible();
 
-    await tarjeta.click();
+    await tarjeta.getByRole('link', { name: EQUIPO }).click();
+    await expect(page).toHaveURL(/\/cliente\/catalogo\/[0-9a-f-]{36}/);
     await expect(page.getByRole('heading', { name: EQUIPO })).toBeVisible();
     await expect(page.getByText('Peso máximo')).toBeVisible();
     await expect(page.getByText('18000 kg')).toBeVisible();

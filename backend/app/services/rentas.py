@@ -184,6 +184,34 @@ def cancel(db: Session, renta: Renta) -> Renta:
     return renta
 
 
+# Estados en los que el cliente todavía tiene algo que hacer o esperar con un equipo.
+OPEN_STATES = (
+    RentaEstado.SOLICITADA,
+    RentaEstado.COTIZADA,
+    RentaEstado.APARTADA,
+    RentaEstado.CONFIRMADA,
+    RentaEstado.EN_RENTA,
+)
+
+
+def open_by_equipo(
+    db: Session, empresa_id: uuid.UUID, equipo_ids: list[uuid.UUID]
+) -> dict[uuid.UUID, Renta]:
+    """La renta abierta más reciente de la empresa para cada equipo (si la tiene)."""
+    expire_stale(db)
+    db.commit()
+    rows = db.scalars(
+        select(Renta)
+        .where(
+            Renta.empresa_id == empresa_id,
+            Renta.equipo_id.in_(equipo_ids),
+            Renta.estado.in_(OPEN_STATES),
+        )
+        .order_by(Renta.created_at)
+    )
+    return {renta.equipo_id: renta for renta in rows}  # la más reciente pisa a las anteriores
+
+
 def to_out(renta: Renta) -> RentaOut:
     provisional = renta.estado in _PROVISIONAL and renta.bloqueo is not None
     return RentaOut(
@@ -196,6 +224,15 @@ def to_out(renta: Renta) -> RentaOut:
         equipo_id=renta.equipo_id,
         equipo_codigo=renta.equipo.codigo,
         equipo_nombre=renta.equipo.nombre,
+        equipo_foto_id=renta.equipo.fotos[0].id if renta.equipo.fotos else None,
+        total=next(
+            (
+                c.total
+                for c in renta.cotizaciones
+                if c.estado in (CotizacionEstado.VIGENTE, CotizacionEstado.ACEPTADA)
+            ),
+            None,
+        ),
         desde=renta.desde,
         hasta=renta.hasta,
         destino=renta.destino,

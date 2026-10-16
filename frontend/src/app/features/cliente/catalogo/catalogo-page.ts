@@ -15,13 +15,30 @@ import { periodFromInputs } from '../../../core/api/dates';
 import { Categoria, EquipoCatalogo } from '../../../core/api/models';
 import { pagedList } from '../../../core/api/paged-list';
 import { CatalogoFiltros, CatalogoService, fotoUrl } from '../../../core/catalogo/catalogo.service';
+import { ETAPAS, TONO_CLASES } from '../../../core/rentas/etapas';
+import { Carousel } from '../../../shared/carousel/carousel';
+import { Icon } from '../../../shared/icon/icon';
 
 const PAGE_SIZE = 12;
 
-/** Catálogo de maquinaria para clientes con empresa aprobada. */
+type Situacion = '' | 'libre' | 'rentado';
+
+const SEGMENTOS: { value: Situacion; label: string }[] = [
+  { value: '', label: 'Todos' },
+  { value: 'libre', label: 'Disponibles hoy' },
+  { value: 'rentado', label: 'Rentados' },
+];
+
+const SITUACION: Record<string, { label: string; classes: string }> = {
+  libre: { label: 'Disponible hoy', classes: 'bg-emerald-500 text-white' },
+  rentado: { label: 'Rentado ahora', classes: 'bg-sky-500 text-white' },
+  bloqueado: { label: 'No disponible hoy', classes: 'bg-amber-500 text-white' },
+};
+
+/** Catálogo de maquinaria para clientes con empresa aprobada: tarjetas grandes y visuales. */
 @Component({
   selector: 'app-catalogo-page',
-  imports: [CurrencyPipe, ReactiveFormsModule, RouterLink],
+  imports: [CurrencyPipe, ReactiveFormsModule, RouterLink, Carousel, Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section
@@ -39,7 +56,7 @@ const PAGE_SIZE = 12;
       </p>
     </section>
 
-    <div class="card -mt-6 relative mx-3 grid gap-3 sm:mx-6 sm:grid-cols-3">
+    <div class="card relative -mt-6 mx-3 grid gap-3 sm:mx-6 sm:grid-cols-3">
       <input
         type="search"
         [formControl]="q"
@@ -77,89 +94,171 @@ const PAGE_SIZE = 12;
       </div>
     </div>
 
+    <div
+      class="mt-6 flex flex-wrap items-center gap-2"
+      role="group"
+      aria-label="Situación del equipo"
+    >
+      @for (s of segmentos; track s.value) {
+        <button
+          type="button"
+          [attr.aria-pressed]="situacion.value === s.value"
+          (click)="situacion.setValue(s.value)"
+          class="rounded-full px-4 py-2 text-sm font-semibold transition"
+          [class]="
+            situacion.value === s.value
+              ? 'bg-chrisco-dark text-white shadow-md'
+              : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+          "
+        >
+          {{ s.label }}
+        </button>
+      }
+    </div>
+
     @if (list.error()) {
       <p role="alert" class="alert-error mt-3">{{ list.error() }}</p>
     }
 
-    <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="mt-6 grid gap-6 lg:grid-cols-2">
       @for (e of list.items(); track e.id) {
-        <a
-          [routerLink]="['/cliente/catalogo', e.id]"
-          [queryParams]="carryOver()"
-          class="card shadow-card hover:shadow-lift group block overflow-hidden !p-0 transition duration-200 hover:-translate-y-1"
+        <article
+          class="card shadow-card hover:shadow-lift flex flex-col overflow-hidden !p-0 transition duration-200 hover:-translate-y-1"
+          [attr.data-equipo]="e.nombre"
         >
-          <div class="relative overflow-hidden">
-            @if (e.fotos.length) {
-              <img
-                [src]="fotoUrl(e.fotos[0].id, 'thumb')"
-                [alt]="e.nombre"
-                class="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-105"
-                loading="lazy"
-              />
-            } @else {
-              <div
-                class="flex aspect-[4/3] items-center justify-center bg-slate-100 text-xs text-slate-400"
-              >
-                Sin foto
-              </div>
-            }
+          <app-carousel
+            [images]="fotos(e)"
+            [label]="e.nombre"
+            aspect="aspect-[16/10]"
+            rounded="rounded-none"
+          >
             <span
               class="absolute top-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-slate-700 shadow-sm backdrop-blur"
               >{{ e.categoria_nombre }}</span
             >
-            @if (e.disponible === true) {
-              <span
-                class="absolute top-3 right-3 rounded-full bg-emerald-500 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm"
-                >Disponible en esas fechas</span
-              >
-            } @else if (e.disponible === false) {
-              <span
-                class="absolute top-3 right-3 rounded-full bg-rose-500 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm"
-                >Ocupado en esas fechas</span
-              >
-            }
-          </div>
-          <div class="p-5">
-            <h2 class="text-lg font-bold tracking-tight text-slate-900">{{ e.nombre }}</h2>
-            <p class="text-sm text-slate-500">
-              {{ e.marca }} {{ e.modelo }}
-              @if (e.anio) {
-                · {{ e.anio }}
-              }
-            </p>
-            <div class="mt-4 flex items-end justify-between gap-3 border-t border-slate-100 pt-4">
-              <p class="text-lg font-extrabold text-slate-900">
-                @if (e.tarifa_hora) {
-                  {{ e.tarifa_hora | currency: 'MXN' : 'symbol-narrow' : '1.0-2' }}/h
-                }
-                @if (e.tarifa_hora && e.tarifa_dia) {
-                  <span class="text-slate-300">·</span>
-                }
-                @if (e.tarifa_dia) {
-                  <span class="text-sm font-semibold text-slate-500"
-                    >{{ e.tarifa_dia | currency: 'MXN' : 'symbol-narrow' : '1.0-2' }}/día</span
+            <span
+              class="absolute top-3 right-3 rounded-full px-2.5 py-1 text-[11px] font-bold shadow-sm"
+              [class]="estado(e).classes"
+              >{{ estado(e).label }}</span
+            >
+          </app-carousel>
+
+          <div class="flex flex-1 flex-col p-6">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <h2 class="text-xl font-bold tracking-tight text-slate-900">
+                  <a
+                    [routerLink]="['/cliente/catalogo', e.id]"
+                    [queryParams]="carryOver()"
+                    class="hover:text-chrisco-orange-dark transition"
+                    >{{ e.nombre }}</a
                   >
-                }
-              </p>
-              <span
-                class="text-chrisco-orange-dark text-sm font-semibold transition group-hover:translate-x-0.5"
-                >Ver →</span
-              >
+                </h2>
+                <p class="text-sm text-slate-500">
+                  {{ e.marca }} {{ e.modelo }}
+                  @if (e.anio) {
+                    · {{ e.anio }}
+                  }
+                  · {{ e.patio }}
+                </p>
+              </div>
             </div>
-            @if (e.requiere_lowboy) {
-              <p class="mt-3 text-[11px] font-semibold text-amber-700">Se entrega en lowboy</p>
+
+            <div class="mt-3 flex flex-wrap gap-2">
+              @if (e.requiere_lowboy) {
+                <span
+                  class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700"
+                  >Se entrega en lowboy</span
+                >
+              }
+              @if (e.requiere_operador_certificado) {
+                <span
+                  class="rounded-full bg-violet-50 px-2.5 py-1 text-xs font-semibold text-violet-700"
+                  >Operador certificado</span
+                >
+              }
+              @if (e.disponible === true) {
+                <span
+                  class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700"
+                  >Disponible en esas fechas</span
+                >
+              } @else if (e.disponible === false) {
+                <span class="rounded-full bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-700"
+                  >Ocupado en esas fechas</span
+                >
+              }
+            </div>
+
+            @if (e.descripcion) {
+              <p class="mt-4 line-clamp-3 text-sm leading-relaxed text-slate-600">
+                {{ e.descripcion }}
+              </p>
             }
+
+            @if (e.specs.length) {
+              <dl class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                @for (s of e.specs.slice(0, 6); track s.label) {
+                  <div class="rounded-xl bg-slate-50 px-3 py-2">
+                    <dt class="truncate text-[11px] text-slate-500">{{ s.label }}</dt>
+                    <dd class="truncate text-sm font-semibold text-slate-800">
+                      {{ s.value }}{{ s.unit ? ' ' + s.unit : '' }}
+                    </dd>
+                  </div>
+                }
+              </dl>
+            }
+
+            <div class="mt-auto pt-5">
+              @if (e.mi_renta; as r) {
+                <div class="rounded-2xl p-4 ring-1 ring-inset" [class]="tono(r.estado)">
+                  <p class="text-sm font-bold">{{ etapa(r.estado).etiqueta }} · {{ r.folio }}</p>
+                  <p class="text-xs opacity-80">{{ etapa(r.estado).pista }}</p>
+                </div>
+              }
+              <div class="mt-4 flex flex-wrap items-end justify-between gap-3">
+                <p class="text-2xl font-extrabold tracking-tight text-slate-900">
+                  @if (e.tarifa_hora) {
+                    {{ e.tarifa_hora | currency: 'MXN' : 'symbol-narrow' : '1.0-2'
+                    }}<span class="text-sm font-semibold text-slate-500">/h</span>
+                  }
+                  @if (e.tarifa_hora && e.tarifa_dia) {
+                    <span class="text-slate-300"> · </span>
+                  }
+                  @if (e.tarifa_dia) {
+                    <span class="text-base font-semibold text-slate-600"
+                      >{{ e.tarifa_dia | currency: 'MXN' : 'symbol-narrow' : '1.0-2' }}/día</span
+                    >
+                  }
+                </p>
+                @if (e.mi_renta; as r) {
+                  <a [routerLink]="['/cliente/rentas', r.id]" class="btn-primary">
+                    {{ etapa(r.estado).accion }}
+                    <app-icon name="flecha" class="size-4" />
+                  </a>
+                } @else {
+                  <a
+                    [routerLink]="['/cliente/catalogo', e.id]"
+                    [queryParams]="carryOver()"
+                    fragment="solicitar"
+                    [class]="e.disponible === false ? 'btn-secondary' : 'btn-primary'"
+                  >
+                    {{ e.disponible === false ? 'Ver disponibilidad' : 'Reservar este equipo' }}
+                    <app-icon name="flecha" class="size-4" />
+                  </a>
+                }
+              </div>
+            </div>
           </div>
-        </a>
+        </article>
       } @empty {
-        <p class="col-span-full text-sm text-slate-500">
+        <p class="col-span-full py-10 text-center text-sm text-slate-500">
           {{ list.loaded() ? 'No encontramos equipos con esos filtros.' : 'Cargando…' }}
         </p>
       }
     </div>
 
     @if (list.pages() > 1) {
-      <nav class="mt-4 flex items-center justify-between text-xs" aria-label="Paginación">
+      <nav class="mt-6 flex items-center justify-between text-sm" aria-label="Paginación">
         <button
           type="button"
           class="btn-secondary"
@@ -185,12 +284,13 @@ export class CatalogoPage implements OnInit {
   private readonly service = inject(CatalogoService);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly fotoUrl = fotoUrl;
+  protected readonly segmentos = SEGMENTOS;
   protected readonly q = new FormControl('', { nonNullable: true });
   protected readonly categoria = new FormControl('', { nonNullable: true });
   protected readonly desde = new FormControl('', { nonNullable: true });
   protected readonly hasta = new FormControl('', { nonNullable: true });
   protected readonly soloDisponibles = new FormControl(false, { nonNullable: true });
+  protected readonly situacion = new FormControl<Situacion>('', { nonNullable: true });
 
   protected readonly categorias = signal<Categoria[]>([]);
   protected readonly rangeHint = signal<string | null>(null);
@@ -210,11 +310,23 @@ export class CatalogoPage implements OnInit {
       this.desde.valueChanges,
       this.hasta.valueChanges,
       this.soloDisponibles.valueChanges,
+      this.situacion.valueChanges,
     )
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.go(0));
     this.go(0);
   }
+
+  protected fotos(e: EquipoCatalogo): string[] {
+    return e.fotos.map((f) => fotoUrl(f.id, 'full'));
+  }
+
+  protected estado(e: EquipoCatalogo): { label: string; classes: string } {
+    return SITUACION[e.situacion ?? 'libre'] ?? SITUACION['libre'];
+  }
+
+  protected etapa = (estado: keyof typeof ETAPAS) => ETAPAS[estado];
+  protected tono = (estado: keyof typeof ETAPAS) => TONO_CLASES[ETAPAS[estado].tono];
 
   /** Periodo que el cliente trae en el catálogo, para llevarlo a la ficha del equipo. */
   protected carryOver(): Record<string, string> {
@@ -243,6 +355,7 @@ export class CatalogoPage implements OnInit {
       categoria_id: this.categoria.value,
       ...periodo,
       solo_disponibles: periodo && this.soloDisponibles.value ? true : undefined,
+      situacion: this.situacion.value || undefined,
       limit: PAGE_SIZE,
       offset: page * PAGE_SIZE,
     };

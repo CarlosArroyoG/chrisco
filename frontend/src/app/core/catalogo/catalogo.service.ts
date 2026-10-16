@@ -11,6 +11,8 @@ export interface CatalogoFiltros {
   desde?: string;
   hasta?: string;
   solo_disponibles?: boolean;
+  /** Solo los equipos que están así ahora mismo (libre, rentado…). */
+  situacion?: string;
   limit?: number;
   offset?: number;
 }

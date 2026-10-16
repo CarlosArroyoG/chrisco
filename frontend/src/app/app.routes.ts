@@ -150,7 +150,8 @@ export const routes: Routes = [
           },
           {
             path: 'rentas',
-            loadComponent: () => import('./features/rentas/rentas-page').then((m) => m.RentasPage),
+            loadComponent: () =>
+              import('./features/cliente/rentas/mis-rentas').then((m) => m.MisRentas),
           },
           {
             path: 'rentas/:id',

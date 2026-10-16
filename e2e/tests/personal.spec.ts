@@ -85,7 +85,7 @@ test.describe.serial('Personal y operador', () => {
   }) => {
     await login(page, OPERADOR.email, OPERADOR.password);
     await expect(page).toHaveURL(/\/operador$/);
-    await expect(page.getByRole('link', { name: 'Cobranza' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Cobranza', exact: true })).toHaveCount(0);
     await expect(page.getByRole('list', { name: 'Por entregar' })).toContainText('Personal Alfa');
 
     await page.getByRole('link', { name: 'Entregar' }).click();

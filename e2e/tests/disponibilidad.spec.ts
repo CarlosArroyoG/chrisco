@@ -111,8 +111,8 @@ test.describe.serial('Disponibilidad y bloqueos de equipos', () => {
 
     // Dentro del mantenimiento: Alfa ocupado, Beta libre.
     await page.getByLabel('Hasta').fill(inHours(2));
-    const alfa = page.getByRole('link', { name: /Disp Alfa/ });
-    const beta = page.getByRole('link', { name: /Disp Beta/ });
+    const alfa = page.locator('[data-equipo="Disp Alfa"]');
+    const beta = page.locator('[data-equipo="Disp Beta"]');
     await expect(alfa).toContainText('Ocupado en esas fechas');
     await expect(beta).toContainText('Disponible en esas fechas');
 

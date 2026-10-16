@@ -10,7 +10,15 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.core.errors import Conflict, NotFound
 from app.models.equipo import Equipo, EquipoFoto, EquipoStatus
-from app.schemas.equipo import EquipoCatalogOut, EquipoIn, EquipoOut, EquipoUpdate, FotoOut
+from app.schemas.disponibilidad import EstadoActual
+from app.schemas.equipo import (
+    EquipoCatalogOut,
+    EquipoIn,
+    EquipoOut,
+    EquipoUpdate,
+    FotoOut,
+    MiRenta,
+)
 from app.services import categorias, disponibilidad, images, specs
 from app.services.storage import PrivateStorage
 
@@ -180,7 +188,13 @@ def to_out(db: Session, equipo: Equipo) -> EquipoOut:
     return to_out_many(db, [equipo])[0]
 
 
-def catalog_out(equipo: Equipo, disponible: bool | None = None) -> EquipoCatalogOut:
+def catalog_out(
+    equipo: Equipo,
+    *,
+    disponible: bool | None = None,
+    situacion: EstadoActual = EstadoActual.LIBRE,
+    mi_renta: MiRenta | None = None,
+) -> EquipoCatalogOut:
     """Lo que ve un cliente: sin número de serie, horómetro ni notas internas."""
     shown: dict[str, Any] = {
         f: getattr(equipo, f)
@@ -197,6 +211,7 @@ def catalog_out(equipo: Equipo, disponible: bool | None = None) -> EquipoCatalog
             "tarifa_dia",
             "requiere_lowboy",
             "requiere_operador_certificado",
+            "descripcion",
         )
     }
     return EquipoCatalogOut(
@@ -204,5 +219,7 @@ def catalog_out(equipo: Equipo, disponible: bool | None = None) -> EquipoCatalog
         categoria_nombre=equipo.categoria.nombre,
         specs=specs.display_specs(specs.parse_fields(equipo.categoria.spec_fields), equipo.specs),
         fotos=[FotoOut.model_validate(f) for f in equipo.fotos],
+        situacion=situacion,
         disponible=disponible,
+        mi_renta=mi_renta,
     )

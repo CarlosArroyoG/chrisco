@@ -955,6 +955,10 @@ export type EquipoCatalogOut = {
      */
     requiere_operador_certificado: boolean;
     /**
+     * Descripcion
+     */
+    descripcion: string | null;
+    /**
      * Specs
      */
     specs: Array<SpecValueOut>;
@@ -962,10 +966,12 @@ export type EquipoCatalogOut = {
      * Fotos
      */
     fotos: Array<FotoOut>;
+    situacion?: EstadoActual;
     /**
      * Disponible
      */
     disponible?: boolean | null;
+    mi_renta?: MiRenta | null;
 };
 
 /**
@@ -1026,6 +1032,10 @@ export type EquipoIn = {
      * Requiere Operador Certificado
      */
     requiere_operador_certificado?: boolean;
+    /**
+     * Descripcion
+     */
+    descripcion?: string | null;
     /**
      * Notas
      */
@@ -1127,6 +1137,10 @@ export type EquipoOut = {
      */
     requiere_operador_certificado: boolean;
     /**
+     * Descripcion
+     */
+    descripcion: string | null;
+    /**
      * Notas
      */
     notas: string | null;
@@ -1215,6 +1229,10 @@ export type EquipoUpdate = {
      * Requiere Operador Certificado
      */
     requiere_operador_certificado?: boolean;
+    /**
+     * Descripcion
+     */
+    descripcion?: string | null;
     /**
      * Notas
      */
@@ -1453,6 +1471,23 @@ export type MessageOut = {
      * Detail
      */
     detail: string;
+};
+
+/**
+ * MiRenta
+ *
+ * Una renta abierta de la empresa del cliente sobre un equipo.
+ */
+export type MiRenta = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Folio
+     */
+    folio: string;
+    estado: RentaEstado;
 };
 
 /**
@@ -2020,6 +2055,14 @@ export type RentaOut = {
      */
     equipo_nombre: string;
     /**
+     * Equipo Foto Id
+     */
+    equipo_foto_id: string | null;
+    /**
+     * Total
+     */
+    total: number | null;
+    /**
      * Desde
      */
     desde: string;
@@ -2197,6 +2240,14 @@ export type SolicitudCreada = {
      * Equipo Nombre
      */
     equipo_nombre: string;
+    /**
+     * Equipo Foto Id
+     */
+    equipo_foto_id: string | null;
+    /**
+     * Total
+     */
+    total: number | null;
     /**
      * Desde
      */
@@ -3414,6 +3465,10 @@ export type ListCatalogoEquiposGetData = {
          * Solo Disponibles
          */
         solo_disponibles?: boolean;
+        /**
+         * Situacion
+         */
+        situacion?: EstadoActual | null;
         /**
          * Limit
          */

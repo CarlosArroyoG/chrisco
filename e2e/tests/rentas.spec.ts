@@ -108,11 +108,12 @@ test.describe.serial('Solicitud de renta', () => {
     await signIn(page, C1.email, C1.password);
     await page.getByRole('main').getByRole('link', { name: 'Mis rentas', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Mis rentas (1)' })).toBeVisible();
-    const fila = page.getByRole('row').filter({ hasText: folio });
-    await expect(fila).toContainText('Renta Alfa');
-    await expect(fila).toContainText('Solicitada');
+    const tarjeta = page.locator(`[data-folio="${folio}"]`);
+    await expect(tarjeta).toContainText('Renta Alfa');
+    await expect(tarjeta).toContainText('Solicitud enviada');
+    await expect(tarjeta).toContainText('Reservado por');
 
-    await fila.getByRole('link', { name: 'Ver' }).click();
+    await tarjeta.getByRole('link', { name: 'Ver mi solicitud' }).click();
     await expect(page.getByRole('heading', { name: folio })).toBeVisible();
     await expect(page.getByText(/Equipo reservado/)).toContainText(/\d\d:\d\d/);
     await expect(page.locator('dd', { hasText: DESTINO })).toBeVisible();
@@ -127,7 +128,7 @@ test.describe.serial('Solicitud de renta', () => {
     page,
   }) => {
     await signIn(page, VENTAS.email, VENTAS.password);
-    await page.getByRole('link', { name: 'Rentas' }).click();
+    await page.getByRole('link', { name: 'Rentas', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Rentas (1)' })).toBeVisible();
     await expect(page.getByRole('row').filter({ hasText: folio })).toContainText(C1.razonSocial);
 
@@ -158,7 +159,7 @@ test.describe.serial('Solicitud de renta', () => {
   test('cancelar la solicitud libera el equipo al instante', async ({ page, browser }) => {
     await signIn(page, C1.email, C1.password);
     await page.goto('/cliente/rentas');
-    await page.getByRole('row').filter({ hasText: folio }).getByRole('link', { name: 'Ver' }).click();
+    await page.locator(`[data-folio="${folio}"]`).getByRole('link', { name: 'Ver mi solicitud' }).click();
     await page.getByRole('button', { name: 'Cancelar solicitud' }).click();
     await page.getByRole('button', { name: 'Sí, cancelar' }).click();
     await expect(page.locator('app-status-badge').getByText('Cancelada')).toBeVisible();

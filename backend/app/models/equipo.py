@@ -72,6 +72,8 @@ class Equipo(IdMixin, TimestampMixin, Base):
     specs: Mapped[dict[str, Any]] = mapped_column(
         JSONB, default=dict, server_default=text("'{}'::jsonb")
     )
+    # Texto que ve el cliente en el catálogo (las `notas` son internas).
+    descripcion: Mapped[str | None] = mapped_column(Text)
     notas: Mapped[str | None] = mapped_column(Text)
 
     categoria: Mapped["Categoria"] = relationship(back_populates="equipos")

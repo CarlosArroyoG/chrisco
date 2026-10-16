@@ -20,6 +20,7 @@ import { StatusBadge } from '../../shared/status-badge/status-badge';
 import { CotizacionEditor } from './cotizacion-editor';
 import { CumplimientoPanel } from './cumplimiento-panel';
 import { MovimientosPanel } from './movimientos-panel';
+import { RentaPasos } from '../../shared/renta-pasos/renta-pasos';
 import { CotizacionView } from './cotizacion-view';
 
 const SECTIONS: { tipo: Requisito['tipo']; titulo: string }[] = [
@@ -45,6 +46,7 @@ const TRANSPORTE = { entrega: 'Entrega CHRISCO en la obra', recoge: 'Lo recoge e
     CotizacionEditor,
     CumplimientoPanel,
     MovimientosPanel,
+    RentaPasos,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -58,6 +60,7 @@ const TRANSPORTE = { entrega: 'Entrega CHRISCO en la obra', recoge: 'Lo recoge e
           <h1 class="font-mono text-lg font-black">{{ r.folio }}</h1>
           <app-status-badge [status]="r.estado" />
         </div>
+        <div class="mt-4"><app-renta-pasos [estado]="r.estado" [etiquetas]="false" /></div>
 
         @if (r.estado === 'solicitada' && r.vence_en && !expired()) {
           <p class="mt-2 text-sm">

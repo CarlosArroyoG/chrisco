@@ -5,6 +5,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, StringConstraints, model_validator
 
 from app.models.renta import OperadorModo, RentaEstado, Transporte
+from app.schemas.common import Money
 from app.schemas.disponibilidad import Periodo
 
 MIN_HOURS = 1
@@ -60,6 +61,9 @@ class RentaOut(BaseModel):
     equipo_id: uuid.UUID
     equipo_codigo: str
     equipo_nombre: str
+    # Primera foto del equipo y total de la cotización viva, para mostrar la renta como tarjeta.
+    equipo_foto_id: uuid.UUID | None
+    total: Money | None
     desde: datetime
     hasta: datetime
     destino: str

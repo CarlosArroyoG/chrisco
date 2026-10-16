@@ -15,6 +15,7 @@ from pydantic import (
 )
 
 from app.models.equipo import EquipoStatus
+from app.models.renta import RentaEstado
 from app.schemas.common import Hours, Money
 from app.schemas.disponibilidad import EstadoActual
 
@@ -96,6 +97,7 @@ class EquipoIn(BaseModel):
     tarifa_dia: Annotated[Money, Field(gt=0)] | None = None
     requiere_lowboy: bool = False
     requiere_operador_certificado: bool = False
+    descripcion: Annotated[str, StringConstraints(max_length=2000)] | None = None
     notas: Annotated[str, StringConstraints(max_length=1000)] | None = None
     specs: dict[str, Any] = Field(default_factory=dict)
 
@@ -145,6 +147,7 @@ class EquipoOut(BaseModel):
     tarifa_dia: Money | None
     requiere_lowboy: bool
     requiere_operador_certificado: bool
+    descripcion: str | None
     notas: str | None
     specs: dict[str, Any]
     status: EquipoStatus
@@ -158,6 +161,14 @@ class SpecValueOut(BaseModel):
     label: str
     value: str
     unit: str | None
+
+
+class MiRenta(BaseModel):
+    """Una renta abierta de la empresa del cliente sobre un equipo."""
+
+    id: uuid.UUID
+    folio: str
+    estado: RentaEstado
 
 
 class EquipoCatalogOut(BaseModel):
@@ -176,10 +187,15 @@ class EquipoCatalogOut(BaseModel):
     tarifa_dia: Money | None
     requiere_lowboy: bool
     requiere_operador_certificado: bool
+    descripcion: str | None
     specs: list[SpecValueOut]
     fotos: list[FotoOut]
+    # Situación del equipo ahora mismo (libre, rentado, apartado…), para verlo de un vistazo.
+    situacion: EstadoActual = EstadoActual.LIBRE
     # Solo se llena cuando se consulta un periodo concreto (`desde` y `hasta`).
     disponible: bool | None = None
+    # La renta abierta de la empresa del cliente con este equipo, si la hay: decide el botón.
+    mi_renta: MiRenta | None = None
 
 
 class RowError(BaseModel):
